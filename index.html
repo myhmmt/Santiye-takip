@@ -113,5 +113,137 @@
       </div>
     </section>
   </div>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+
+  const el = id => document.getElementById(id);
+  const loginCard = el("loginCard");
+  const appCard = el("app");
+  const loginUser = el("loginUser");
+  const loginErr = el("loginErr");
+  const blocksGrid = el("blocksGrid");
+  const noteText = el("noteText");
+  const notesList = el("notesList");
+  const crewType = el("crewType");
+  const crewList = el("crewList");
+
+  // 🔹 Yardımcı fonksiyonlar
+  const showToast = msg => alert(msg);
+  const saveSession = u => localStorage.setItem("santiye_user", JSON.stringify(u));
+  const getSession = () => JSON.parse(localStorage.getItem("santiye_user") || "null");
+  const clearSession = () => localStorage.removeItem("santiye_user");
+
+  // 🔹 Kullanıcılar
+  const users = [
+    { username: "Muhammet", password: "1234" },
+    { username: "Harun", password: "1234" },
+    { username: "Metin", password: "1234" },
+    { username: "Mert", password: "1234" },
+    { username: "Fuat", password: "1234" },
+    { username: "Furkan", password: "1234" },
+    { username: "Misafir", password: "1234" }
+  ];
+
+  // 🔹 Firebase config yükle
+  const fbconf = await fetch("src/data/firebase.json").then(r => r.json());
+  const fcmconf = await fetch("src/data/fcm.json").then(r => r.json());
+  const app = initializeApp(fbconf);
+  const db = getFirestore(app);
+
+  // 🔹 Giriş işlemi
+  const session = getSession();
+  if (session) showApp(session);
+
+  el("btnLogin").onclick = () => {
+    const u = el("inpUser").value.trim();
+    const p = el("inpPass").value.trim();
+    const found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+    if (!found) {
+      loginErr.textContent = "Hatalı kullanıcı adı veya şifre.";
+      return;
+    }
+    saveSession(found);
+    showApp(found);
+  };
+
+  function showApp(user) {
+    loginCard.style.display = "none";
+    appCard.style.display = "block";
+    loginUser.textContent = "👷 " + user.username;
+    initApp(user);
+  }
+
+  // 🔹 Firestore canlı not akışı
+  const q = query(collection(db, "notes"), orderBy("createdAt", "desc"));
+  onSnapshot(q, (snapshot) => {
+    notesList.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const n = doc.data();
+      const elDiv = document.createElement("div");
+      elDiv.className = "card";
+      elDiv.innerHTML = `<b>${n.block || "Genel"}</b> - ${n.user}<br>${n.text}`;
+      notesList.appendChild(elDiv);
+    });
+  });
+
+  // 🔹 Not ekleme
+  el("btnAddNote").onclick = async () => {
+    const u = getSession();
+    if (!u) return alert("Giriş yapmalısın!");
+    const text = noteText.value.trim();
+    if (!text) return alert("Not boş olamaz");
+    await addDoc(collection(db, "notes"), {
+      text,
+      user: u.username,
+      block: "Genel",
+      createdAt: serverTimestamp()
+    });
+    noteText.value = "";
+    showToast("Not eklendi ✅");
+  };
+
+  // 🔹 Bildirim kurulumu (FCM)
+  async function setupMessaging() {
+    const supported = await isSupported();
+    if (!supported) return console.log("FCM desteklenmiyor");
+
+    const messaging = getMessaging(app);
+    try {
+      const token = await getToken(messaging, { vapidKey: fcmconf.vapidKey });
+      console.log("FCM Token:", token);
+      if (Notification.permission !== "granted") {
+        await Notification.requestPermission();
+      }
+      onMessage(messaging, (payload) => {
+        console.log("Yeni mesaj:", payload);
+        new Notification("Yeni Bildirim", {
+          body: payload.notification?.body || "Yeni not eklendi",
+        });
+      });
+    } catch (err) {
+      console.error("Bildirim hatası:", err);
+    }
+  }
+
+  setupMessaging();
+
+  // 🔹 Ekipler örnek liste
+  const crews = ["Mekanik", "Elektrik", "Çatı (kereste)", "Çatı (kiremit)", "Çatı (oluk)", "Denizlik", "Parke", "Seramik", "Boya", "TG5", "PVC", "Kör Kasa", "Şap", "Dış Cephe", "Makina Alçı", "Saten Alçı", "Kaba Sıva (iç)"];
+  crewType.innerHTML = crews.map(c => `<option>${c}</option>`).join("");
+
+  el("btnCrewSave").onclick = () => {
+    const type = crewType.value;
+    const count = el("crewCount").value;
+    if (!count) return alert("Kişi sayısı gir");
+    const t = document.createElement("div");
+    t.className = "card";
+    t.textContent = `${type}: ${count} kişi`;
+    crewList.prepend(t);
+  };
+</script>
+</body>
+</html>
 </body>
 </html>
