@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Şantiye Takip</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0ea5e9" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111827;
+      --muted: #94a3b8;
+      --pri: #0ea5e9;
+      --line: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
+      background: var(--bg);
+      color: #e5e7eb;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: #0b1220cc;
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-weight: 700; letter-spacing: .3px; }
+    .wrap { max-width: 980px; margin: 12px auto; padding: 0 12px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+    input, button, select, textarea {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #243244;
+      background: #0b1220;
+      color: #e5e7eb;
+    }
+    button {
+      background: linear-gradient(90deg, #0ea5e9, #22d3ee);
+      color: #001016;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ghost { background: #0b1220; border: 1px solid #243244; color: #e5e7eb; }
+    .tabs { display: flex; gap: 8px; margin-top: 8px; }
+    .tabs button { background: #0b1220; border: 1px solid var(--line); }
+    .tabs button.active {
+      background: linear-gradient(90deg, #0ea5e9, #22d3ee);
+      color: #001016;
+      border: none;
+    }
+    .tab { display: none; margin-top: 12px; }
+    .tab.active { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🏗️ Şantiye Takip</div>
+    <div id="loginUser"></div>
+  </header>
+
+  <div class="wrap">
+    <!-- LOGIN EKRANI -->
+    <section id="loginCard" class="card">
+      <h3>Giriş</h3>
+      <p class="muted">Kullanıcılar: Muhammet, Harun, Metin, Mert, Fuat, Furkan, Misafir — Şifre: 1234</p>
+      <input id="inpUser" placeholder="Kullanıcı adı" />
+      <input id="inpPass" type="password" placeholder="Şifre" />
+      <button id="btnLogin">Giriş Yap</button>
+      <p id="loginErr" style="color:#f87171"></p>
+    </section>
+
+    <!-- ANA SEKME -->
+    <section id="app" class="card" style="display:none;">
+      <div class="tabs">
+        <button data-tab="tabBlocks" class="active">Bloklar</button>
+        <button data-tab="tabNotes">Notlar</button>
+        <button data-tab="tabCrews">Ekipler</button>
+      </div>
+
+      <div id="tabBlocks" class="tab active">
+        <h3>Bloklar</h3>
+        <div id="blocksGrid" class="grid"></div>
+      </div>
+
+      <div id="tabNotes" class="tab">
+        <h3>Notlar</h3>
+        <textarea id="noteText" placeholder="Not ekle..."></textarea>
+        <button id="btnAddNote">Kaydet</button>
+        <div id="notesList"></div>
+      </div>
+
+      <div id="tabCrews" class="tab">
+        <h3>Ekipler</h3>
+        <select id="crewType"></select>
+        <input id="crewCount" type="number" placeholder="Kişi sayısı" />
+        <button id="btnCrewSave">Kaydet</button>
+        <div id="crewList"></div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
