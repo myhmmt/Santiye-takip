@@ -3,157 +3,69 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Şantiye Takip – Basit MVP</title>
-  <meta name="theme-color" content="#0ea5e9" />
+  <title>Şantiye Takip – MVP</title>
   <style>
     :root{--bg:#0b1220;--card:#111827;--line:#1f2937;--muted:#94a3b8}
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:#e5e7eb}
-    header{position:sticky;top:0;background:#0b1220cc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:10}
-    .logo{font-weight:800}
+    header{position:sticky;top:0;background:#0b1220cc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px;font-weight:800}
     .wrap{max-width:900px;margin:12px auto;padding:0 12px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
     input,select,button,textarea{padding:10px 12px;border-radius:10px;border:1px solid #243244;background:#0b1220;color:#e5e7eb}
     textarea{min-height:80px;width:100%}
     button{background:linear-gradient(90deg,#0ea5e9,#22d3ee);color:#001016;border:none;font-weight:700;cursor:pointer}
     .muted{color:var(--muted)}
     .list{display:flex;flex-direction:column;gap:8px}
-    .note{border-left:3px solid #0ea5e9;padding-left:10px}
   </style>
 </head>
 <body>
-<header>
-  <div class="logo">🏗️ Şantiye Takip – Basit MVP</div>
-</header>
+  <header>🏗️ Şantiye Takip – MVP (Adım 1: UI)</header>
 
-<div class="wrap">
-  <!-- FORM -->
-  <section class="card">
-    <h3>Hızlı Kayıt</h3>
-    <div class="row">
-      <!-- İsim -->
-      <select id="who" style="min-width:140px">
-        <option value="">İsim seç</option>
-        <option>Muhammet</option><option>Harun</option><option>Metin</option>
-        <option>Mert</option><option>Fuat</option><option>Furkan</option>
-        <option>Misafir</option>
-      </select>
+  <div class="wrap">
+    <!-- FORM (şimdilik pasif) -->
+    <section class="card">
+      <h3>Hızlı Kayıt</h3>
+      <div class="row">
+        <select id="who" style="min-width:140px">
+          <option value="">İsim seç</option>
+          <option>Muhammet</option><option>Harun</option><option>Metin</option>
+          <option>Mert</option><option>Fuat</option><option>Furkan</option>
+          <option>Misafir</option>
+        </select>
 
-      <!-- Blok -->
-      <input id="block" placeholder="Blok (örn. A, R, AC…)" style="min-width:140px" />
+        <input id="block" placeholder="Blok (örn. A, R, AC…)" style="min-width:140px" />
+        <select id="crew" style="min-width:160px">
+          <option value="">Ekip seç</option>
+          <option>Elektrik</option><option>Mekanik</option>
+          <option>Çatı (kereste)</option><option>Çatı (kiremit)</option><option>Çatı (oluk)</option>
+          <option>Denizlik</option><option>Parke</option><option>Seramik</option><option>Boya</option>
+          <option>Tg5</option><option>PVC</option><option>Kör Kasa</option><option>Şap</option>
+          <option>Dış Cephe</option><option>Makina Alçı</option><option>Saten Alçı</option><option>Kaba Sıva (iç)</option>
+        </select>
 
-      <!-- Ekip -->
-      <select id="crew" style="min-width:160px">
-        <option value="">Ekip seç</option>
-        <option>Elektrik</option><option>Mekanik</option>
-        <option>Çatı (kereste)</option><option>Çatı (kiremit)</option><option>Çatı (oluk)</option>
-        <option>Denizlik</option><option>Parke</option><option>Seramik</option><option>Boya</option>
-        <option>Tg5</option><option>PVC</option><option>Kör Kasa</option><option>Şap</option>
-        <option>Dış Cephe</option><option>Makina Alçı</option><option>Saten Alçı</option><option>Kaba Sıva (iç)</option>
-      </select>
+        <select id="state" style="min-width:150px">
+          <option value="başladı">Başladı</option>
+          <option value="devam ediyor">Devam ediyor</option>
+          <option value="tamamlandı">Tamamlandı</option>
+        </select>
+      </div>
 
-      <!-- Durum -->
-      <select id="state" style="min-width:150px">
-        <option value="başladı">Başladı</option>
-        <option value="devam ediyor">Devam ediyor</option>
-        <option value="tamamlandı">Tamamlandı</option>
-      </select>
-    </div>
+      <div class="row" style="margin-top:8px">
+        <textarea id="text" placeholder="Not (opsiyonel)"></textarea>
+      </div>
 
-    <div class="row" style="margin-top:8px">
-      <textarea id="text" placeholder="Not (opsiyonel)"></textarea>
-    </div>
+      <div class="row" style="margin-top:8px">
+        <button disabled>Kaydet (bir sonraki adımda)</button>
+        <span class="muted">Şu an sadece arayüz yüklendi.</span>
+      </div>
+    </section>
 
-    <div class="row" style="margin-top:8px">
-      <button id="save">Kaydet</button>
-      <span id="msg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- LİSTE -->
-  <section class="card">
-    <h3>Son Kayıtlar</h3>
-    <div id="list" class="list"></div>
-  </section>
-</div>
-
-<script type="module">
-  // Firebase SDK
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc, serverTimestamp,
-    query, orderBy, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  // Senin Firebase config'in
-  const firebaseConfig = {
-    apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
-    authDomain: "santiye-takip-83874.firebaseapp.com",
-    projectId: "santiye-takip-83874",
-    storageBucket: "santiye-takip-83874.firebasestorage.app",
-    messagingSenderId: "893666575482",
-    appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  // İsim seçimlerini hatırla
-  const el = (id)=>document.getElementById(id);
-  const whoSel = el('who');
-  const savedWho = localStorage.getItem('santiye_who');
-  if (savedWho) whoSel.value = savedWho;
-  whoSel.addEventListener('change', ()=> localStorage.setItem('santiye_who', whoSel.value));
-
-  // Kaydet
-  el('save').onclick = async ()=>{
-    const who   = el('who').value.trim();
-    const block = el('block').value.trim().toUpperCase();
-    const crew  = el('crew').value.trim();
-    const state = el('state').value;
-    const text  = el('text').value.trim();
-
-    if(!who)   return say("İsim seç");
-    if(!block) return say("Blok gir (örn. A, R, AC)");
-    if(!crew)  return say("Ekip seç");
-
-    try{
-      await addDoc(collection(db,'notes'),{
-        user: who, block, crew, state, text,
-        createdAt: serverTimestamp()
-      });
-      el('text').value='';
-      say("Kaydedildi ✅");
-    }catch(e){
-      console.error(e);
-      say("Hata oluştu");
-    }
-  };
-
-  // Canlı liste
-  const listEl = el('list');
-  const q = query(collection(db,'notes'), orderBy('createdAt','desc'));
-  onSnapshot(q, (snap)=>{
-    listEl.innerHTML = '';
-    snap.forEach(doc=>{
-      const n = doc.data();
-      const when = n.createdAt?.toDate ? n.createdAt.toDate().toLocaleString() : '';
-      const div = document.createElement('div');
-      div.className = 'note';
-      div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:8px">
-          <b>${n.block}</b>
-          <span class="muted">${when}</span>
-        </div>
-        <div class="muted" style="margin:4px 0">${n.crew} • ${n.state} • ${n.user}</div>
-        <div>${(n.text||'')}</div>
-      `;
-      listEl.appendChild(div);
-    });
-  });
-
-  function say(m){ const msg=el('msg'); msg.textContent=m; setTimeout(()=>msg.textContent='',2000) }
-</script>
+    <!-- LİSTE (şimdilik boş) -->
+    <section class="card">
+      <h3>Son Kayıtlar</h3>
+      <div class="list muted">Kayıt yok (Adım 2'de aktif olacak).</div>
+    </section>
+  </div>
 </body>
 </html>
