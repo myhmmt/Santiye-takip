@@ -243,7 +243,11 @@
     crewList.prepend(t);
   };
 </script>
-</body>
-</html>
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js').catch(console.error);
+  navigator.serviceWorker.register('/firebase-messaging-sw.js').catch(console.error);
+}
+  </script>
 </body>
 </html>
