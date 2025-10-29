@@ -1,1 +1,9 @@
-[]
+[
+  { "id": 1, "name": "Muhammet", "username": "muhammet", "password": "1234", "role": "admin" },
+  { "id": 2, "name": "Harun", "username": "harun", "password": "1234", "role": "admin" },
+  { "id": 3, "name": "Metin", "username": "metin", "password": "1234", "role": "admin" },
+  { "id": 4, "name": "Mert", "username": "mert", "password": "1234", "role": "admin" },
+  { "id": 5, "name": "Fuat", "username": "fuat", "password": "1234", "role": "admin" },
+  { "id": 6, "name": "Furkan", "username": "furkan", "password": "1234", "role": "admin" },
+  { "id": 7, "name": "Misafir", "username": "misafir", "password": "1234", "role": "admin" }
+]
