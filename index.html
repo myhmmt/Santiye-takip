@@ -17,6 +17,7 @@
     button{background:linear-gradient(90deg,#0ea5e9,#22d3ee);color:#001016;border:none;font-weight:700;cursor:pointer}
     .muted{color:var(--muted)}
     .list{display:flex;flex-direction:column;gap:8px}
+    .note{border-left:3px solid #0ea5e9;padding-left:10px}
 
     /* === Blok seçici (modal + grid) === */
     .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:50}
@@ -38,10 +39,10 @@
   </style>
 </head>
 <body>
-  <header>🏗️ Şantiye Takip – MVP (Adım 2: 3 Sıralı Blok Seçici)</header>
+  <header>🏗️ Şantiye Takip – MVP (Adım 3: Kaydet + Liste / localStorage)</header>
 
   <div class="wrap">
-    <!-- FORM (şimdilik pasif) -->
+    <!-- FORM -->
     <section class="card">
       <h3>Hızlı Kayıt</h3>
       <div class="row">
@@ -78,15 +79,15 @@
       </div>
 
       <div class="row" style="margin-top:8px">
-        <button disabled>Kaydet (Adım 3’te)</button>
-        <span class="muted">Şu an sadece blok seçimi aktif.</span>
+        <button id="save">Kaydet</button>
+        <span id="msg" class="muted"></span>
       </div>
     </section>
 
-    <!-- LİSTE (şimdilik boş) -->
+    <!-- LİSTE -->
     <section class="card">
       <h3>Son Kayıtlar</h3>
-      <div class="list muted">Kayıt yok (Adım 3'te aktif olacak).</div>
+      <div id="list" class="list muted">Kayıt yok.</div>
     </section>
   </div>
 
@@ -129,6 +130,8 @@
     const PATRON = "R";
 
     const el = id => document.getElementById(id);
+
+    /* === Blok seçici === */
     const modal = el('blkModal');
     const openBtn = el('openPicker');
     const closeBtn = el('closePicker');
@@ -169,6 +172,71 @@
     openBtn.onclick = ()=> modal.classList.add('show');
     closeBtn.onclick = ()=> modal.classList.remove('show');
     modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
+
+    /* === İsim seçimini hatırla === */
+    const whoSel = el('who');
+    const savedWho = localStorage.getItem('santiye_who');
+    if (savedWho) whoSel.value = savedWho;
+    whoSel.addEventListener('change', ()=> localStorage.setItem('santiye_who', whoSel.value));
+
+    /* === Kayıt ve Liste (localStorage) === */
+    const KEY = 'santiye_notes_v1';
+
+    function loadNotes(){
+      try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+      catch { return []; }
+    }
+    function saveNotes(arr){
+      localStorage.setItem(KEY, JSON.stringify(arr));
+    }
+    function render(){
+      const listEl = el('list');
+      const items = loadNotes().sort((a,b)=>b.ts - a.ts);
+      if(!items.length){
+        listEl.classList.add('muted');
+        listEl.innerHTML = 'Kayıt yok.';
+        return;
+      }
+      listEl.classList.remove('muted');
+      listEl.innerHTML = '';
+      items.forEach(n=>{
+        const when = new Date(n.ts).toLocaleString();
+        const div = document.createElement('div');
+        div.className = 'note';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:8px">
+            <b>${n.block}</b>
+            <span class="muted">${when}</span>
+          </div>
+          <div class="muted" style="margin:4px 0">${n.crew} • ${n.state} • ${n.user}</div>
+          <div>${n.text||''}</div>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+    function say(m){ const msg=el('msg'); msg.textContent=m; setTimeout(()=>msg.textContent='',2000) }
+
+    el('save').onclick = ()=>{
+      const who   = (whoSel.value||'').trim();
+      const block = (el('block').value||'').trim().toUpperCase();
+      const crew  = (el('crew').value||'').trim();
+      const state = el('state').value;
+      const text  = (el('text').value||'').trim();
+
+      if(!who)   return say('İsim seç');
+      if(!block) return say('Blok seç');
+      if(!crew)  return say('Ekip seç');
+
+      const notes = loadNotes();
+      notes.push({ user: who, block, crew, state, text, ts: Date.now() });
+      saveNotes(notes);
+      el('text').value = '';
+      say('Kaydedildi ✅');
+      render();
+    };
+
+    // ilk çizim
+    render();
   </script>
 </body>
 </html>
