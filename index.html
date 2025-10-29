@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Şantiye Takip – Ekip Önce / Görsel Durum + Düzeltme</title>
+<title>Şantiye Takip – Canlı (Firestore)</title>
 <style>
   :root{--bg:#0b1220;--card:#111827;--line:#1f2937;--muted:#94a3b8}
   *{box-sizing:border-box}
@@ -23,9 +23,9 @@
 
   /* Blok ızgarası */
   .grid{display:grid;gap:8px}
-  .row1{grid-template-columns:repeat(12,1fr)}  /* AC … AN */
-  .row2{grid-template-columns:repeat(13,1fr)}  /* AB … I  */
-  .row3{grid-template-columns:repeat(12,1fr)}  /* AA,Z,U,T,A … H */
+  .row1{grid-template-columns:repeat(12,1fr)}
+  .row2{grid-template-columns:repeat(13,1fr)}
+  .row3{grid-template-columns:repeat(12,1fr)}
   .tile{padding:10px 6px;text-align:center;border:1px solid #243244;border-radius:10px;background:#0b1220;cursor:pointer;font-weight:800}
   .badge{font-size:10px;color:#cbd5e1;display:block;margin-top:4px;font-weight:500}
 
@@ -43,13 +43,11 @@
   .st-done{box-shadow:0 0 0 3px #10b981 inset}       /* yeşil: bitti */
 
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:6px}
-
-  /* ufak etiket */
   .chip{padding:2px 6px;border-radius:999px;border:1px solid #334155;background:#0b1220;color:#cbd5e1;font-size:12px}
 </style>
 </head>
 <body>
-<header>🏗️ Şantiye Takip – Ekip Önce / Görsel Durum + Düzeltme</header>
+<header>🏗️ Şantiye Takip – Canlı (Firestore)</header>
 
 <div class="wrap">
 
@@ -83,7 +81,7 @@
     </div>
   </section>
 
-  <!-- 2) BLOK IZGARASI (EKİBE GÖRE DURUM) -->
+  <!-- 2) BLOK IZGARASI -->
   <section class="card">
     <h3>2) Blok Seç (Ekip durumunu renkten gör)</h3>
 
@@ -134,56 +132,87 @@
 
 </div>
 
-<script>
-  /* ==== Sabit blok dizilimi (3 sıra) ==== */
-  const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"]; // 12
-  const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];         // 13
-  const ROW3 = ["AA","Z","U","T","A","B","C","D","E","F","G","H"];            // 12
+<script type="module">
+  /* ==== Firebase SDK ==== */
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, enableIndexedDbPersistence,
+    collection, addDoc, updateDoc, deleteDoc, doc,
+    serverTimestamp,
+    query, orderBy, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  /* ==== Senin Firebase config'in ==== */
+  const firebaseConfig = {
+    apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
+    authDomain: "santiye-takip-83874.firebaseapp.com",
+    projectId: "santiye-takip-83874",
+    storageBucket: "santiye-takip-83874.firebasestorage.app",
+    messagingSenderId: "893666575482",
+    appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // Offline çalışabilsin:
+  try { await enableIndexedDbPersistence(db); } catch(_) {}
+
+  /* ==== Sabit blok/ekip verileri ==== */
+  const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
+  const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
+  const ROW3 = ["AA","Z","U","T","A","B","C","D","E","F","G","H"];
   const ALL_BLOCKS = [...ROW1, ...ROW2, ...ROW3];
 
-  // Ekip listesi (geçerlilik için)
   const CREWS = ["Elektrik","Mekanik","Çatı (kereste)","Çatı (kiremit)","Çatı (oluk)","Denizlik","Parke","Seramik","Boya","Tg5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı","Kaba Sıva (iç)"];
   const STATES = ["başladı","devam ediyor","tamamlandı"];
 
-  // Daire tipi arka planları
   const T41 = new Set(["AA","Z","U","T"]);
   const T51 = new Set(["A","B","C","D","E","F","G","H"]);
   const T62 = new Set(["AI","AJ","AK","AL","AM","AN","P","O","N","M","L","K","J","I"]);
   const T72 = new Set(["AC","AD","AE","AF","AG","AH","AB","Y","V","S","R"]);
-
-  // Sahiplik + Patron
-  const OWNER = new Set(["AC","AD","AH","AI","AJ","Y","R","P","O","N","J","I","Z","A","B","C","H"]);
+  const OWNER  = new Set(["AC","AD","AH","AI","AJ","Y","R","P","O","N","J","I","Z","A","B","C","H"]);
   const PATRON = "R";
 
   const el = id => document.getElementById(id);
 
-  /* ==== LocalStorage ==== */
-  const KEY = 'santiye_notes_v2'; // v2: id destekli
-  const load = () => { try { return JSON.parse(localStorage.getItem(KEY))||[] } catch { return [] } };
-  const save = (arr) => localStorage.setItem(KEY, JSON.stringify(arr));
-  const newId = ()=> 'n_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+  /* ==== Bellekte anlık notlar (Firestore'dan) ==== */
+  let notes = []; // {id, user, block, crew, state, text, ts(Timestamp)}
 
-  // Bir ekip için her bloktaki SON durumu hesapla
+  // Canlı abonelik: en yeni üste
+  const q = query(collection(db,'notes'), orderBy('ts','desc'));
+  onSnapshot(q, (snap)=>{
+    notes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderList();
+    paintGrid();
+  });
+
+  // TS yardımcı (Firestore Timestamp ya da Date/number)
+  function tsToString(ts){
+    if (!ts) return '';
+    try {
+      if (ts.toDate) return ts.toDate().toLocaleString();
+      if (typeof ts === 'number') return new Date(ts).toLocaleString();
+      return String(ts);
+    } catch { return ''; }
+  }
+
+  /* ==== Grid durum hesaplama ==== */
   function latestStatusByBlockForCrew(crew){
-    const notes = load();
-    const map = new Map(); // block -> {state, ts}
+    const map = new Map(); // block -> {state, tsMillis}
     notes.forEach(n=>{
       if(n.crew!==crew) return;
+      const t = n.ts?.toMillis ? n.ts.toMillis() : (typeof n.ts==='number'? n.ts : 0);
       const prev = map.get(n.block);
-      if(!prev || (n.ts>prev.ts)) map.set(n.block, {state:n.state, ts:n.ts});
+      if(!prev || t>prev.tsMillis) map.set(n.block, {state:n.state, tsMillis:t});
     });
-    const stateClass = (s)=>{
-      if(!s) return 'st-none';
-      if(s==='tamamlandı') return 'st-done';
-      if(s==='devam ediyor' || s==='başladı') return 'st-progress';
-      return 'st-progress';
-    };
+    const cls = s => !s ? 'st-none' : (s==='tamamlandı' ? 'st-done' : 'st-progress');
     const out = {};
-    ALL_BLOCKS.forEach(b=>{ out[b] = stateClass(map.get(b)?.state); });
+    ALL_BLOCKS.forEach(b => out[b] = cls(map.get(b)?.state));
     return out;
   }
 
-  /* ==== Blok ızgarası ==== */
+  /* ==== Izgara çizimi ==== */
   const buckets = [
     {row: ROW1, el: el('row1')},
     {row: ROW2, el: el('row2')},
@@ -193,7 +222,7 @@
 
   function paintGrid(){
     const crewSel = el('crewPick').value;
-    const filt = el('statusFilter').value; // '', 'done', 'progress', 'none'
+    const filt = el('statusFilter').value;
     const st = crewSel ? latestStatusByBlockForCrew(crewSel) : {};
 
     buckets.forEach(({row,el:wrap})=>{
@@ -242,11 +271,58 @@
   if (savedWho) whoSel.value = savedWho;
   whoSel.addEventListener('change', ()=> localStorage.setItem('santiye_who', whoSel.value));
 
-  /* ==== Kayıt & Liste ==== */
-  let editId = null; // düzenleme modunda hangi kayıt
+  /* ==== Liste ==== */
+  function renderList(){
+    const listEl = el('list');
+    if(!notes.length){ listEl.classList.add('muted'); listEl.textContent='Kayıt yok.'; return; }
+    listEl.classList.remove('muted'); listEl.innerHTML='';
+    notes.forEach(n=>{
+      const when = tsToString(n.ts);
+      const div = document.createElement('div');
+      div.className='note';
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+          <div><b>${n.block}</b> <span class="chip">${n.crew}</span> <span class="chip">${n.state}</span> <span class="chip">${n.user}</span></div>
+          <span class="muted">${when}</span>
+        </div>
+        <div style="margin-top:6px">${n.text? String(n.text).replace(/</g,"&lt;") : ''}</div>
+        <div class="row" style="margin-top:8px">
+          <button class="ghost" data-edit="${n.id}">Düzelt</button>
+          <button class="danger" data-del="${n.id}">Sil</button>
+        </div>`;
+      listEl.appendChild(div);
+    });
 
+    // Düzelt
+    listEl.querySelectorAll('[data-edit]').forEach(b=>{
+      b.onclick = ()=>{
+        const id = b.getAttribute('data-edit');
+        const rec = notes.find(x=>x.id===id);
+        if(!rec) return;
+        editId = id;
+        whoSel.value = rec.user||'';
+        el('block').value = rec.block||'';
+        el('crew').value  = rec.crew||'';
+        el('state').value = rec.state||'başladı';
+        el('text').value  = rec.text||'';
+        el('save').textContent = 'Güncelle';
+        el('cancelEdit').style.display = 'inline-block';
+        say('Düzenleme modundasın');
+      };
+    });
+    // Sil
+    listEl.querySelectorAll('[data-del]').forEach(b=>{
+      b.onclick = async ()=>{
+        const id = b.getAttribute('data-del');
+        if(!confirm('Bu kaydı silmek istiyor musun?')) return;
+        await deleteDoc(doc(db,'notes',id));
+        say('Silindi');
+      };
+    });
+  }
+
+  /* ==== Yardımcılar ==== */
   function say(m){ const msg=el('msg'); msg.textContent=m; setTimeout(()=>msg.textContent='',2200) }
-
   function validateInputs({who, block, crew, state}){
     if(!who) return "İsim seç";
     if(!crew) return "Ekip seç (üstten ekip seçip blok tıkla)";
@@ -256,70 +332,13 @@
     if(!STATES.includes(state)) return "Geçersiz durum";
     return "";
   }
-
-  function renderList(){
-    const listEl = el('list');
-    const items = load().sort((a,b)=>b.ts-a.ts);
-    if(!items.length){ listEl.classList.add('muted'); listEl.textContent='Kayıt yok.'; return; }
-    listEl.classList.remove('muted'); listEl.innerHTML='';
-    items.forEach(n=>{
-      const when = new Date(n.ts).toLocaleString();
-      const div = document.createElement('div');
-      div.className='note';
-      div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-          <div><b>${n.block}</b> <span class="chip">${n.crew}</span> <span class="chip">${n.state}</span> <span class="chip">${n.user}</span></div>
-          <span class="muted">${when}</span>
-        </div>
-        <div style="margin-top:6px">${n.text? n.text.replace(/</g,"&lt;") : ''}</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-edit="${n.id}">Düzelt</button>
-          <button class="danger" data-del="${n.id}">Sil</button>
-        </div>`;
-      listEl.appendChild(div);
-    });
-
-    // olaylar
-    listEl.querySelectorAll('[data-edit]').forEach(b=>{
-      b.onclick = ()=>{
-        const id = b.getAttribute('data-edit');
-        const rec = load().find(x=>x.id===id);
-        if(!rec) return;
-        editId = id;
-        whoSel.value = rec.user;
-        el('block').value = rec.block;
-        el('crew').value  = rec.crew;
-        el('state').value = rec.state;
-        el('text').value  = rec.text || '';
-        el('save').textContent = 'Güncelle';
-        el('cancelEdit').style.display = 'inline-block';
-        say('Düzenleme modundasın');
-      };
-    });
-    listEl.querySelectorAll('[data-del]').forEach(b=>{
-      b.onclick = ()=>{
-        const id = b.getAttribute('data-del');
-        if(!confirm('Bu kaydı silmek istiyor musun?')) return;
-        const arr = load().filter(x=>x.id!==id);
-        save(arr);
-        renderList();
-        paintGrid();
-        say('Silindi');
-        if(editId===id){ // silinen kayıt düzenlemede ise formu temizle
-          editId=null;
-          el('save').textContent='Kaydet';
-          el('cancelEdit').style.display='none';
-          el('text').value='';
-        }
-      };
-    });
-  }
-
   function resetFormKeepCrewWho(){
     el('text').value='';
     el('state').value='başladı';
-    // who ve crew/block'ı koru
   }
+
+  /* ==== Kaydet/Güncelle ==== */
+  let editId = null;
 
   el('cancelEdit').onclick = ()=>{
     editId=null;
@@ -329,7 +348,7 @@
     say('Düzenleme iptal edildi');
   };
 
-  el('save').onclick = ()=>{
+  el('save').onclick = async ()=>{
     const who   = (whoSel.value||'').trim();
     const block = (el('block').value||'').trim().toUpperCase();
     const crew  = (el('crew').value||'').trim();
@@ -339,25 +358,22 @@
     const err = validateInputs({who,block,crew,state});
     if (err) { say(err); return; }
 
-    const arr = load();
-    if(editId){
-      const i = arr.findIndex(x=>x.id===editId);
-      if(i>-1){
-        arr[i] = { ...arr[i], user:who, block, crew, state, text, ts: Date.now() };
-        save(arr);
+    try{
+      if(editId){
+        await updateDoc(doc(db,'notes',editId), { user:who, block, crew, state, text, ts: serverTimestamp() });
+        editId=null;
+        el('save').textContent='Kaydet';
+        el('cancelEdit').style.display='none';
         say('Güncellendi ✅');
+      }else{
+        await addDoc(collection(db,'notes'), { user:who, block, crew, state, text, ts: serverTimestamp() });
+        say('Kaydedildi ✅');
       }
-      editId=null;
-      el('save').textContent='Kaydet';
-      el('cancelEdit').style.display='none';
-    }else{
-      arr.push({ id:newId(), user: who, block, crew, state, text, ts: Date.now() });
-      save(arr);
-      say('Kaydedildi ✅');
+      resetFormKeepCrewWho();
+    }catch(e){
+      console.error(e);
+      say('Hata: kayıt yazılamadı');
     }
-    renderList();
-    paintGrid();
-    resetFormKeepCrewWho();
   };
 
   // Ekip seçimi & filtre
@@ -368,9 +384,8 @@
   el('statusFilter').addEventListener('change', paintGrid);
   el('clearFilter').addEventListener('click', ()=>{ el('statusFilter').value=''; paintGrid(); });
 
-  // İlk çizimler
+  // İlk çizimler (notlar onSnapshot ile geldikçe kendini yeniler)
   paintGrid();
-  renderList();
 </script>
 </body>
 </html>
