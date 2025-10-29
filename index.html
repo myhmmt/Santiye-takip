@@ -23,10 +23,9 @@
     .modal.show{display:flex}
     .panel{width:min(900px,96vw);max-height:88vh;overflow:auto;background:#111827;border:1px solid #1f2937;border-radius:16px;padding:14px}
     .grid{display:grid;gap:8px}
-    .row1{grid-template-columns:repeat(12,1fr)}
-    .row2{grid-template-columns:repeat(13,1fr)}
-    .row3{grid-template-columns:repeat(4,1fr)}
-    .row4{grid-template-columns:repeat(8,1fr)}
+    .row1{grid-template-columns:repeat(12,1fr)}  /* AC … AN */
+    .row2{grid-template-columns:repeat(13,1fr)}  /* AB … I  */
+    .row3{grid-template-columns:repeat(12,1fr)}  /* AA,Z,U,T,A … H */
     .tile{padding:10px 6px;text-align:center;border:1px solid #243244;border-radius:10px;background:#0b1220;cursor:pointer;font-weight:800}
     .tile:hover{outline:2px solid #22d3ee}
     .badge{font-size:10px;color:#94a3b8;display:block;margin-top:4px;font-weight:500}
@@ -39,10 +38,10 @@
   </style>
 </head>
 <body>
-  <header>🏗️ Şantiye Takip – MVP (Adım 2: Blok Seçici)</header>
+  <header>🏗️ Şantiye Takip – MVP (Adım 2: 3 Sıralı Blok Seçici)</header>
 
   <div class="wrap">
-    <!-- FORM (hala pasif) -->
+    <!-- FORM (şimdilik pasif) -->
     <section class="card">
       <h3>Hızlı Kayıt</h3>
       <div class="row">
@@ -106,20 +105,18 @@
         &nbsp; 7+2 <span style="background:#153056;padding:4px 8px;border-radius:6px"></span>
       </p>
 
-      <!-- Plan sırasına göre 4 sıra -->
+      <!-- Plan sırasına göre 3 sıra -->
       <div class="grid row1" id="row1"></div>
       <div class="grid row2" id="row2" style="margin-top:8px"></div>
       <div class="grid row3" id="row3" style="margin-top:8px"></div>
-      <div class="grid row4" id="row4" style="margin-top:8px"></div>
     </div>
   </div>
 
   <script>
-    /* === Blok listeleri (plan sırası) === */
-    const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"]; // üst sıra
-    const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];         // 2. sıra
-    const ROW3 = ["AA","Z","U","T"];                                            // sol alttaki 4
-    const ROW4 = ["A","B","C","D","E","F","G","H"];                             // alt sıra
+    /* === Blok listeleri (3 sıra, plan sırası) === */
+    const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"]; // üst sıra (12)
+    const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];         // orta sıra (13)
+    const ROW3 = ["AA","Z","U","T","A","B","C","D","E","F","G","H"];            // alt sıra (12)
 
     // Daire tipleri (renk)
     const T41 = new Set(["AA","Z","U","T"]);
@@ -140,8 +137,7 @@
     const buckets = [
       {row: ROW1, el: el('row1')},
       {row: ROW2, el: el('row2')},
-      {row: ROW3, el: el('row3')},
-      {row: ROW4, el: el('row4')}
+      {row: ROW3, el: el('row3')}
     ];
 
     function tileClass(code){
