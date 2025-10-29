@@ -17,13 +17,32 @@
     button{background:linear-gradient(90deg,#0ea5e9,#22d3ee);color:#001016;border:none;font-weight:700;cursor:pointer}
     .muted{color:var(--muted)}
     .list{display:flex;flex-direction:column;gap:8px}
+
+    /* === Blok seçici (modal + grid) === */
+    .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:50}
+    .modal.show{display:flex}
+    .panel{width:min(900px,96vw);max-height:88vh;overflow:auto;background:#111827;border:1px solid #1f2937;border-radius:16px;padding:14px}
+    .grid{display:grid;gap:8px}
+    .row1{grid-template-columns:repeat(12,1fr)}
+    .row2{grid-template-columns:repeat(13,1fr)}
+    .row3{grid-template-columns:repeat(4,1fr)}
+    .row4{grid-template-columns:repeat(8,1fr)}
+    .tile{padding:10px 6px;text-align:center;border:1px solid #243244;border-radius:10px;background:#0b1220;cursor:pointer;font-weight:800}
+    .tile:hover{outline:2px solid #22d3ee}
+    .badge{font-size:10px;color:#94a3b8;display:block;margin-top:4px;font-weight:500}
+    .t-41{background:#7c2d4e}  /* 4+1 */
+    .t-51{background:#8a6a15}  /* 5+1 */
+    .t-62{background:#0f3b46}  /* 6+2 */
+    .t-72{background:#153056}  /* 7+2 */
+    .own{border-color:#22d3ee}  /* arsa sahibi */
+    .patron{outline:2px dashed #22d3ee} /* R: patron */
   </style>
 </head>
 <body>
-  <header>🏗️ Şantiye Takip – MVP (Adım 1: UI)</header>
+  <header>🏗️ Şantiye Takip – MVP (Adım 2: Blok Seçici)</header>
 
   <div class="wrap">
-    <!-- FORM (şimdilik pasif) -->
+    <!-- FORM (hala pasif) -->
     <section class="card">
       <h3>Hızlı Kayıt</h3>
       <div class="row">
@@ -34,7 +53,11 @@
           <option>Misafir</option>
         </select>
 
-        <input id="block" placeholder="Blok (örn. A, R, AC…)" style="min-width:140px" />
+        <div class="row" style="align-items:stretch;flex:1">
+          <input id="block" placeholder="Blok (seç butonundan)" style="min-width:140px;flex:1" readonly />
+          <button type="button" id="openPicker">Blok Seç</button>
+        </div>
+
         <select id="crew" style="min-width:160px">
           <option value="">Ekip seç</option>
           <option>Elektrik</option><option>Mekanik</option>
@@ -56,16 +79,100 @@
       </div>
 
       <div class="row" style="margin-top:8px">
-        <button disabled>Kaydet (bir sonraki adımda)</button>
-        <span class="muted">Şu an sadece arayüz yüklendi.</span>
+        <button disabled>Kaydet (Adım 3’te)</button>
+        <span class="muted">Şu an sadece blok seçimi aktif.</span>
       </div>
     </section>
 
     <!-- LİSTE (şimdilik boş) -->
     <section class="card">
       <h3>Son Kayıtlar</h3>
-      <div class="list muted">Kayıt yok (Adım 2'de aktif olacak).</div>
+      <div class="list muted">Kayıt yok (Adım 3'te aktif olacak).</div>
     </section>
   </div>
+
+  <!-- BLOK SEÇİCİ MODAL -->
+  <div id="blkModal" class="modal" aria-hidden="true">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
+        <h3 style="margin:0">Blok Seç</h3>
+        <button id="closePicker">Kapat</button>
+      </div>
+
+      <p class="muted" style="margin:6px 0 12px">
+        Renkler: 4+1 <span style="background:#7c2d4e;padding:4px 8px;border-radius:6px"></span>
+        &nbsp; 5+1 <span style="background:#8a6a15;padding:4px 8px;border-radius:6px"></span>
+        &nbsp; 6+2 <span style="background:#0f3b46;padding:4px 8px;border-radius:6px"></span>
+        &nbsp; 7+2 <span style="background:#153056;padding:4px 8px;border-radius:6px"></span>
+      </p>
+
+      <!-- Plan sırasına göre 4 sıra -->
+      <div class="grid row1" id="row1"></div>
+      <div class="grid row2" id="row2" style="margin-top:8px"></div>
+      <div class="grid row3" id="row3" style="margin-top:8px"></div>
+      <div class="grid row4" id="row4" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <script>
+    /* === Blok listeleri (plan sırası) === */
+    const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"]; // üst sıra
+    const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];         // 2. sıra
+    const ROW3 = ["AA","Z","U","T"];                                            // sol alttaki 4
+    const ROW4 = ["A","B","C","D","E","F","G","H"];                             // alt sıra
+
+    // Daire tipleri (renk)
+    const T41 = new Set(["AA","Z","U","T"]);
+    const T51 = new Set(["A","B","C","D","E","F","G","H"]);
+    const T62 = new Set(["AI","AJ","AK","AL","AM","AN","P","O","N","M","L","K","J","I"]);
+    const T72 = new Set(["AC","AD","AE","AF","AG","AH","AB","Y","V","S","R"]);
+
+    // Sahiplik (17 arsa sahibi) + Patron villası R
+    const OWNER = new Set(["AC","AD","AH","AI","AJ","Y","R","P","O","N","J","I","Z","A","B","C","H"]);
+    const PATRON = "R";
+
+    const el = id => document.getElementById(id);
+    const modal = el('blkModal');
+    const openBtn = el('openPicker');
+    const closeBtn = el('closePicker');
+    const blockInp = el('block');
+
+    const buckets = [
+      {row: ROW1, el: el('row1')},
+      {row: ROW2, el: el('row2')},
+      {row: ROW3, el: el('row3')},
+      {row: ROW4, el: el('row4')}
+    ];
+
+    function tileClass(code){
+      if (T41.has(code)) return 'tile t-41';
+      if (T51.has(code)) return 'tile t-51';
+      if (T62.has(code)) return 'tile t-62';
+      if (T72.has(code)) return 'tile t-72';
+      return 'tile';
+    }
+
+    function buildPicker(){
+      buckets.forEach(({row,el})=>{
+        el.innerHTML = '';
+        row.forEach(code=>{
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = tileClass(code);
+          if (OWNER.has(code)) btn.classList.add('own');
+          if (code===PATRON) btn.classList.add('patron');
+          btn.innerHTML = code + (code===PATRON ? `<span class="badge">patronun villası 😄</span>` :
+                                   OWNER.has(code) ? `<span class="badge">arsa sahibi</span>` : `<span class="badge">müteahhit</span>`);
+          btn.onclick = ()=>{ blockInp.value = code; modal.classList.remove('show'); };
+          el.appendChild(btn);
+        });
+      });
+    }
+    buildPicker();
+
+    openBtn.onclick = ()=> modal.classList.add('show');
+    closeBtn.onclick = ()=> modal.classList.remove('show');
+    modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
+  </script>
 </body>
 </html>
