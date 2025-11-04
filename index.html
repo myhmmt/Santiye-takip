@@ -1,277 +1,517 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Şantiye Takip</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Şantiye Takip Sistemi</title>
+
+<!-- Font & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --primary:#0d47a1; --primary-2:#1976d2; --bg:#f4f7f6; --card:#fff; --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
+  --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:1000px;margin:0 auto;padding-bottom:74px}
+header{background:var(--primary);color:#fff;text-align:center;padding:18px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+header h1{margin:0;font-size:28px;letter-spacing:.3px}
+
+main{padding:16px}
+.page{display:none}
+.page.active{display:block}
+h2{margin:10px 4px 14px;font-size:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.form-row{display:grid;gap:12px}
+label{display:block;font-weight:500;margin:2px 0 6px}
+input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}
+textarea{resize:vertical}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;background:var(--primary-2);color:#fff;font-weight:700;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn.secondary{background:#e0e7ff;color:#0b3ea9}
+.btn.icon{padding:8px 10px;border-radius:8px}
+.inline{display:flex;gap:10px;flex-wrap:wrap}
+
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
+.nav .bar{max-width:1000px;margin:0 auto;display:flex}
+.nav button{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
+.nav i{font-size:20px}
+.nav button.active{color:var(--primary);font-weight:700}
+
+/* Pafta */
+.pafta-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pafta{min-width:760px}
+.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
+.blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
+.blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
+.blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
+.blok.d-devam{background:var(--devam);border-color:#f1c21b}
+.blok.d-bitti{background:var(--bitti);color:#fff;border-color:#2e7d32}
+.blok.d-teslim{background:var(--teslim);color:#fff}
+.blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
+.blok.sosyal{width:120px}
+
+/* Özet listeleri */
+.list{list-style:none;margin:0;padding:0}
+.list li{padding:10px 6px;border-bottom:1px dashed var(--border)}
+
+/* Modal (Paftadan Seç) */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
+.modal.active{display:flex}
+.modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
+.modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
+.modal .top h3{margin:6px 0 0}
+.modal .close{background:#f3f4f6;border:1px solid var(--border)}
+.modal .help{color:#666;font-size:13px;margin:6px 8px 0}
+
+/* PDF alanı */
+#printArea{display:none}
+@media print{
+  .nav, header{display:none!important}
+  #printArea{display:block}
+}
+</style>
 </head>
 <body>
-  <div class="app-container">
-    <header class="app-header">
-      <h1>Şantiye Takip Sistemi</h1>
-    </header>
+<div class="app">
 
-    <main class="app-main">
-      <!-- BÖLÜM 1: Günlük Yoklama -->
-      <section id="bolum1" class="page">
-        <h2>Bölüm 1: Günlük Yoklama</h2>
+  <header><h1>Şantiye Takip Sistemi</h1></header>
 
-        <form id="formYoklama" class="card">
-          <div class="form-group">
-            <label for="yoklamaEkip">Ekip Seçimi</label>
-            <select id="yoklamaEkip"></select>
+  <main>
+
+    <!-- BÖLÜM 1: GÜNLÜK YOKLAMA -->
+    <section id="p1" class="page">
+      <h2>Bölüm 1 — Günlük Şantiye Yoklama</h2>
+
+      <div class="card">
+        <div class="form-row">
+          <div>
+            <label for="yk-crew">Ekip</label>
+            <select id="yk-crew"></select>
           </div>
-
-          <div class="form-group">
-            <label for="yoklamaKisi">Kişi Sayısı</label>
-            <input type="number" id="yoklamaKisi" placeholder="Örn: 5" min="1"/>
+          <div>
+            <label for="yk-count">Kişi Sayısı</label>
+            <input id="yk-count" type="number" min="1" placeholder="Örn: 5" />
           </div>
-
-          <div class="form-group">
-            <label for="yoklamaBlok">Blok Seçimi</label>
-            <div class="combo-row">
-              <select id="yoklamaBlok"></select>
-              <button type="button" class="btn btn-light btn-pafta" data-target="yoklamaBlok">
-                <i class="fa-solid fa-map"></i> Paftadan Seç
-              </button>
+          <div>
+            <label for="yk-block">Blok</label>
+            <div class="inline">
+              <select id="yk-block" style="min-width:160px"></select>
+              <button class="btn secondary icon" id="btnPickYoklama"><i class="fa-solid fa-map"></i>Paftadan Seç</button>
             </div>
-            <small class="muted">İpucu: Bu alana tıklayınca da pafta açılır.</small>
           </div>
-
-          <div class="form-group">
-            <label for="yoklamaNot">Not (Opsiyonel)</label>
-            <textarea id="yoklamaNot" rows="3"></textarea>
+          <div>
+            <label for="yk-note">Not (opsiyonel)</label>
+            <textarea id="yk-note" rows="3" placeholder="Kısa not…"></textarea>
           </div>
-
-          <button type="submit" class="btn btn-primary">Giriş Yap</button>
-          <div id="yoklamaMsg" class="form-msg"></div>
-        </form>
-
-        <div class="ozet-panel card">
-          <h3>Bugünkü Yoklama Özeti</h3>
-          <ul id="yoklamaListesi"></ul>
         </div>
-      </section>
+        <div class="inline" style="margin-top:6px">
+          <button class="btn" id="btnYokla"><i class="fa-solid fa-user-check"></i>Giriş Yap</button>
+          <button class="btn secondary" id="btnClearDaily"><i class="fa-regular fa-calendar-xmark"></i>Bugünü Sıfırla</button>
+        </div>
+      </div>
 
-      <!-- BÖLÜM 2: Hızlı Kayıt -->
-      <section id="bolum2" class="page">
-        <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
+      <div class="card">
+        <h3>Bugünkü Yoklama Özeti</h3>
+        <ul class="list" id="yk-list"></ul>
+      </div>
+    </section>
 
-        <form id="formHizliKayit" class="card">
-          <div class="form-group">
-            <label for="kayitKullanici">Kullanıcı</label>
-            <select id="kayitKullanici"></select>
+    <!-- BÖLÜM 2: HIZLI KAYIT -->
+    <section id="p2" class="page">
+      <h2>Bölüm 2 — Hızlı Kayıt (İmalat)</h2>
+
+      <div class="card">
+        <div class="form-row">
+          <div>
+            <label for="hk-user">Kullanıcı</label>
+            <select id="hk-user"></select>
           </div>
-
-          <div class="form-group">
-            <label for="kayitEkip">Ekip / İmalat Kalemi</label>
-            <select id="kayitEkip"></select>
+          <div>
+            <label for="hk-crew">Ekip / İmalat Kalemi</label>
+            <select id="hk-crew"></select>
           </div>
-
-          <div class="form-group">
-            <label for="kayitBlok">Blok Seçimi</label>
-            <div class="combo-row">
-              <select id="kayitBlok"></select>
-              <button type="button" class="btn btn-light btn-pafta" data-target="kayitBlok">
-                <i class="fa-solid fa-map"></i> Paftadan Seç
-              </button>
+          <div>
+            <label for="hk-block">Blok</label>
+            <div class="inline">
+              <select id="hk-block" style="min-width:160px"></select>
+              <button class="btn secondary icon" id="btnPickKayit"><i class="fa-solid fa-map"></i>Paftadan Seç</button>
             </div>
-            <small class="muted">İpucu: Bu alana tıklayınca da pafta açılır.</small>
           </div>
-
-          <div class="form-group">
-            <label for="kayitDurum">Durum</label>
-            <select id="kayitDurum">
+          <div>
+            <label for="hk-status">Durum</label>
+            <select id="hk-status">
               <option value="Basladi">Başladı</option>
               <option value="Devam">Devam Ediyor</option>
               <option value="Bitti">Bitti</option>
-              <option value="TeslimAlindi">Teslim Alındı</option>
+              <option value="Teslim">Teslim Alındı</option>
             </select>
           </div>
-
-          <div class="form-group">
-            <label for="kayitNot">Not (Opsiyonel)</label>
-            <textarea id="kayitNot" rows="3"></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary">Kaydet</button>
-          <div id="kayitMsg" class="form-msg"></div>
-        </form>
-
-        <div id="hizliKayitArsivi" class="card">
-          <h3>Hızlı Kayıt Özet / Arşiv</h3>
-
-          <div class="arsiv-filtreleri">
-            <label for="filtreBlok">Blok Filtresi:</label>
-            <select id="filtreBlok"></select>
-            <button id="filtreTemizle" class="btn btn-light">Filtreyi Temizle</button>
-          </div>
-
-          <div class="table-responsive">
-            <table id="arsivTablosu">
-              <thead>
-                <tr>
-                  <th>Tarih</th>
-                  <th>Kullanıcı</th>
-                  <th>Ekip</th>
-                  <th>Blok</th>
-                  <th>Durum</th>
-                  <th>Not</th>
-                  <th>İşlem</th>
-                </tr>
-              </thead>
-              <tbody><!-- JS dolduracak --></tbody>
-            </table>
+          <div>
+            <label for="hk-note">Not (opsiyonel)</label>
+            <textarea id="hk-note" rows="3" placeholder="Örn: eksik yerler var…"></textarea>
           </div>
         </div>
-      </section>
+        <button class="btn" id="btnSave"><i class="fa-solid fa-floppy-disk"></i>Kaydet</button>
+      </div>
 
-      <!-- BÖLÜM 3: Proje Durum Panosu -->
-      <section id="bolum3" class="page active">
-        <h2>Bölüm 3: Proje Durum Panosu</h2>
-
-        <div class="dashboard-filter card">
-          <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
-          <select id="panoEkipFiltre">
-            <option value="tum">Tüm Ekipler (Genel Bakış)</option>
-          </select>
+      <div class="card">
+        <h3>Hızlı Kayıt Arşivi</h3>
+        <div class="inline" style="margin-bottom:8px">
+          <select id="f-block"></select>
+          <select id="f-crew"></select>
+          <button class="btn secondary" id="btnFilter"><i class="fa-solid fa-filter"></i>Filtrele</button>
+          <button class="btn secondary" id="btnResetFilter"><i class="fa-solid fa-rotate"></i>Sıfırla</button>
         </div>
+        <div style="overflow-x:auto">
+          <table id="tbl" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#f2f2f7">
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Tarih</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Kullanıcı</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Ekip</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Blok</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Durum</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-        <div id="projePaftasi" class="card">
-          <h3>Görsel Proje Paftası</h3>
+    <!-- BÖLÜM 3: ANA PANO -->
+    <section id="p3" class="page active">
+      <h2>Bölüm 3 — Proje Durum Panosu</h2>
 
-          <div class="pafta-row">
-            <div class="blok" data-blok-id="AC">AC</div>
-            <div class="blok" data-blok-id="AD">AD</div>
-            <div class="blok" data-blok-id="AE">AE</div>
-            <div class="blok" data-blok-id="AF">AF</div>
-            <div class="blok" data-blok-id="AG">AG</div>
-            <div class="blok" data-blok-id="AH">AH</div>
-            <div class="blok" data-blok-id="AI">AI</div>
-            <div class="blok" data-blok-id="AJ">AJ</div>
-            <div class="blok" data-blok-id="AK">AK</div>
-            <div class="blok" data-blok-id="AL">AL</div>
-            <div class="blok" data-blok-id="AM">AM</div>
-            <div class="blok" data-blok-id="AN">AN</div>
+      <div class="card">
+        <div class="inline" style="align-items:flex-end;justify-content:space-between">
+          <div style="min-width:240px">
+            <label for="pano-crew">Ekip seç:</label>
+            <select id="pano-crew"></select>
           </div>
+          <button class="btn secondary" id="btnPdf"><i class="fa-solid fa-file-pdf"></i>İcmal PDF Al</button>
+        </div>
+      </div>
 
-          <div class="pafta-row">
-            <div class="blok" data-blok-id="AB">AB</div>
-            <div class="blok" data-blok-id="Y">Y</div>
-            <div class="blok" data-blok-id="V">V</div>
-            <div class="blok" data-blok-id="S">S</div>
-            <div class="blok" data-blok-id="R">R</div>
-            <div class="blok" data-blok-id="P">P</div>
-            <div class="blok" data-blok-id="O">O</div>
-            <div class="blok" data-blok-id="N">N</div>
-            <div class="blok" data-blok-id="M">M</div>
-            <div class="blok" data-blok-id="L">L</div>
-            <div class="blok" data-blok-id="K">K</div>
-            <div class="blok" data-blok-id="J">J</div>
-            <div class="blok" data-blok-id="I">I</div>
-          </div>
-
-          <div class="pafta-row">
-            <div class="blok" data-blok-id="AA">AA</div>
-            <div class="blok" data-blok-id="Z">Z</div>
-            <div class="blok" data-blok-id="U">U</div>
-            <div class="blok" data-blok-id="T">T</div>
-            <div class="blok sosyal-tesis" data-blok-id="Sosyal">SOSYAL TESİS</div>
-            <div class="blok" data-blok-id="A">A</div>
-            <div class="blok" data-blok-id="B">B</div>
-            <div class="blok" data-blok-id="C">C</div>
-            <div class="blok" data-blok-id="D">D</div>
-            <div class="blok" data-blok-id="E">E</div>
-            <div class="blok" data-blok-id="F">F</div>
-            <div class="blok" data-blok-id="G">G</div>
-            <div class="blok" data-blok-id="H">H</div>
+      <div class="card">
+        <h3>Görsel Proje Paftası</h3>
+        <div class="pafta-wrap">
+          <div class="pafta" id="pafta">
+            <!-- Satır 1 -->
+            <div class="row" id="row-top"></div>
+            <!-- Satır 2 -->
+            <div class="row" id="row-mid"></div>
+            <!-- Satır 3 -->
+            <div class="row" id="row-bot"></div>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
-    <nav class="app-nav">
-      <button class="nav-btn" data-page="bolum1">
-        <i class="fas fa-user-check"></i><span>Yoklama</span>
-      </button>
-      <button class="nav-btn" data-page="bolum2">
-        <i class="fas fa-plus-circle"></i><span>Hızlı Kayıt</span>
-      </button>
-      <button class="nav-btn active" data-page="bolum3">
-        <i class="fas fa-th-large"></i><span>Ana Pano</span>
-      </button>
-    </nav>
-  </div>
+  </main>
 
-  <!-- 🔵 PAFTA MODAL (Popup Seçici) -->
-  <div id="paftaModal" class="modal">
-    <div class="modal-backdrop" data-close="1"></div>
-    <div class="modal-content">
-      <div class="modal-header">
+  <!-- Paftadan Seç Modal -->
+  <div class="modal" id="modal">
+    <div class="sheet">
+      <div class="top">
         <h3>Paftadan Blok Seç</h3>
-        <button type="button" class="btn-icon modal-close" title="Kapat">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button class="btn close" id="btnClose"><i class="fa-solid fa-xmark"></i>Kapat</button>
       </div>
-
-      <div class="modal-body">
-        <div id="modalPafta" class="card">
-          <div class="pafta-row">
-            <div class="blok" data-blok-id="AC">AC</div>
-            <div class="blok" data-blok-id="AD">AD</div>
-            <div class="blok" data-blok-id="AE">AE</div>
-            <div class="blok" data-blok-id="AF">AF</div>
-            <div class="blok" data-blok-id="AG">AG</div>
-            <div class="blok" data-blok-id="AH">AH</div>
-            <div class="blok" data-blok-id="AI">AI</div>
-            <div class="blok" data-blok-id="AJ">AJ</div>
-            <div class="blok" data-blok-id="AK">AK</div>
-            <div class="blok" data-blok-id="AL">AL</div>
-            <div class="blok" data-blok-id="AM">AM</div>
-            <div class="blok" data-blok-id="AN">AN</div>
-          </div>
-          <div class="pafta-row">
-            <div class="blok" data-blok-id="AB">AB</div>
-            <div class="blok" data-blok-id="Y">Y</div>
-            <div class="blok" data-blok-id="V">V</div>
-            <div class="blok" data-blok-id="S">S</div>
-            <div class="blok" data-blok-id="R">R</div>
-            <div class="blok" data-blok-id="P">P</div>
-            <div class="blok" data-blok-id="O">O</div>
-            <div class="blok" data-blok-id="N">N</div>
-            <div class="blok" data-blok-id="M">M</div>
-            <div class="blok" data-blok-id="L">L</div>
-            <div class="blok" data-blok-id="K">K</div>
-            <div class="blok" data-blok-id="J">J</div>
-            <div class="blok" data-blok-id="I">I</div>
-          </div>
-          <div class="pafta-row">
-            <div class="blok" data-blok-id="AA">AA</div>
-            <div class="blok" data-blok-id="Z">Z</div>
-            <div class="blok" data-blok-id="U">U</div>
-            <div class="blok" data-blok-id="T">T</div>
-            <div class="blok sosyal-tesis" data-blok-id="Sosyal">SOSYAL TESİS</div>
-            <div class="blok" data-blok-id="A">A</div>
-            <div class="blok" data-blok-id="B">B</div>
-            <div class="blok" data-blok-id="C">C</div>
-            <div class="blok" data-blok-id="D">D</div>
-            <div class="blok" data-blok-id="E">E</div>
-            <div class="blok" data-blok-id="F">F</div>
-            <div class="blok" data-blok-id="G">G</div>
-            <div class="blok" data-blok-id="H">H</div>
-          </div>
+      <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
+      <div class="pafta-wrap" style="margin-top:8px">
+        <div class="pafta">
+          <div class="row" id="m-top"></div>
+          <div class="row" id="m-mid"></div>
+          <div class="row" id="m-bot"></div>
         </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-light modal-close">Kapat</button>
       </div>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Yazdırılacak icmal -->
+  <section id="printArea">
+    <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali</h2>
+    <div id="printTable" class="card"></div>
+  </section>
+
+  <!-- Alt Menü -->
+  <nav class="nav">
+    <div class="bar">
+      <button class="active" data-goto="p1"><i class="fa-solid fa-user-check"></i><span>Yoklama</span></button>
+      <button data-goto="p2"><i class="fa-solid fa-plus"></i><span>Hızlı Kayıt</span></button>
+      <button data-goto="p3"><i class="fa-solid fa-table-cells"></i><span>Ana Pano</span></button>
+    </div>
+  </nav>
+</div>
+
+<script>
+/* ---------- VERİLER ---------- */
+const CREWS = [
+ "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke",
+ "Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı",
+ "Kaba Sıva (İç)","Yerden Isıtma","Asma Tavan","Klima Tesisat","Mobilya","Çelik Kapı","Korkuluk"
+];
+const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
+
+/* Pafta sıraları */
+const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
+const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
+const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
+
+/* Blok sahipliği (kısaltma etiket) */
+const OWN = {};
+const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
+[...TOP,...MID,...BOT].forEach(b=>{
+  OWN[b] = asSet.has(b) ? "AS" : "MÜT";
+});
+
+/* Kayıtlar (localStorage) */
+const KEY_FAST = "st_fast_records";
+const KEY_DAILY = "st_daily_records";
+const readLS = (k)=>JSON.parse(localStorage.getItem(k)||"[]");
+const writeLS = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
+
+/* ---------- YARDIMCILAR ---------- */
+const el = s=>document.querySelector(s);
+const els = s=>document.querySelectorAll(s);
+
+function fillSelect(id, list, placeholder="— Seçiniz —"){
+  const s = el('#'+id);
+  s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
+}
+function formatDate(ts){
+  const d = new Date(ts);
+  return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+
+         d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+}
+
+/* ---------- SAYFA GEÇİŞİ ---------- */
+els(".nav button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    els(".nav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const id = btn.dataset.goto;
+    els(".page").forEach(p=>p.classList.remove("active"));
+    el("#"+id).classList.add("active");
+  });
+});
+
+/* ---------- SELECTLERİ DOLDUR ---------- */
+fillSelect("yk-crew", CREWS);
+fillSelect("hk-crew", CREWS);
+fillSelect("pano-crew", CREWS, "Tüm Ekipler (Genel)");
+fillSelect("hk-user", USERS);
+fillSelect("f-crew", ["Tümü", ...CREWS], "Ekip: Tümü");
+
+/* Blok listeleri (formlar ve filtre) */
+const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
+fillSelect("yk-block", ALL_BLOCKS);
+fillSelect("hk-block", ALL_BLOCKS);
+fillSelect("f-block", ["Tümü", ...ALL_BLOCKS], "Blok: Tümü");
+
+/* ---------- PAFTA OLUŞTUR ---------- */
+function makeBlok(label){
+  const div = document.createElement("div");
+  div.className = "blok"+(label==="Sosyal"?" sosyal":"");
+  div.dataset.id = label;
+  div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${label!=="Sosyal"?`<span class="own">${OWN[label]||""}</span>`:""}`;
+  return div;
+}
+function drawPafta(rowSel, arr){
+  const row = el(rowSel);
+  row.innerHTML="";
+  arr.forEach(b=>row.appendChild(makeBlok(b)));
+}
+drawPafta("#row-top", TOP);
+drawPafta("#row-mid", MID);
+drawPafta("#row-bot", BOT);
+drawPafta("#m-top", TOP);
+drawPafta("#m-mid", MID);
+drawPafta("#m-bot", BOT);
+
+/* ---------- P1: Günlük yoklama ---------- */
+function renderDaily(){
+  const list = readLS(KEY_DAILY).filter(x=>{
+    const d = new Date(x.ts); const t = new Date();
+    return d.toDateString()===t.toDateString();
+  });
+  el("#yk-list").innerHTML = list.length? list.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDate(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("") : "<li>Bugün henüz kayıt yok.</li>";
+}
+el("#btnYokla").addEventListener("click",()=>{
+  const crew = el("#yk-crew").value;
+  const count = parseInt(el("#yk-count").value||"0",10);
+  const block = el("#yk-block").value;
+  const note = el("#yk-note").value.trim();
+  if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok seçilmelidir.");return;}
+  const arr = readLS(KEY_DAILY);
+  arr.unshift({crew,count,block,note,ts:Date.now()});
+  writeLS(KEY_DAILY,arr);
+  el("#yk-count").value=""; el("#yk-note").value="";
+  renderDaily();
+});
+el("#btnClearDaily").addEventListener("click",()=>{
+  const today = new Date().toDateString();
+  const remain = readLS(KEY_DAILY).filter(x=> (new Date(x.ts)).toDateString()!==today );
+  writeLS(KEY_DAILY, remain);
+  renderDaily();
+});
+
+/* ---------- P2: Hızlı Kayıt ---------- */
+function renderTable(filter={}){
+  const tbody = el("#rows");
+  let data = readLS(KEY_FAST);
+  if(filter.block && filter.block!=="Tümü") data = data.filter(x=>x.block===filter.block);
+  if(filter.crew && filter.crew!=="Tümü") data = data.filter(x=>x.crew===filter.crew);
+  tbody.innerHTML = data.length? data.map((x,i)=>`
+    <tr>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">${formatDate(x.ts)}</td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.user}</td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.crew}</td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.block}</td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)"><b>${x.status}</b></td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">
+        <button class="btn icon secondary" onclick="editRow(${i})"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn icon" style="background:#ffe6e6;color:#c62828" onclick="delRow(${i})"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join("") : `<tr><td colspan="6" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
+}
+window.editRow = (idx)=>{
+  const data = readLS(KEY_FAST);
+  const x = data[idx]; if(!x) return;
+  el("#hk-user").value = x.user;
+  el("#hk-crew").value = x.crew;
+  el("#hk-block").value = x.block;
+  el("#hk-status").value = x.status;
+  el("#hk-note").value = x.note||"";
+  data.splice(idx,1); writeLS(KEY_FAST,data); renderTable(); renderPafta();
+  alert("Kayıt düzenleme modunda forma alındı. Güncel halini Kaydet ile ekle.");
+};
+window.delRow = (idx)=>{
+  const data = readLS(KEY_FAST); data.splice(idx,1); writeLS(KEY_FAST,data); renderTable(); renderPafta();
+};
+
+el("#btnSave").addEventListener("click",()=>{
+  const rec = {
+    user: el("#hk-user").value,
+    crew: el("#hk-crew").value,
+    block: el("#hk-block").value,
+    status: el("#hk-status").value,
+    note: el("#hk-note").value.trim(),
+    ts: Date.now()
+  };
+  if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
+  const data = readLS(KEY_FAST); data.unshift(rec); writeLS(KEY_FAST,data);
+  el("#hk-note").value="";
+  renderTable(); renderPafta();
+});
+
+el("#btnFilter").addEventListener("click",()=>{
+  renderTable({block:el("#f-block").value, crew:el("#f-crew").value});
+});
+el("#btnResetFilter").addEventListener("click",()=>{
+  el("#f-block").value=""; el("#f-crew").value=""; renderTable();
+});
+
+/* ---------- P3: Pano durumu ---------- */
+/* Bir ekip seçiliyken her blok için EN SON kayda göre renk verilir. */
+function getLatestStatusFor(block, crew){
+  const data = readLS(KEY_FAST).filter(x=>x.block===block && (!crew || x.crew===crew));
+  if(!data.length) return "";
+  // zamana göre en son
+  data.sort((a,b)=>b.ts-a.ts);
+  const st = data[0].status;
+  if(st==="Devam"||st==="Devam Ediyor") return "d-devam";
+  if(st==="Bitti") return "d-bitti";
+  if(st==="Teslim"||st==="Teslim Alındı") return "d-teslim";
+  return "";
+}
+function paintRow(rowSel, arr, crew){
+  const row = el(rowSel);
+  row.querySelectorAll(".blok").forEach(b=>{
+    b.classList.remove("d-devam","d-bitti","d-teslim");
+  });
+  arr.forEach(id=>{
+    const box = row.querySelector(`.blok[data-id="${id}"]`);
+    const cls = getLatestStatusFor(id, crew);
+    if(cls && box) box.classList.add(cls);
+  });
+}
+function renderPafta(){
+  const crew = el("#pano-crew").value || "";
+  paintRow("#row-top", TOP, crew);
+  paintRow("#row-mid", MID, crew);
+  paintRow("#row-bot", BOT, crew);
+}
+el("#pano-crew").addEventListener("change", renderPafta);
+
+/* ---------- Paftadan Seç (Modal) ---------- */
+let activeTarget = null; // 'yk-block' veya 'hk-block'
+function openPicker(targetId){
+  activeTarget = targetId;
+  el("#modal").classList.add("active");
+}
+function closePicker(){ el("#modal").classList.remove("active"); activeTarget=null; }
+el("#btnPickYoklama").addEventListener("click",()=>openPicker("yk-block"));
+el("#btnPickKayit").addEventListener("click",()=>openPicker("hk-block"));
+el("#btnClose").addEventListener("click",closePicker);
+el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
+
+["#m-top","#m-mid","#m-bot"].forEach(sel=>{
+  el(sel).addEventListener("click",(ev)=>{
+    const box = ev.target.closest(".blok"); if(!box||!activeTarget) return;
+    const id = box.dataset.id; if(id==="Sosyal") return;
+    el("#"+activeTarget).value = id;
+    closePicker();
+  });
+});
+
+/* ---------- İcmal PDF ---------- */
+function buildIcmalHTML(){
+  const data = readLS(KEY_FAST);
+  const teams = CREWS;
+  const totalBlocks = ALL_BLOCKS.length;
+
+  const rows = teams.map(t=>{
+    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
+    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
+    const percent = Math.round((done/totalBlocks)*100);
+    return `<tr>
+      <td style="padding:8px;border:1px solid #bbb">${t}</td>
+      <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
+      <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
+      <td style="padding:8px;border:1px solid #bbb;text-align:center">%${percent}</td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <thead>
+        <tr style="background:#f1f5f9">
+          <th style="padding:10px;border:1px solid #bbb;text-align:left">İMALAT KALEMİ</th>
+          <th style="padding:10px;border:1px solid #bbb">YAPILACAK BLOK</th>
+          <th style="padding:10px;border:1px solid #bbb">YAPILAN BLOK</th>
+          <th style="padding:10px;border:1px solid #bbb">İLERLEME</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
+  `;
+}
+el("#btnPdf").addEventListener("click",()=>{
+  el("#printTable").innerHTML = buildIcmalHTML();
+  window.print();
+});
+
+/* ---------- BAŞLANGIÇ RENDER ---------- */
+renderTable();
+renderDaily();
+renderPafta();
+</script>
 </body>
-              </html>
+</html>
