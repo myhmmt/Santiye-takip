@@ -1,3 +1,5 @@
+// app.js (GÜNCEL)
+
 document.addEventListener('DOMContentLoaded', () => {
   /* ---------- SABİT LİSTELER ---------- */
   const EKIP_LISTESI = [
@@ -14,16 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   /* ---------- BLOK SAHİPLİK HARİTASI (yazı etiketi) ---------- */
-  // Not: Şimdilik R = Patron, diğerleri “Müteahhit”.
-  // İstediğinde tek satırda güncelleyebiliriz.
-  const OWNER_MAP = BLOK_LISTESI.reduce((acc, b) => {
-    acc[b] = (b === "R") ? "Patron" : "Müteahhit";
-    return acc;
-  }, {});
-  // Özel bloklar (istersen burada değiştir):
-  // OWNER_MAP["AC"] = "Arsa Sahibi";
-  // OWNER_MAP["AD"] = "Arsa Sahibi";
-  // ...
+  // Varsayılan: Müteahhit
+  const OWNER_MAP = BLOK_LISTESI.reduce((acc, b) => (acc[b] = "Müteahhit", acc), {});
+
+  // Patron
+  OWNER_MAP["R"] = "Patron";
+
+  // Arsa Sahibi (16 blok – R hariç)
+  [
+    "AC","AD","AH","AI","AJ","Y","P","O","N","J","I","Z","A","B","C","H"
+  ].forEach(b => OWNER_MAP[b] = "Arsa Sahibi");
 
   /* ---------- KÜÇÜK ARAÇLAR ---------- */
   const $ = (s) => document.querySelector(s);
@@ -41,12 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
     el.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
   }
 
+  // Formlar
   populateSelect('yoklamaEkip', EKIP_LISTESI);
   populateSelect('kayitEkip', EKIP_LISTESI);
   populateSelect('kayitKullanici', KULLANICI_LISTESI);
   populateSelect('yoklamaBlok', BLOK_LISTESI);
   populateSelect('kayitBlok', BLOK_LISTESI);
-  populateSelect('filtreBlok', ["(Hepsi)", ...BLOK_LISTESI], "Blok seç");
+
+  // 🔧 Pano filtresi: TÜM EKİPLER + EKIP_LISTESI
+  populateSelect('panoEkipFiltre', EKIP_LISTESI, 'Tüm Ekipler (Genel Bakış)');
 
   /* ---------- NAV (sekme) ---------- */
   const navButtons = $$('.nav-btn');
@@ -81,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#kayitBlok').value = id;
         flashMsg('#kayitMsg', `${id} blok seçildi.`);
       } else {
-        // pano aktifken tık: Hızlı Kayıt sayfasına geçip blok ayarla
         $('[data-page="bolum2"]').click();
         $('#kayitBlok').value = id;
         flashMsg('#kayitMsg', `${id} blok seçildi.`);
@@ -120,8 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(()=>{ el.style.opacity='0.6'; }, 1500);
     setTimeout(()=>{ el.textContent = ''; el.style.opacity='1'; }, 3000);
   }
-
-  // Günlük reset: tarih değiştiyse eski gün görünmez (yeni anahtar)
   renderYoklama();
 
   $('#formYoklama').addEventListener('submit', (e)=>{
@@ -227,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     flashMsg('#kayitMsg','Kayıt eklendi.');
   });
 
-  // Tablo işlem: düzenle / sil (event delegation)
+  // Tablo işlem: düzenle / sil
   $('#arsivTablosu').addEventListener('click', (e)=>{
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -249,19 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (btn.classList.contains('btn-edit')){
-      // Basit düzenleme: sadece Durum ve Not’u güncelle
       const cur = arr[idx];
       const yeniDurum = prompt("Yeni durum (Basladi/Devam/Bitti/TeslimAlindi):", cur.durum) || cur.durum;
       const yeniNot = prompt("Not (boş bırakabilirsiniz):", cur.not||"") ?? cur.not;
-      // doğrula
       const okSet = new Set(["Basladi","Devam","Bitti","TeslimAlindi"]);
-      if (!okSet.has(yeniDurum)){
-        alert("Geçersiz durum girdiniz."); return;
-      }
+      if (!okSet.has(yeniDurum)){ alert("Geçersiz durum girdiniz."); return; }
       arr[idx] = {...cur, durum:yeniDurum, not:yeniNot};
       saveHK(arr);
       renderHK();
-      return;
     }
   });
 
@@ -278,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- PANO DEMO (isteğe bağlı) ---------- */
   const panoFiltre = $('#panoEkipFiltre');
   panoFiltre.addEventListener('change', ()=>{
-    // Şimdilik görünümü değiştirmiyoruz; demo amacıyla boş.
     // İstersen burada seçilen ekibe göre paftaya ipucu işaretleri eklenebilir.
   });
 });
