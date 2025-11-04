@@ -198,3 +198,76 @@ document.addEventListener('DOMContentLoaded', () => {
     formYoklama.reset();
   });
 });
+// ====== İCMAL PDF ======
+(function setupIcmalPdf() {
+  const btn = document.getElementById('btnPdfIcmal');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+    // Veriyi hazırla
+    const TOTAL_BLOCKS = BLOK_LISTESI.length; // 38
+    const rows = [];
+    let toplamYuzde = 0;
+    let sayac = 0;
+
+    EKIP_LISTESI.forEach(ekip => {
+      // Bu ekipte “Bitti” veya “TeslimAlindi” olan blokları say
+      let bitti = 0;
+      BLOK_LISTESI.forEach(blok => {
+        const d = getDurum(ekip, blok);
+        if (d === 'Bitti' || d === 'TeslimAlindi') bitti++;
+      });
+
+      const yuzde = TOTAL_BLOCKS ? Math.round((bitti / TOTAL_BLOCKS) * 100) : 0;
+      rows.push([
+        ekip,                       // İmalat Kalemi
+        `${TOTAL_BLOCKS} Blok`,     // Yapılacak İmalat
+        `${bitti} Blok`,            // Yapılan İmalat
+        `%${yuzde}`                 // İlerleme Yüzdesi
+      ]);
+
+      toplamYuzde += yuzde;
+      sayac++;
+    });
+
+    const genelOrtalama = sayac ? Math.round(toplamYuzde / sayac) : 0;
+
+    // Başlık
+    const today = new Date().toLocaleDateString('tr-TR');
+    doc.setFontSize(16);
+    doc.text('ŞANTİYE İLERLEME İCMALİ', 40, 40);
+    doc.setFontSize(10);
+    doc.text(`Tarih: ${today}`, 40, 58);
+
+    // Tablo
+    doc.autoTable({
+      startY: 80,
+      head: [['SIRA NO', 'İMALAT KALEMİ', 'YAPILACAK İMALAT', 'YAPILAN İMALAT', 'İLERLEME YÜZDESİ']],
+      body: rows.map((r, i) => [i + 1, ...r]),
+      styles: { fontSize: 9, cellPadding: 6 },
+      headStyles: { fillColor: [13, 71, 161], halign: 'center', valign: 'middle', textColor: 255 },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 60 },
+        1: { cellWidth: 180 },
+        2: { halign: 'center', cellWidth: 120 },
+        3: { halign: 'center', cellWidth: 120 },
+        4: { halign: 'center', cellWidth: 120 }
+      }
+    });
+
+    // Genel Ortalama kutusu
+    const y = doc.lastAutoTable.finalY + 20;
+    doc.setLineWidth(0.7);
+    doc.rect(40, y, 515, 40);
+    doc.setFontSize(12);
+    doc.text('GENEL ORTALAMA', 50, y + 25);
+    doc.setFontSize(14);
+    doc.text(`%${genelOrtalama}`, 520, y + 25, { align: 'right' });
+
+    // Kaydet
+    doc.save(`Icmal_${today}.pdf`);
+  });
+})();
