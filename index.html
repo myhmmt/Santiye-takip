@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Şantiye Takip – Canlı (Firestore)</title>
+<title>Şantiye Takip – Canlı (Firestore + Push)</title>
 <style>
   :root{--bg:#0b1220;--card:#111827;--line:#1f2937;--muted:#94a3b8}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:#e5e7eb}
-  header{position:sticky;top:0;background:#0b1220cc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px;font-weight:800}
+  header{position:sticky;top:0;background:#0b1220cc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
   .wrap{max-width:1000px;margin:12px auto;padding:0 12px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -20,38 +20,30 @@
   .muted{color:var(--muted)}
   .list{display:flex;flex-direction:column;gap:8px}
   .note{border-left:3px solid #0ea5e9;padding-left:10px}
-
-  /* Blok ızgarası */
   .grid{display:grid;gap:8px}
   .row1{grid-template-columns:repeat(12,1fr)}
   .row2{grid-template-columns:repeat(13,1fr)}
   .row3{grid-template-columns:repeat(12,1fr)}
   .tile{padding:10px 6px;text-align:center;border:1px solid #243244;border-radius:10px;background:#0b1220;cursor:pointer;font-weight:800}
   .badge{font-size:10px;color:#cbd5e1;display:block;margin-top:4px;font-weight:500}
-
-  /* Daire tipi arka plan tonları */
-  .t-41{background:#7c2d4e}
-  .t-51{background:#8a6a15}
-  .t-62{background:#0f3b46}
-  .t-72{background:#153056}
-  .own{border-color:#22d3ee}
-  .patron{outline:2px dashed #22d3ee}
-
-  /* Ekip durum çerçevesi */
-  .st-none{box-shadow:0 0 0 3px #374151 inset}       /* gri: başlanmadı */
-  .st-progress{box-shadow:0 0 0 3px #f59e0b inset}   /* sarı: devam/başladı */
-  .st-done{box-shadow:0 0 0 3px #10b981 inset}       /* yeşil: bitti */
-
+  .t-41{background:#7c2d4e}.t-51{background:#8a6a15}.t-62{background:#0f3b46}.t-72{background:#153056}
+  .own{border-color:#22d3ee}.patron{outline:2px dashed #22d3ee}
+  .st-none{box-shadow:0 0 0 3px #374151 inset}.st-progress{box-shadow:0 0 0 3px #f59e0b inset}.st-done{box-shadow:0 0 0 3px #10b981 inset}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:6px}
   .chip{padding:2px 6px;border-radius:999px;border:1px solid #334155;background:#0b1220;color:#cbd5e1;font-size:12px}
 </style>
 </head>
 <body>
-<header>🏗️ Şantiye Takip – Canlı (Firestore)</header>
+<header>
+  <div>🏗️ Şantiye Takip – Canlı (Firestore + Push)</div>
+  <div class="row">
+    <button id="btnNotify">🔔 Bildirimleri Aç</button>
+    <span id="permStatus" class="muted"></span>
+  </div>
+</header>
 
 <div class="wrap">
-
-  <!-- 1) EKİP SEÇ + ÖZET/FİLTRE -->
+  <!-- 1) EKİP SEÇ + FİLTRE -->
   <section class="card">
     <h3>1) Ekip Seç</h3>
     <div class="row">
@@ -63,20 +55,17 @@
         <option>Tg5</option><option>PVC</option><option>Kör Kasa</option><option>Şap</option>
         <option>Dış Cephe</option><option>Makina Alçı</option><option>Saten Alçı</option><option>Kaba Sıva (iç)</option>
       </select>
-
       <span class="muted">Durum:
         <span class="dot" style="background:#10b981"></span>tamamlandı •
         <span class="dot" style="background:#f59e0b"></span>devam ediyor •
         <span class="dot" style="background:#374151"></span>başlanmadı
       </span>
-
       <select id="statusFilter">
         <option value="">Tümü</option>
         <option value="done">Sadece tamamlanan</option>
         <option value="progress">Sadece devam eden</option>
         <option value="none">Sadece başlanmayan</option>
       </select>
-
       <button id="clearFilter" class="ghost">Filtreyi sıfırla</button>
     </div>
   </section>
@@ -84,11 +73,9 @@
   <!-- 2) BLOK IZGARASI -->
   <section class="card">
     <h3>2) Blok Seç (Ekip durumunu renkten gör)</h3>
-
     <div class="grid row1" id="row1"></div>
     <div class="grid row2" id="row2" style="margin-top:8px"></div>
     <div class="grid row3" id="row3" style="margin-top:8px"></div>
-
     <div class="muted" id="crewHint" style="margin-top:6px">İpucu: Ekip seç, sonra bloklara tıkla.</div>
   </section>
 
@@ -102,21 +89,17 @@
         <option>Mert</option><option>Fuat</option><option>Furkan</option>
         <option>Misafir</option>
       </select>
-
       <input id="block" placeholder="Blok" style="min-width:120px" readonly />
       <input id="crew"  placeholder="Ekip" style="min-width:160px" readonly />
-
       <select id="state" style="min-width:150px">
         <option value="başladı">Başladı</option>
         <option value="devam ediyor">Devam ediyor</option>
         <option value="tamamlandı">Tamamlandı</option>
       </select>
     </div>
-
     <div class="row" style="margin-top:8px">
       <textarea id="text" placeholder="Not (opsiyonel)"></textarea>
     </div>
-
     <div class="row" style="margin-top:8px">
       <button id="save">Kaydet</button>
       <button id="cancelEdit" class="ghost" style="display:none">İptal</button>
@@ -129,20 +112,20 @@
     <h3>Son Kayıtlar</h3>
     <div id="list" class="list muted">Kayıt yok.</div>
   </section>
-
 </div>
 
 <script type="module">
-  /* ==== Firebase SDK ==== */
+  /* ==== Firebase ==== */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, enableIndexedDbPersistence,
-    collection, addDoc, updateDoc, deleteDoc, doc,
-    serverTimestamp,
-    query, orderBy, onSnapshot
+    getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+    serverTimestamp, query, orderBy, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  /* ==== Senin Firebase config'in ==== */
+  import {
+    getMessaging, getToken, onMessage, isSupported
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
     authDomain: "santiye-takip-83874.firebaseapp.com",
@@ -151,106 +134,79 @@
     messagingSenderId: "893666575482",
     appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
   };
-
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // Offline çalışabilsin:
-  try { await enableIndexedDbPersistence(db); } catch(_) {}
-
-  /* ==== Sabit blok/ekip verileri ==== */
+  /* ==== UI yardımcı ==== */
+  const el = id => document.getElementById(id);
   const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
   const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
   const ROW3 = ["AA","Z","U","T","A","B","C","D","E","F","G","H"];
   const ALL_BLOCKS = [...ROW1, ...ROW2, ...ROW3];
-
   const CREWS = ["Elektrik","Mekanik","Çatı (kereste)","Çatı (kiremit)","Çatı (oluk)","Denizlik","Parke","Seramik","Boya","Tg5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı","Kaba Sıva (iç)"];
   const STATES = ["başladı","devam ediyor","tamamlandı"];
-
   const T41 = new Set(["AA","Z","U","T"]);
   const T51 = new Set(["A","B","C","D","E","F","G","H"]);
   const T62 = new Set(["AI","AJ","AK","AL","AM","AN","P","O","N","M","L","K","J","I"]);
   const T72 = new Set(["AC","AD","AE","AF","AG","AH","AB","Y","V","S","R"]);
   const OWNER  = new Set(["AC","AD","AH","AI","AJ","Y","R","P","O","N","J","I","Z","A","B","C","H"]);
   const PATRON = "R";
+  const typeClass = (code)=> T41.has(code) ? 't-41' : T51.has(code) ? 't-51' : T62.has(code) ? 't-62' : T72.has(code) ? 't-72' : '';
 
-  const el = id => document.getElementById(id);
-
-  /* ==== Bellekte anlık notlar (Firestore'dan) ==== */
-  let notes = []; // {id, user, block, crew, state, text, ts(Timestamp)}
-
-  // Canlı abonelik: en yeni üste
-  const q = query(collection(db,'notes'), orderBy('ts','desc'));
-  onSnapshot(q, (snap)=>{
-    notes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let notes = [];
+  const qNotes = query(collection(db,'notes'), orderBy('ts','desc'));
+  onSnapshot(qNotes, (snap)=>{
+    notes = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     renderList();
     paintGrid();
   });
 
-  // TS yardımcı (Firestore Timestamp ya da Date/number)
   function tsToString(ts){
-    if (!ts) return '';
-    try {
-      if (ts.toDate) return ts.toDate().toLocaleString();
-      if (typeof ts === 'number') return new Date(ts).toLocaleString();
-      return String(ts);
-    } catch { return ''; }
+    try{ return ts?.toDate ? ts.toDate().toLocaleString() : new Date(ts||0).toLocaleString(); }catch{ return '' }
   }
-
-  /* ==== Grid durum hesaplama ==== */
   function latestStatusByBlockForCrew(crew){
-    const map = new Map(); // block -> {state, tsMillis}
+    const map = new Map();
     notes.forEach(n=>{
       if(n.crew!==crew) return;
-      const t = n.ts?.toMillis ? n.ts.toMillis() : (typeof n.ts==='number'? n.ts : 0);
+      const t = n.ts?.toMillis ? n.ts.toMillis() : (typeof n.ts==='number'?n.ts:0);
       const prev = map.get(n.block);
-      if(!prev || t>prev.tsMillis) map.set(n.block, {state:n.state, tsMillis:t});
+      if(!prev || t>prev.ts) map.set(n.block,{state:n.state,ts:t});
     });
     const cls = s => !s ? 'st-none' : (s==='tamamlandı' ? 'st-done' : 'st-progress');
-    const out = {};
-    ALL_BLOCKS.forEach(b => out[b] = cls(map.get(b)?.state));
+    const out = {}; ALL_BLOCKS.forEach(b=> out[b]=cls(map.get(b)?.state));
     return out;
   }
 
-  /* ==== Izgara çizimi ==== */
   const buckets = [
     {row: ROW1, el: el('row1')},
     {row: ROW2, el: el('row2')},
     {row: ROW3, el: el('row3')}
   ];
-  const typeClass = (code)=> T41.has(code) ? 't-41' : T51.has(code) ? 't-51' : T62.has(code) ? 't-62' : T72.has(code) ? 't-72' : '';
 
   function paintGrid(){
     const crewSel = el('crewPick').value;
     const filt = el('statusFilter').value;
     const st = crewSel ? latestStatusByBlockForCrew(crewSel) : {};
-
     buckets.forEach(({row,el:wrap})=>{
       wrap.innerHTML='';
       row.forEach(code=>{
         const btn = document.createElement('button');
         btn.type='button';
-        let cls = `tile ${typeClass(code)}`;
+        let cls=`tile ${typeClass(code)}`;
         if (OWNER.has(code)) cls+=' own';
         if (code===PATRON) cls+=' patron';
-
         const sClass = st[code] || 'st-none';
         cls += ` ${sClass}`;
-        btn.className = cls;
-
-        // filtre
+        btn.className=cls;
         let keep = true;
-        if (filt==='done'     && sClass!=='st-done') keep=false;
+        if (filt==='done' && sClass!=='st-done') keep=false;
         if (filt==='progress' && sClass!=='st-progress') keep=false;
-        if (filt==='none'     && sClass!=='st-none') keep=false;
+        if (filt==='none' && sClass!=='st-none') keep=false;
         if (!keep) btn.style.display='none';
-
         const ownerLbl = code===PATRON ? 'patronun villası 😄' : (OWNER.has(code)?'arsa sahibi':'müteahhit');
         let stateLbl = 'başlanmadı';
-        if (sClass==='st-done') stateLbl='tamamlandı';
-        else if (sClass==='st-progress') stateLbl='devam/başladı';
+        if (sClass==='st-done') stateLbl='tamamlandı'; else if (sClass==='st-progress') stateLbl='devam/başladı';
         btn.innerHTML = `${code}<span class="badge">${ownerLbl} • ${el('crewPick').value?stateLbl:''}</span>`;
-
         btn.onclick = ()=>{
           const cPick = el('crewPick').value;
           if(!cPick){ alert('Önce ekip seç'); return; }
@@ -261,17 +217,52 @@
         wrap.appendChild(btn);
       });
     });
-
     el('crewHint').textContent = el('crewPick').value ? 'Bir bloğa tıkla: form otomatik dolacak.' : 'İpucu: Ekip seç, sonra bloklara tıkla.';
   }
 
-  /* ==== İsim hatırlama ==== */
   const whoSel = el('who');
   const savedWho = localStorage.getItem('santiye_who');
   if (savedWho) whoSel.value = savedWho;
   whoSel.addEventListener('change', ()=> localStorage.setItem('santiye_who', whoSel.value));
 
-  /* ==== Liste ==== */
+  let editId=null;
+  function say(m){ const msg=el('msg'); msg.textContent=m; setTimeout(()=>msg.textContent='',2200) }
+  function validateInputs({who, block, crew, state}){
+    if(!who) return "İsim seç";
+    if(!crew) return "Ekip seç (üstten ekip seçip blok tıkla)";
+    if(!block) return "Blok seç (ızgaradan tıkla)";
+    if(!ALL_BLOCKS.includes(block)) return "Geçersiz blok kodu";
+    if(!CREWS.includes(crew)) return "Geçersiz ekip";
+    if(!STATES.includes(state)) return "Geçersiz durum";
+    return "";
+  }
+  function resetFormKeepCrewWho(){ el('text').value=''; el('state').value='başladı'; }
+
+  el('cancelEdit').onclick = ()=>{
+    editId=null; el('save').textContent='Kaydet'; el('cancelEdit').style.display='none';
+    resetFormKeepCrewWho(); say('Düzenleme iptal edildi');
+  };
+
+  el('save').onclick = async ()=>{
+    const who   = (whoSel.value||'').trim();
+    const block = (el('block').value||'').trim().toUpperCase();
+    const crew  = (el('crew').value||'').trim();
+    const state = el('state').value;
+    const text  = (el('text').value||'').trim();
+    const err = validateInputs({who,block,crew,state});
+    if (err) { say(err); return; }
+    try{
+      if(editId){
+        await updateDoc(doc(db,'notes',editId), { user:who, block, crew, state, text, ts: serverTimestamp() });
+        editId=null; el('save').textContent='Kaydet'; el('cancelEdit').style.display='none'; say('Güncellendi ✅');
+      }else{
+        await addDoc(collection(db,'notes'), { user:who, block, crew, state, text, ts: serverTimestamp() });
+        say('Kaydedildi ✅');
+      }
+      resetFormKeepCrewWho();
+    }catch(e){ console.error(e); say('Hata: ' + (e.code||e.message||'kayıt yazılamadı')); }
+  };
+
   function renderList(){
     const listEl = el('list');
     if(!notes.length){ listEl.classList.add('muted'); listEl.textContent='Kayıt yok.'; return; }
@@ -292,99 +283,93 @@
         </div>`;
       listEl.appendChild(div);
     });
-
-    // Düzelt
     listEl.querySelectorAll('[data-edit]').forEach(b=>{
       b.onclick = ()=>{
         const id = b.getAttribute('data-edit');
-        const rec = notes.find(x=>x.id===id);
-        if(!rec) return;
-        editId = id;
-        whoSel.value = rec.user||'';
-        el('block').value = rec.block||'';
-        el('crew').value  = rec.crew||'';
-        el('state').value = rec.state||'başladı';
-        el('text').value  = rec.text||'';
-        el('save').textContent = 'Güncelle';
-        el('cancelEdit').style.display = 'inline-block';
-        say('Düzenleme modundasın');
+        const rec = notes.find(x=>x.id===id); if(!rec) return;
+        editId=id;
+        whoSel.value = rec.user||''; el('block').value = rec.block||''; el('crew').value  = rec.crew||'';
+        el('state').value = rec.state||'başladı'; el('text').value  = rec.text||'';
+        el('save').textContent='Güncelle'; el('cancelEdit').style.display='inline-block'; say('Düzenleme modundasın');
       };
     });
-    // Sil
     listEl.querySelectorAll('[data-del]').forEach(b=>{
       b.onclick = async ()=>{
         const id = b.getAttribute('data-del');
         if(!confirm('Bu kaydı silmek istiyor musun?')) return;
-        await deleteDoc(doc(db,'notes',id));
-        say('Silindi');
+        await deleteDoc(doc(db,'notes',id)); say('Silindi');
       };
     });
   }
 
-  /* ==== Yardımcılar ==== */
-  function say(m){ const msg=el('msg'); msg.textContent=m; setTimeout(()=>msg.textContent='',2200) }
-  function validateInputs({who, block, crew, state}){
-    if(!who) return "İsim seç";
-    if(!crew) return "Ekip seç (üstten ekip seçip blok tıkla)";
-    if(!block) return "Blok seç (ızgaradan tıkla)";
-    if(!ALL_BLOCKS.includes(block)) return "Geçersiz blok kodu";
-    if(!CREWS.includes(crew)) return "Geçersiz ekip";
-    if(!STATES.includes(state)) return "Geçersiz durum";
-    return "";
+  // === Bildirim (Web Push) ===
+  const permStatus = el('permStatus');
+  const btnNotify  = el('btnNotify');
+  const VAPID_PUBLIC_KEY = "BURAYA_WEB_PUSH_PUBLIC_KEY_YAPIŞTIR"; // Firebase → Cloud Messaging → Web Push Certificates (Public key)
+
+  function setPermText(){
+    permStatus.textContent = (Notification.permission === 'granted')
+      ? 'Bildirim: AÇIK'
+      : (Notification.permission === 'denied' ? 'Bildirim: ENGELLİ' : 'Bildirim: İZİN İSTENMEDİ');
   }
-  function resetFormKeepCrewWho(){
-    el('text').value='';
-    el('state').value='başladı';
+  setPermText();
+
+  // SW kaydı (GitHub Pages altında kökte olmalı)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/Santiye-takip/firebase-messaging-sw.js');
   }
 
-  /* ==== Kaydet/Güncelle ==== */
-  let editId = null;
+  let fcmToken = null;
 
-  el('cancelEdit').onclick = ()=>{
-    editId=null;
-    el('save').textContent='Kaydet';
-    el('cancelEdit').style.display='none';
-    resetFormKeepCrewWho();
-    say('Düzenleme iptal edildi');
-  };
-
-  el('save').onclick = async ()=>{
-    const who   = (whoSel.value||'').trim();
-    const block = (el('block').value||'').trim().toUpperCase();
-    const crew  = (el('crew').value||'').trim();
-    const state = el('state').value;
-    const text  = (el('text').value||'').trim();
-
-    const err = validateInputs({who,block,crew,state});
-    if (err) { say(err); return; }
-
+  btnNotify.onclick = async ()=>{
     try{
-      if(editId){
-        await updateDoc(doc(db,'notes',editId), { user:who, block, crew, state, text, ts: serverTimestamp() });
-        editId=null;
-        el('save').textContent='Kaydet';
-        el('cancelEdit').style.display='none';
-        say('Güncellendi ✅');
-      }else{
-        await addDoc(collection(db,'notes'), { user:who, block, crew, state, text, ts: serverTimestamp() });
-        say('Kaydedildi ✅');
-      }
-      resetFormKeepCrewWho();
+      if (!(await isSupported())) { alert('Tarayıcı push desteklemiyor'); return; }
+      const granted = await Notification.requestPermission();
+      setPermText();
+      if (granted !== 'granted') return;
+
+      const messaging = getMessaging(app);
+      fcmToken = await getToken(messaging, {
+        vapidKey: VAPID_PUBLIC_KEY,
+        serviceWorkerRegistration: await navigator.serviceWorker.getRegistration('/Santiye-takip/firebase-messaging-sw.js')
+      });
+
+      if (!fcmToken) { alert('Token alınamadı'); return; }
+
+      // Token'ı Firestore'a yaz (tekillik)
+      await addDoc(collection(db,'fcm_tokens'), {
+        token: fcmToken,
+        user: (localStorage.getItem('santiye_who')||'Bilinmiyor'),
+        ua: navigator.userAgent,
+        createdAt: serverTimestamp()
+      });
+
+      btnNotify.textContent = '🔔 Bildirimler Açık';
+      say('Bildirim izni verildi ✅');
+
+      // Ön planda yeni mesaj geldiğinde küçük bip göster
+      onMessage(messaging, (payload)=>{
+        try {
+          // küçük bip: izin gerektirmiyor
+          const ctx = new (window.AudioContext||window.webkitAudioContext)();
+          const o = ctx.createOscillator(); const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination); o.frequency.value=1200; g.gain.value=0.05;
+          o.start(); setTimeout(()=>{o.stop();ctx.close()},140);
+        } catch {}
+      });
+
     }catch(e){
       console.error(e);
-      say('Hata: kayıt yazılamadı');
+      alert('Bildirim kurulamadı: ' + (e.code||e.message));
     }
   };
 
-  // Ekip seçimi & filtre
-  el('crewPick').addEventListener('change', ()=>{
-    el('crew').value = el('crewPick').value || '';
-    paintGrid();
-  });
+  // Filtre ve ekip seçim
+  el('crewPick').addEventListener('change', ()=>{ el('crew').value = el('crewPick').value || ''; paintGrid(); });
   el('statusFilter').addEventListener('change', paintGrid);
   el('clearFilter').addEventListener('click', ()=>{ el('statusFilter').value=''; paintGrid(); });
 
-  // İlk çizimler (notlar onSnapshot ile geldikçe kendini yeniler)
+  // İlk çizimler
   paintGrid();
 </script>
 </body>
