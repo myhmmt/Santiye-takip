@@ -1,5 +1,3 @@
-// app.js (GÜNCEL)
-
 document.addEventListener('DOMContentLoaded', () => {
   /* ---------- SABİT LİSTELER ---------- */
   const EKIP_LISTESI = [
@@ -16,41 +14,38 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   /* ---------- BLOK SAHİPLİK HARİTASI (yazı etiketi) ---------- */
-  // Varsayılan: Müteahhit
   const OWNER_MAP = BLOK_LISTESI.reduce((acc, b) => (acc[b] = "Müteahhit", acc), {});
-
-  // Patron
   OWNER_MAP["R"] = "Patron";
-
-  // Arsa Sahibi (16 blok – R hariç)
-  [
-    "AC","AD","AH","AI","AJ","Y","P","O","N","J","I","Z","A","B","C","H"
-  ].forEach(b => OWNER_MAP[b] = "Arsa Sahibi");
+  // Arsa Sahibine ait 16 blok (senin verdiğin liste)
+  ["AC","AD","AH","AI","AJ","Y","P","O","N","J","I","Z","A","B","C","H"]
+    .forEach(b => OWNER_MAP[b] = "Arsa Sahibi");
 
   /* ---------- KÜÇÜK ARAÇLAR ---------- */
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
   const todayKey = () => new Date().toISOString().slice(0,10); // YYYY-MM-DD
   const fmtDateTime = (d=new Date()) => {
-    const pad = (n)=> (n<10?'0':'')+n;
-    return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const p=(n)=> (n<10?'0':'')+n;
+    return `${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+  const flashMsg = (sel, text) => {
+    const el = $(sel); if(!el) return;
+    el.textContent = text; el.style.opacity='1';
+    setTimeout(()=>{el.style.opacity='0.6';},1500);
+    setTimeout(()=>{el.textContent=''; el.style.opacity='1';},3000);
   };
 
   /* ---------- SELECT DOLDURUCULAR ---------- */
   function populateSelect(selectId, list, placeholder="-- Seçiniz --"){
-    const el = $( `#${selectId}` );
-    if (!el) return;
+    const el = $(`#${selectId}`); if(!el) return;
     el.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
   }
-
-  // Formlar
   populateSelect('yoklamaEkip', EKIP_LISTESI);
   populateSelect('kayitEkip', EKIP_LISTESI);
   populateSelect('kayitKullanici', KULLANICI_LISTESI);
   populateSelect('yoklamaBlok', BLOK_LISTESI);
   populateSelect('kayitBlok', BLOK_LISTESI);
-
-  // 🔧 Pano filtresi: TÜM EKİPLER + EKIP_LISTESI
+  populateSelect('filtreBlok', ["(Hepsi)", ...BLOK_LISTESI], "Blok seç");
   populateSelect('panoEkipFiltre', EKIP_LISTESI, 'Tüm Ekipler (Genel Bakış)');
 
   /* ---------- NAV (sekme) ---------- */
@@ -66,18 +61,75 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ---------- PAFTA: sahiplik etiketi ve tıklama seçimi ---------- */
-  const paftaBloklari = $$('#projePaftasi .blok:not(.sosyal-tesis)');
-  paftaBloklari.forEach(el=>{
-    const id = el.dataset.blokId;
-    // sahiplik etiketi (renksiz)
-    const tag = document.createElement('div');
-    tag.className = 'owner-tag';
-    tag.textContent = OWNER_MAP[id] || '—';
-    el.appendChild(tag);
+  /* ---------- SAHİPLİK ETİKETLERİ (pano) ---------- */
+  const addOwnerTags = (rootSel) => {
+    $$(rootSel + ' .blok:not(.sosyal-tesis)').forEach(el=>{
+      if(el.querySelector('.owner-tag')) return; // tekrar ekleme
+      const id = el.dataset.blokId;
+      const tag = document.createElement('div');
+      tag.className = 'owner-tag';
+      tag.textContent = OWNER_MAP[id] || '—';
+      el.appendChild(tag);
+    });
+  };
+  addOwnerTags('#projePaftasi');
+  addOwnerTags('#modalPafta');
 
-    // tıklayınca aktif sayfaya göre blok seç
+  /* ---------- PAFTA MODAL ---------- */
+  const modal = $('#paftaModal');
+  let paftaTargetSelectId = null;
+
+  const openModal = (targetSelectId) => {
+    paftaTargetSelectId = targetSelectId;
+    modal.classList.add('open');
+  };
+  const closeModal = () => {
+    modal.classList.remove('open');
+    paftaTargetSelectId = null;
+  };
+
+  // Modal kapatma
+  $$('.modal-close, .modal-backdrop').forEach(el=>{
+    el.addEventListener('click', ()=> closeModal());
+  });
+
+  // “Paftadan Seç” butonları
+  $$('.btn-pafta').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const target = btn.dataset.target; // yoklamaBlok | kayitBlok
+      openModal(target);
+    });
+  });
+
+  // Select’lere tıklayınca da modal aç (istenen davranış)
+  ['yoklamaBlok','kayitBlok'].forEach(id=>{
+    const sel = $(`#${id}`);
+    // Mobilde native dropdown açılmasına izin veriyoruz ama önce modal açıyoruz
+    sel.addEventListener('mousedown', (e)=>{ e.preventDefault(); openModal(id); });
+    sel.addEventListener('focus', (e)=>{ /* klavye gezginleri için */ openModal(id); });
+  });
+
+  // Modal pafta içinde blok seçimi → hedef select’e yaz & modalı kapa
+  $$('#modalPafta .blok:not(.sosyal-tesis)').forEach(el=>{
     el.addEventListener('click', ()=>{
+      const id = el.dataset.blokId;
+      if(paftaTargetSelectId){
+        const sel = $(`#${paftaTargetSelectId}`);
+        if (sel){
+          sel.value = id;
+          // hangi formdaysak mesaj göster
+          if(paftaTargetSelectId==='yoklamaBlok') flashMsg('#yoklamaMsg', `${id} blok seçildi.`);
+          if(paftaTargetSelectId==='kayitBlok')   flashMsg('#kayitMsg',   `${id} blok seçildi.`);
+        }
+      }
+      closeModal();
+    });
+  });
+
+  /* ---------- PANO BLOK TIK → formda blok seçme ---------- */
+  $$('#projePaftasi .blok:not(.sosyal-tesis)').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.dataset.blokId;
       const activePage = $('.page.active')?.id;
       if (activePage === 'bolum1') {
         $('#yoklamaBlok').value = id;
@@ -93,15 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ---------- BÖLÜM 1: GÜNLÜK YOKLAMA (günlük sıfırlı) ---------- */
+  /* ---------- BÖLÜM 1: GÜNLÜK YOKLAMA ---------- */
   const YOKLAMA_KEY_PREFIX = 'yoklama_'; // yoklama_YYYY-MM-DD
-  function loadYoklama(dateKey = todayKey()){
-    const raw = localStorage.getItem(YOKLAMA_KEY_PREFIX + dateKey);
-    return raw ? JSON.parse(raw) : [];
-  }
-  function saveYoklama(list, dateKey = todayKey()){
-    localStorage.setItem(YOKLAMA_KEY_PREFIX + dateKey, JSON.stringify(list));
-  }
+  const loadYoklama = (dk=todayKey()) => JSON.parse(localStorage.getItem(YOKLAMA_KEY_PREFIX + dk)||'[]');
+  const saveYoklama = (arr, dk=todayKey()) => localStorage.setItem(YOKLAMA_KEY_PREFIX + dk, JSON.stringify(arr));
+
   function renderYoklama(){
     const list = loadYoklama();
     const ul = $('#yoklamaListesi');
@@ -115,14 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
       li.textContent = `${item.ekip} – ${item.kisi} kişi – ${item.blok}` + (item.not?` — ${item.not}`:'');
       ul.appendChild(li);
     });
-  }
-  function flashMsg(sel, text){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = text;
-    el.style.opacity = '1';
-    setTimeout(()=>{ el.style.opacity='0.6'; }, 1500);
-    setTimeout(()=>{ el.textContent = ''; el.style.opacity='1'; }, 3000);
   }
   renderYoklama();
 
@@ -145,50 +185,12 @@ document.addEventListener('DOMContentLoaded', () => {
     flashMsg('#yoklamaMsg','Günlük yoklama kaydedildi.');
   });
 
-  /* ---------- BÖLÜM 2: HIZLI KAYIT (kalıcı, düzenle/sil + blok filtresi) ---------- */
+  /* ---------- BÖLÜM 2: HIZLI KAYIT ---------- */
   const HK_KEY = 'hizliKayit_list';
-  function loadHK(){
-    const raw = localStorage.getItem(HK_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }
-  function saveHK(arr){
-    localStorage.setItem(HK_KEY, JSON.stringify(arr));
-  }
-  function nextIdHK(){
-    const arr = loadHK();
-    return (arr.reduce((m,x)=>Math.max(m,x.id||0),0) + 1);
-  }
-  function renderHK(){
-    const tbody = $('#arsivTablosu tbody');
-    const arr = loadHK();
-    const fb = $('#filtreBlok').value; // "" veya "(Hepsi)" veya "AC"
-    const filtered = (!fb || fb==="(Hepsi)") ? arr : arr.filter(r=>r.blok===fb);
+  const loadHK = () => JSON.parse(localStorage.getItem(HK_KEY)||'[]');
+  const saveHK = (arr) => localStorage.setItem(HK_KEY, JSON.stringify(arr));
+  const nextIdHK = () => loadHK().reduce((m,x)=>Math.max(m,x.id||0),0)+1;
 
-    tbody.innerHTML = '';
-    if (!filtered.length){
-      tbody.innerHTML = `<tr><td colspan="7" class="muted">Gösterilecek kayıt yok.</td></tr>`;
-      return;
-    }
-    filtered
-      .sort((a,b)=>b.ts-a.ts)
-      .forEach(rec=>{
-        const tr = document.createElement('tr');
-        tr.dataset.id = rec.id;
-        tr.innerHTML = `
-          <td>${rec.tarih}</td>
-          <td>${rec.kullanici}</td>
-          <td>${rec.ekip}</td>
-          <td>${rec.blok}</td>
-          <td><span class="durum-badge durum-${rec.durum}">${etiketDurum(rec.durum)}</span></td>
-          <td>${rec.not?escapeHtml(rec.not):""}</td>
-          <td>
-            <button class="btn-icon btn-edit" title="Düzenle"><i class="fas fa-edit"></i></button>
-            <button class="btn-icon btn-del" title="Sil"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-  }
   function etiketDurum(k){
     if (k==="Basladi") return "Başladı";
     if (k==="Devam") return "Devam";
@@ -196,11 +198,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (k==="TeslimAlindi") return "Teslim Alındı";
     return k;
   }
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
-  }
+  const escapeHtml = (s) => s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
 
-  // Form submit
+  function renderHK(){
+    const tbody = $('#arsivTablosu tbody');
+    const arr = loadHK();
+    const fb = $('#filtreBlok').value;
+    const filtered = (!fb || fb==="(Hepsi)") ? arr : arr.filter(r=>r.blok===fb);
+
+    tbody.innerHTML = '';
+    if (!filtered.length){
+      tbody.innerHTML = `<tr><td colspan="7" class="muted">Gösterilecek kayıt yok.</td></tr>`;
+      return;
+    }
+    filtered.sort((a,b)=>b.ts-a.ts).forEach(rec=>{
+      const tr = document.createElement('tr');
+      tr.dataset.id = rec.id;
+      tr.innerHTML = `
+        <td>${rec.tarih}</td>
+        <td>${rec.kullanici}</td>
+        <td>${rec.ekip}</td>
+        <td>${rec.blok}</td>
+        <td><span class="durum-badge durum-${rec.durum}">${etiketDurum(rec.durum)}</span></td>
+        <td>${rec.not?escapeHtml(rec.not):""}</td>
+        <td>
+          <button class="btn-icon btn-edit" title="Düzenle"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon btn-del" title="Sil"><i class="fas fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  renderHK();
+
   $('#formHizliKayit').addEventListener('submit', (e)=>{
     e.preventDefault();
     const kullanici = $('#kayitKullanici').value;
@@ -213,39 +243,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!ekip) return flashMsg('#kayitMsg','Ekip seçiniz.');
     if (!blok) return flashMsg('#kayitMsg','Blok seçiniz.');
 
-    const id = nextIdHK();
     const now = new Date();
     const rec = {
-      id,
-      tarih: fmtDateTime(now).split(' ').slice(0,2).join(' '), // DD.MM.YYYY HH:MM
+      id: nextIdHK(),
+      tarih: fmtDateTime(now).split(' ').slice(0,2).join(' '),
       ts: now.getTime(),
       kullanici, ekip, blok, durum, not
     };
     const arr = loadHK();
-    arr.push(rec);
-    saveHK(arr);
+    arr.push(rec); saveHK(arr);
     $('#formHizliKayit').reset();
     renderHK();
     flashMsg('#kayitMsg','Kayıt eklendi.');
   });
 
-  // Tablo işlem: düzenle / sil
+  // Düzenle / Sil
   $('#arsivTablosu').addEventListener('click', (e)=>{
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    const tr = e.target.closest('tr');
-    const id = parseInt(tr?.dataset.id||'0',10);
-    if (!id) return;
-
-    const arr = loadHK();
-    const idx = arr.findIndex(x=>x.id===id);
-    if (idx<0) return;
+    const btn = e.target.closest('button'); if(!btn) return;
+    const tr = e.target.closest('tr'); const id = parseInt(tr?.dataset.id||'0',10); if(!id) return;
+    const arr = loadHK(); const idx = arr.findIndex(x=>x.id===id); if(idx<0) return;
 
     if (btn.classList.contains('btn-del')){
       if (confirm('Bu kaydı silmek istiyor musunuz?')){
-        arr.splice(idx,1);
-        saveHK(arr);
-        renderHK();
+        arr.splice(idx,1); saveHK(arr); renderHK();
       }
       return;
     }
@@ -257,24 +277,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const okSet = new Set(["Basladi","Devam","Bitti","TeslimAlindi"]);
       if (!okSet.has(yeniDurum)){ alert("Geçersiz durum girdiniz."); return; }
       arr[idx] = {...cur, durum:yeniDurum, not:yeniNot};
-      saveHK(arr);
-      renderHK();
+      saveHK(arr); renderHK();
     }
   });
 
   // Filtre
   $('#filtreBlok').addEventListener('change', renderHK);
   $('#filtreTemizle').addEventListener('click', ()=>{
-    $('#filtreBlok').value = "";
-    renderHK();
+    $('#filtreBlok').value = ""; renderHK();
   });
 
-  // İlk render
-  renderHK();
-
-  /* ---------- PANO DEMO (isteğe bağlı) ---------- */
-  const panoFiltre = $('#panoEkipFiltre');
-  panoFiltre.addEventListener('change', ()=>{
-    // İstersen burada seçilen ekibe göre paftaya ipucu işaretleri eklenebilir.
+  /* ---------- PANO DEMO FİLTRE ---------- */
+  $('#panoEkipFiltre').addEventListener('change', ()=>{
+    // Şimdilik görsel işaretleme eklemiyoruz.
   });
 });
