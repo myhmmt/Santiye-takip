@@ -1,430 +1,192 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şantiye Takip</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Şantiye Takip</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 </head>
 <body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>Şantiye Takip Sistemi</h1>
+    </header>
 
-    <div class="app-container">
-        
-        <header class="app-header">
-            <h1>Şantiye Takip Sistemi</h1>
-        </header>
+    <main class="app-main">
+      <!-- BÖLÜM 1: Günlük Yoklama -->
+      <section id="bolum1" class="page">
+        <h2>Bölüm 1: Günlük Yoklama</h2>
 
-        <main class="app-main">
+        <form id="formYoklama" class="card">
+          <div class="form-group">
+            <label for="yoklamaEkip">Ekip Seçimi</label>
+            <select id="yoklamaEkip"></select>
+          </div>
+          <div class="form-group">
+            <label for="yoklamaKisi">Kişi Sayısı</label>
+            <input type="number" id="yoklamaKisi" placeholder="Örn: 5" min="1"/>
+          </div>
+          <div class="form-group">
+            <label for="yoklamaBlok">Blok Seçimi</label>
+            <select id="yoklamaBlok"></select>
+            <small class="muted">İpucu: Pafta üzerindeki bloklara tıklayarak da seçebilirsin.</small>
+          </div>
+          <div class="form-group">
+            <label for="yoklamaNot">Not (Opsiyonel)</label>
+            <textarea id="yoklamaNot" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Giriş Yap</button>
+          <div id="yoklamaMsg" class="form-msg"></div>
+        </form>
 
-            <section id="bolum1" class="page">
-                <h2>Bölüm 1: Günlük Yoklama</h2>
-                <form id="formYoklama" class="card">
-                    <div class="form-group">
-                        <label for="yoklamaEkip">Ekip Seçimi</label>
-                        <select id="yoklamaEkip">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="yoklamaKisi">Kişi Sayısı</label>
-                        <input type="number" id="yoklamaKisi" placeholder="Örn: 5" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="yoklamaBlok">Blok Seçimi</label>
-                        <select id="yoklamaBlok">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="yoklamaNot">Not (Opsiyonel)</label>
-                        <textarea id="yoklamaNot" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Giriş Yap</button>
-                </form>
-                <div class="ozet-panel card">
-                    <h3>Bugünkü Yoklama Özeti</h3>
-                    <ul id="yoklamaListesi">
-                        <li>Mekanik - 5 Kişi - AC BLOK</li>
-                        <li>Elektrik - 3 Kişi - T BLOK</li>
-                    </ul>
-                </div>
-            </section>
+        <div class="ozet-panel card">
+          <h3>Bugünkü Yoklama Özeti</h3>
+          <ul id="yoklamaListesi"></ul>
+        </div>
+      </section>
 
-            <section id="bolum2" class="page">
-                <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
-                <form id="formHizliKayit" class="card">
-                    <div class="form-group">
-                        <label for="kayitKullanici">Kullanıcı</label>
-                        <select id="kayitKullanici">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitEkip">Ekip / İmalat Kalemi</label>
-                        <select id="kayitEkip">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitBlok">Blok Seçimi</label>
-                        <select id="kayitBlok">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitDurum">Durum</label>
-                        <select id="kayitDurum">
-                            <option value="Basladi">Başladı</option>
-                            <option value="Devam">Devam Ediyor</option>
-                            <option value="Bitti">Bitti</option>
-                            <option value="TeslimAlindi">Teslim Alındı</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitNot">Not (Opsiyonel)</label>
-                        <textarea id="kayitNot" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Kaydet</button>
-                </form>
-            </section>
+      <!-- BÖLÜM 2: Hızlı Kayıt -->
+      <section id="bolum2" class="page">
+        <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
 
-            <section id="bolum3" class="page active">
-                <h2>Bölüm 3: Proje Durum Panosu</h2>
-                
-                <div class="dashboard-filter card">
-                    <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
-                    <select id="panoEkipFiltre">
-                        <option value="tum">Tüm Ekipler (Genel Bakış)</option>
-                        </select>
-                </div>
+        <form id="formHizliKayit" class="card">
+          <div class="form-group">
+            <label for="kayitKullanici">Kullanıcı</label>
+            <select id="kayitKullanici"></select>
+          </div>
+          <div class="form-group">
+            <label for="kayitEkip">Ekip / İmalat Kalemi</label>
+            <select id="kayitEkip"></select>
+          </div>
+          <div class="form-group">
+            <label for="kayitBlok">Blok Seçimi</label>
+            <select id="kayitBlok"></select>
+            <small class="muted">İpucu: Paftadan blok seçersen buraya otomatik düşer.</small>
+          </div>
+          <div class="form-group">
+            <label for="kayitDurum">Durum</label>
+            <select id="kayitDurum">
+              <option value="Basladi">Başladı</option>
+              <option value="Devam">Devam Ediyor</option>
+              <option value="Bitti">Bitti</option>
+              <option value="TeslimAlindi">Teslim Alındı</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="kayitNot">Not (Opsiyonel)</label>
+            <textarea id="kayitNot" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Kaydet</button>
+          <div id="kayitMsg" class="form-msg"></div>
+        </form>
 
-                <div id="projePaftasi" class="card">
-                    <h3>Görsel Proje Paftası</h3>
-                    
-                    <div class="pafta-row">
-                        <div class="blok" data-blok-id="AC">AC</div>
-                        <div class="blok" data-blok-id="AD">AD</div>
-                        <div class="blok" data-blok-id="AE">AE</div>
-                        <div class="blok" data-blok-id="AF">AF</div>
-                        <div class="blok" data-blok-id="AG">AG</div>
-                        <div class="blok" data-blok-id="AH">AH</div>
-                        <div class="blok" data-blok-id="AI">AI</div>
-                        <div class="blok" data-blok-id="AJ">AJ</div>
-                        <div class="blok" data-blok-id="AK">AK</div>
-                        <div class="blok" data-blok-id="AL">AL</div>
-                        <div class="blok" data-blok-id="AM">AM</div>
-                        <div class="blok" data-blok-id="AN">AN</div>
-                    </div>
-                    
-                    <div class="pafta-row">
-                        <div class="blok" data-blok-id="AB">AB</div>
-                        <div class="blok" data-blok-id="Y">Y</div>
-                        <div class="blok" data-blok-id="V">V</div>
-                        <div class="blok" data-blok-id="S">S</div>
-                        <div class="blok" data-blok-id="R">R</div>
-                        <div class="blok" data-blok-id="P">P</div>
-                        <div class="blok" data-blok-id="O">O</div>
-                        <div class="blok" data-blok-id="N">N</div>
-                        <div class="blok" data-blok-id="M">M</div>
-                        <div class="blok" data-blok-id="L">L</div>
-                        <div class="blok" data-blok-id="K">K</div>
-                        <div class="blok" data-blok-id="J">J</div>
-                        <div class="blok" data-blok-id="I">I</div>
-                    </div>
-                    
-                    <div class="pafta-row">
-                        <div class="blok" data-blok-id="AA">AA</div>
-                        <div class="blok" data-blok-id="Z">Z</div>
-                        <div class="blok" data-blok-id="U">U</div>
-                        <div class="blok" data-blok-id="T">T</div>
-                        <div class="blok sosyal-tesis" data-blok-id="Sosyal">SOSYAL TESİS</div>
-                        <div class="blok" data-blok-id="A">A</div>
-                        <div class="blok" data-blok-id="B">B</div>
-                        <div class="blok" data-blok-id="C">C</div>
-                        <div class="blok" data-blok-id="D">D</div>
-                        <div class="blok" data-blok-id="E">E</div>
-                        <div class="blok" data-blok-id="F">F</div>
-                        <div class="blok" data-blok-id="G">G</div>
-                        <div class="blok" data-blok-id="H">H</div>
-                    </div>
-                </div>
+        <div id="hizliKayitArsivi" class="card">
+          <h3>Hızlı Kayıt Özet / Arşiv</h3>
 
-                <div id="hizliKayitArsivi" class="card">
-                    <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
-                    <div class="arsiv-filtreleri">
-                        </div>
-                    <div class="table-responsive">
-                        <table id="arsivTablosu">
-                            <thead>
-                                <tr>
-                                    <th>Tarih</th>
-                                    <th>Kullanıcı</th>
-                                    <th>Ekip</th>
-                                    <th>Blok</th>
-                                    <th>Durum</th>
-                                    <th>İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>04.11.2025</td>
-                                    <td>Muhammet</td>
-                                    <td>Elektrik</td>
-                                    <td>AC BLOK</td>
-                                    <td><span class="durum-badge durum-Bitti">Bitti</span></td>
-                                    <td><button classclass="btn-icon"><i class="fas fa-edit"></i></button> <button class="btn-icon"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>03.11.2025</td>
-                                    <td>Furkan</td>
-                                    <td>Çelik Kapı</td>
-                                    <td>T BLOK</td>
-                                    <td><span class="durum-badge durum-TeslimAlindi">Teslim Alındı</span></td>
-                                    <td><button class="btn-icon"><i class="fas fa-edit"></i></button> <button class="btn-icon"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>02.11.2025</td>
-                                    <td>Harun</td>
-                                    <td>Saten Alçı</td>
-                                    <td>J BLOK</td>
-                                    <td><span class="durum-badge durum-Devam">Devam</span></td>
-                                    <td><button class="btn-icon"><i class="fas fa-edit"></i></button> <button class="btn-icon"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+          <div class="arsiv-filtreleri">
+            <label for="filtreBlok">Blok Filtresi:</label>
+            <select id="filtreBlok"></select>
+            <button id="filtreTemizle" class="btn btn-light">Filtreyi Temizle</button>
+          </div>
 
-        </main>
+          <div class="table-responsive">
+            <table id="arsivTablosu">
+              <thead>
+                <tr>
+                  <th>Tarih</th>
+                  <th>Kullanıcı</th>
+                  <th>Ekip</th>
+                  <th>Blok</th>
+                  <th>Durum</th>
+                  <th>Not</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody><!-- JS dolduracak --></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-        <nav class="app-nav">
-            <button class="nav-btn" data-page="bolum1">
-                <i class="fas fa-user-check"></i>
-                <span>Yoklama</span>
-            </button>
-            <button class="nav-btn" data-page="bolum2">
-                <i class="fas fa-plus-circle"></i>
-                <span>Hızlı Kayıt</span>
-            </button>
-            <button class="nav-btn active" data-page="bolum3">
-                <i class="fas fa-th-large"></i>
-                <span>Ana Pano</span>
-            </button>
-        </nav>
+      <!-- BÖLÜM 3: Proje Durum Panosu -->
+      <section id="bolum3" class="page active">
+        <h2>Bölüm 3: Proje Durum Panosu</h2>
 
-    </div> <script src="app.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şantiye Takip</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-<body>
+        <div class="dashboard-filter card">
+          <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
+          <select id="panoEkipFiltre">
+            <option value="tum">Tüm Ekipler (Genel Bakış)</option>
+          </select>
+        </div>
 
-    <div class="app-container">
-        
-        <header class="app-header">
-            <h1>Şantiye Takip Sistemi</h1>
-        </header>
+        <div id="projePaftasi" class="card">
+          <h3>Görsel Proje Paftası</h3>
 
-        <main class="app-main">
+          <div class="pafta-row">
+            <div class="blok" data-blok-id="AC">AC</div>
+            <div class="blok" data-blok-id="AD">AD</div>
+            <div class="blok" data-blok-id="AE">AE</div>
+            <div class="blok" data-blok-id="AF">AF</div>
+            <div class="blok" data-blok-id="AG">AG</div>
+            <div class="blok" data-blok-id="AH">AH</div>
+            <div class="blok" data-blok-id="AI">AI</div>
+            <div class="blok" data-blok-id="AJ">AJ</div>
+            <div class="blok" data-blok-id="AK">AK</div>
+            <div class="blok" data-blok-id="AL">AL</div>
+            <div class="blok" data-blok-id="AM">AM</div>
+            <div class="blok" data-blok-id="AN">AN</div>
+          </div>
 
-            <section id="bolum1" class="page">
-                <h2>Bölüm 1: Günlük Yoklama</h2>
-                <form id="formYoklama" class="card">
-                    <div class="form-group">
-                        <label for="yoklamaEkip">Ekip Seçimi</label>
-                        <select id="yoklamaEkip">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="yoklamaKisi">Kişi Sayısı</label>
-                        <input type="number" id="yoklamaKisi" placeholder="Örn: 5" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="yoklamaBlok">Blok Seçimi</label>
-                        <select id="yoklamaBlok">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="yoklamaNot">Not (Opsiyonel)</label>
-                        <textarea id="yoklamaNot" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Giriş Yap</button>
-                </form>
-                <div class="ozet-panel card">
-                    <h3>Bugünkü Yoklama Özeti</h3>
-                    <ul id="yoklamaListesi">
-                        <li>Mekanik - 5 Kişi - AC BLOK</li>
-                        <li>Elektrik - 3 Kişi - T BLOK</li>
-                    </ul>
-                </div>
-            </section>
+          <div class="pafta-row">
+            <div class="blok" data-blok-id="AB">AB</div>
+            <div class="blok" data-blok-id="Y">Y</div>
+            <div class="blok" data-blok-id="V">V</div>
+            <div class="blok" data-blok-id="S">S</div>
+            <div class="blok" data-blok-id="R">R</div>
+            <div class="blok" data-blok-id="P">P</div>
+            <div class="blok" data-blok-id="O">O</div>
+            <div class="blok" data-blok-id="N">N</div>
+            <div class="blok" data-blok-id="M">M</div>
+            <div class="blok" data-blok-id="L">L</div>
+            <div class="blok" data-blok-id="K">K</div>
+            <div class="blok" data-blok-id="J">J</div>
+            <div class="blok" data-blok-id="I">I</div>
+          </div>
 
-            <section id="bolum2" class="page">
-                <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
-                <form id="formHizliKayit" class="card">
-                    <div class="form-group">
-                        <label for="kayitKullanici">Kullanıcı</label>
-                        <select id="kayitKullanici">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitEkip">Ekip / İmalat Kalemi</label>
-                        <select id="kayitEkip">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitBlok">Blok Seçimi</label>
-                        <select id="kayitBlok">
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitDurum">Durum</label>
-                        <select id="kayitDurum">
-                            <option value="Basladi">Başladı</option>
-                            <option value="Devam">Devam Ediyor</option>
-                            <option value="Bitti">Bitti</option>
-                            <option value="TeslimAlindi">Teslim Alındı</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="kayitNot">Not (Opsiyonel)</label>
-                        <textarea id="kayitNot" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Kaydet</button>
-                </form>
-            </section>
+          <div class="pafta-row">
+            <div class="blok" data-blok-id="AA">AA</div>
+            <div class="blok" data-blok-id="Z">Z</div>
+            <div class="blok" data-blok-id="U">U</div>
+            <div class="blok" data-blok-id="T">T</div>
+            <div class="blok sosyal-tesis" data-blok-id="Sosyal">SOSYAL TESİS</div>
+            <div class="blok" data-blok-id="A">A</div>
+            <div class="blok" data-blok-id="B">B</div>
+            <div class="blok" data-blok-id="C">C</div>
+            <div class="blok" data-blok-id="D">D</div>
+            <div class="blok" data-blok-id="E">E</div>
+            <div class="blok" data-blok-id="F">F</div>
+            <div class="blok" data-blok-id="G">G</div>
+            <div class="blok" data-blok-id="H">H</div>
+          </div>
+        </div>
+      </section>
+    </main>
 
-            <section id="bolum3" class="page active">
-                <h2>Bölüm 3: Proje Durum Panosu</h2>
-                
-                <div class="dashboard-filter card">
-                    <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
-                    <select id="panoEkipFiltre">
-                        <option value="tum">Tüm Ekipler (Genel Bakış)</option>
-                        </select>
-                </div>
+    <nav class="app-nav">
+      <button class="nav-btn" data-page="bolum1">
+        <i class="fas fa-user-check"></i><span>Yoklama</span>
+      </button>
+      <button class="nav-btn" data-page="bolum2">
+        <i class="fas fa-plus-circle"></i><span>Hızlı Kayıt</span>
+      </button>
+      <button class="nav-btn active" data-page="bolum3">
+        <i class="fas fa-th-large"></i><span>Ana Pano</span>
+      </button>
+    </nav>
+  </div>
 
-                <div id="projePaftasi" class="card">
-                    <h3>Görsel Proje Paftası</h3>
-                    
-                    <div class="pafta-row">
-                        <div class="blok" data-blok-id="AC">AC</div>
-                        <div class="blok" data-blok-id="AD">AD</div>
-                        <div class="blok" data-blok-id="AE">AE</div>
-                        <div class="blok" data-blok-id="AF">AF</div>
-                        <div class="blok" data-blok-id="AG">AG</div>
-                        <div class="blok" data-blok-id="AH">AH</div>
-                        <div class="blok" data-blok-id="AI">AI</div>
-                        <div class="blok" data-blok-id="AJ">AJ</div>
-                        <div class="blok" data-blok-id="AK">AK</div>
-                        <div class="blok" data-blok-id="AL">AL</div>
-                        <div class="blok" data-blok-id="AM">AM</div>
-                        <div class="blok" data-blok-id="AN">AN</div>
-                    </div>
-                    
-                    <div class="pafta-row">
-                        <div class="blok" data-blok-id="AB">AB</div>
-                        <div class="blok" data-blok-id="Y">Y</div>
-                        <div class="blok" data-blok-id="V">V</div>
-                        <div class="blok" data-blok-id="S">S</div>
-                        <div class="blok" data-blok-id="R">R</div>
-                        <div class="blok" data-blok-id="P">P</div>
-                        <div class="blok" data-blok-id="O">O</div>
-                        <div class="blok" data-blok-id="N">N</div>
-                        <div class="blok" data-blok-id="M">M</div>
-                        <div class="blok" data-blok-id="L">L</div>
-                        <div class="blok" data-blok-id="K">K</div>
-                        <div class="blok" data-blok-id="J">J</div>
-                        <div class="blok" data-blok-id="I">I</div>
-                    </div>
-                    
-                    <div class="pafta-row">
-                        <div class="blok" data-blok-id="AA">AA</div>
-                        <div class="blok" data-blok-id="Z">Z</div>
-                        <div class="blok" data-blok-id="U">U</div>
-                        <div class="blok" data-blok-id="T">T</div>
-                        <div class="blok sosyal-tesis" data-blok-id="Sosyal">SOSYAL TESİS</div>
-                        <div class="blok" data-blok-id="A">A</div>
-                        <div class="blok" data-blok-id="B">B</div>
-                        <div class="blok" data-blok-id="C">C</div>
-                        <div class="blok" data-blok-id="D">D</div>
-                        <div class="blok" data-blok-id="E">E</div>
-                        <div class="blok" data-blok-id="F">F</div>
-                        <div class="blok" data-blok-id="G">G</div>
-                        <div class="blok" data-blok-id="H">H</div>
-                    </div>
-                </div>
-
-                <div id="hizliKayitArsivi" class="card">
-                    <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
-                    <div class="arsiv-filtreleri">
-                        </div>
-                    <div class="table-responsive">
-                        <table id="arsivTablosu">
-                            <thead>
-                                <tr>
-                                    <th>Tarih</th>
-                                    <th>Kullanıcı</th>
-                                    <th>Ekip</th>
-                                    <th>Blok</th>
-                                    <th>Durum</th>
-                                    <th>İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>04.11.2025</td>
-                                    <td>Muhammet</td>
-                                    <td>Elektrik</td>
-                                    <td>AC BLOK</td>
-                                    <td><span class="durum-badge durum-Bitti">Bitti</span></td>
-                                    <td><button classclass="btn-icon"><i class="fas fa-edit"></i></button> <button class="btn-icon"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>03.11.2025</td>
-                                    <td>Furkan</td>
-                                    <td>Çelik Kapı</td>
-                                    <td>T BLOK</td>
-                                    <td><span class="durum-badge durum-TeslimAlindi">Teslim Alındı</span></td>
-                                    <td><button class="btn-icon"><i class="fas fa-edit"></i></button> <button class="btn-icon"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>02.11.2025</td>
-                                    <td>Harun</td>
-                                    <td>Saten Alçı</td>
-                                    <td>J BLOK</td>
-                                    <td><span class="durum-badge durum-Devam">Devam</span></td>
-                                    <td><button class="btn-icon"><i class="fas fa-edit"></i></button> <button class="btn-icon"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <nav class="app-nav">
-            <button class="nav-btn" data-page="bolum1">
-                <i class="fas fa-user-check"></i>
-                <span>Yoklama</span>
-            </button>
-            <button class="nav-btn" data-page="bolum2">
-                <i class="fas fa-plus-circle"></i>
-                <span>Hızlı Kayıt</span>
-            </button>
-            <button class="nav-btn active" data-page="bolum3">
-                <i class="fas fa-th-large"></i>
-                <span>Ana Pano</span>
-            </button>
-        </nav>
-
-    </div> <script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
