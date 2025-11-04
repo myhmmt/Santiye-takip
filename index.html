@@ -1,376 +1,360 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Şantiye Takip – Canlı (Firestore + Push)</title>
-<style>
-  :root{--bg:#0b1220;--card:#111827;--line:#1f2937;--muted:#94a3b8}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:#e5e7eb}
-  header{position:sticky;top:0;background:#0b1220cc;backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-  .wrap{max-width:1000px;margin:12px auto;padding:0 12px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  input,select,button,textarea{padding:10px 12px;border-radius:10px;border:1px solid #243244;background:#0b1220;color:#e5e7eb}
-  textarea{min-height:80px;width:100%}
-  button{background:linear-gradient(90deg,#0ea5e9,#22d3ee);color:#001016;border:none;font-weight:700;cursor:pointer}
-  .ghost{background:#0b1220;border:1px solid #243244;color:#e5e7eb}
-  .danger{background:#7f1d1d;color:#fff;border:none}
-  .muted{color:var(--muted)}
-  .list{display:flex;flex-direction:column;gap:8px}
-  .note{border-left:3px solid #0ea5e9;padding-left:10px}
-  .grid{display:grid;gap:8px}
-  .row1{grid-template-columns:repeat(12,1fr)}
-  .row2{grid-template-columns:repeat(13,1fr)}
-  .row3{grid-template-columns:repeat(12,1fr)}
-  .tile{padding:10px 6px;text-align:center;border:1px solid #243244;border-radius:10px;background:#0b1220;cursor:pointer;font-weight:800}
-  .badge{font-size:10px;color:#cbd5e1;display:block;margin-top:4px;font-weight:500}
-  .t-41{background:#7c2d4e}.t-51{background:#8a6a15}.t-62{background:#0f3b46}.t-72{background:#153056}
-  .own{border-color:#22d3ee}.patron{outline:2px dashed #22d3ee}
-  .st-none{box-shadow:0 0 0 3px #374151 inset}.st-progress{box-shadow:0 0 0 3px #f59e0b inset}.st-done{box-shadow:0 0 0 3px #10b981 inset}
-  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:6px}
-  .chip{padding:2px 6px;border-radius:999px;border:1px solid #334155;background:#0b1220;color:#cbd5e1;font-size:12px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🏗️ Şantiye Takip – Basit MVP</title>
+  <meta name="theme-color" content="#0f172a" />
+
+  <style>
+    :root{
+      --bg:#0b1020;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;--primary:#22d3ee;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
+      --border:#1f2937; --chip-bg:#0f172a; --chip-on:#0ea5e9;
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto}
+    .bar{display:flex;align-items:center;gap:.75rem;padding:.9rem 1rem;border-bottom:1px solid var(--border);background:#0a0f1e;position:sticky;top:0;z-index:10}
+    .bar b{font-size:1.05rem}
+    .wrap{max-width:880px;margin:18px auto;padding:0 14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 6px 18px #00000033}
+    h2{margin:0 0 10px;font-size:1.05rem}
+    label{display:block;font-size:.86rem;color:var(--muted);margin:.5rem 0 .35rem}
+    input,select,textarea{width:100%;background:#0b1222;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none}
+    textarea{min-height:90px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{background:var(--primary);color:#001018;border:none;border-radius:10px;padding:10px 14px;font-weight:600}
+    .btn.ghost{background:#0b1222;color:var(--text);border:1px solid var(--border)}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{padding:8px 10px;border-radius:999px;background:var(--chip-bg);border:1px solid var(--border);cursor:pointer;font-size:.85rem}
+    .chip.on{background:#062335;border-color:#0a4760;color:#8be8ff}
+    .note{border-left:3px solid #224; padding:10px;margin:8px 0;background:#0b1222;border-radius:8px}
+    .muted{color:var(--muted)}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .topbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    small.k{opacity:.8}
+  </style>
 </head>
 <body>
-<header>
-  <div>🏗️ Şantiye Takip – Canlı (Firestore + Push)</div>
-  <div class="row">
-    <button id="btnNotify">🔔 Bildirimleri Aç</button>
-    <span id="permStatus" class="muted"></span>
-  </div>
-</header>
+  <header class="bar">
+    <span style="font-size:1.2rem">🏗️</span>
+    <b>Şantiye Takip – Basit MVP</b>
+    <span id="whoView" class="muted" style="margin-left:auto">Kullanıcı: <b id="whoName">Bilinmiyor</b></span>
+  </header>
 
-<div class="wrap">
-  <!-- 1) EKİP SEÇ + FİLTRE -->
-  <section class="card">
-    <h3>1) Ekip Seç</h3>
-    <div class="row">
-      <select id="crewPick" style="min-width:200px">
-        <option value="">Ekip seç</option>
-        <option>Elektrik</option><option>Mekanik</option>
-        <option>Çatı (kereste)</option><option>Çatı (kiremit)</option><option>Çatı (oluk)</option>
-        <option>Denizlik</option><option>Parke</option><option>Seramik</option><option>Boya</option>
-        <option>Tg5</option><option>PVC</option><option>Kör Kasa</option><option>Şap</option>
-        <option>Dış Cephe</option><option>Makina Alçı</option><option>Saten Alçı</option><option>Kaba Sıva (iç)</option>
-      </select>
-      <span class="muted">Durum:
-        <span class="dot" style="background:#10b981"></span>tamamlandı •
-        <span class="dot" style="background:#f59e0b"></span>devam ediyor •
-        <span class="dot" style="background:#374151"></span>başlanmadı
-      </span>
-      <select id="statusFilter">
-        <option value="">Tümü</option>
-        <option value="done">Sadece tamamlanan</option>
-        <option value="progress">Sadece devam eden</option>
-        <option value="none">Sadece başlanmayan</option>
-      </select>
-      <button id="clearFilter" class="ghost">Filtreyi sıfırla</button>
-    </div>
-  </section>
+  <main class="wrap">
 
-  <!-- 2) BLOK IZGARASI -->
-  <section class="card">
-    <h3>2) Blok Seç (Ekip durumunu renkten gör)</h3>
-    <div class="grid row1" id="row1"></div>
-    <div class="grid row2" id="row2" style="margin-top:8px"></div>
-    <div class="grid row3" id="row3" style="margin-top:8px"></div>
-    <div class="muted" id="crewHint" style="margin-top:6px">İpucu: Ekip seç, sonra bloklara tıkla.</div>
-  </section>
-
-  <!-- 3) HIZLI KAYIT -->
-  <section class="card">
-    <h3>3) Hızlı Kayıt</h3>
-    <div class="row">
-      <select id="who" style="min-width:140px">
-        <option value="">İsim seç</option>
-        <option>Muhammet</option><option>Harun</option><option>Metin</option>
-        <option>Mert</option><option>Fuat</option><option>Furkan</option>
-        <option>Misafir</option>
-      </select>
-      <input id="block" placeholder="Blok" style="min-width:120px" readonly />
-      <input id="crew"  placeholder="Ekip" style="min-width:160px" readonly />
-      <select id="state" style="min-width:150px">
-        <option value="başladı">Başladı</option>
-        <option value="devam ediyor">Devam ediyor</option>
-        <option value="tamamlandı">Tamamlandı</option>
-      </select>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <textarea id="text" placeholder="Not (opsiyonel)"></textarea>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <button id="save">Kaydet</button>
-      <button id="cancelEdit" class="ghost" style="display:none">İptal</button>
-      <span id="msg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- 4) SON KAYITLAR -->
-  <section class="card">
-    <h3>Son Kayıtlar</h3>
-    <div id="list" class="list muted">Kayıt yok.</div>
-  </section>
-</div>
-
-<script type="module">
-  /* ==== Firebase ==== */
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-    serverTimestamp, query, orderBy, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  import {
-    getMessaging, getToken, onMessage, isSupported
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
-    authDomain: "santiye-takip-83874.firebaseapp.com",
-    projectId: "santiye-takip-83874",
-    storageBucket: "santiye-takip-83874.firebasestorage.app",
-    messagingSenderId: "893666575482",
-    appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  /* ==== UI yardımcı ==== */
-  const el = id => document.getElementById(id);
-  const ROW1 = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
-  const ROW2 = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
-  const ROW3 = ["AA","Z","U","T","A","B","C","D","E","F","G","H"];
-  const ALL_BLOCKS = [...ROW1, ...ROW2, ...ROW3];
-  const CREWS = ["Elektrik","Mekanik","Çatı (kereste)","Çatı (kiremit)","Çatı (oluk)","Denizlik","Parke","Seramik","Boya","Tg5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı","Kaba Sıva (iç)"];
-  const STATES = ["başladı","devam ediyor","tamamlandı"];
-  const T41 = new Set(["AA","Z","U","T"]);
-  const T51 = new Set(["A","B","C","D","E","F","G","H"]);
-  const T62 = new Set(["AI","AJ","AK","AL","AM","AN","P","O","N","M","L","K","J","I"]);
-  const T72 = new Set(["AC","AD","AE","AF","AG","AH","AB","Y","V","S","R"]);
-  const OWNER  = new Set(["AC","AD","AH","AI","AJ","Y","R","P","O","N","J","I","Z","A","B","C","H"]);
-  const PATRON = "R";
-  const typeClass = (code)=> T41.has(code) ? 't-41' : T51.has(code) ? 't-51' : T62.has(code) ? 't-62' : T72.has(code) ? 't-72' : '';
-
-  let notes = [];
-  const qNotes = query(collection(db,'notes'), orderBy('ts','desc'));
-  onSnapshot(qNotes, (snap)=>{
-    notes = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-    renderList();
-    paintGrid();
-  });
-
-  function tsToString(ts){
-    try{ return ts?.toDate ? ts.toDate().toLocaleString() : new Date(ts||0).toLocaleString(); }catch{ return '' }
-  }
-  function latestStatusByBlockForCrew(crew){
-    const map = new Map();
-    notes.forEach(n=>{
-      if(n.crew!==crew) return;
-      const t = n.ts?.toMillis ? n.ts.toMillis() : (typeof n.ts==='number'?n.ts:0);
-      const prev = map.get(n.block);
-      if(!prev || t>prev.ts) map.set(n.block,{state:n.state,ts:t});
-    });
-    const cls = s => !s ? 'st-none' : (s==='tamamlandı' ? 'st-done' : 'st-progress');
-    const out = {}; ALL_BLOCKS.forEach(b=> out[b]=cls(map.get(b)?.state));
-    return out;
-  }
-
-  const buckets = [
-    {row: ROW1, el: el('row1')},
-    {row: ROW2, el: el('row2')},
-    {row: ROW3, el: el('row3')}
-  ];
-
-  function paintGrid(){
-    const crewSel = el('crewPick').value;
-    const filt = el('statusFilter').value;
-    const st = crewSel ? latestStatusByBlockForCrew(crewSel) : {};
-    buckets.forEach(({row,el:wrap})=>{
-      wrap.innerHTML='';
-      row.forEach(code=>{
-        const btn = document.createElement('button');
-        btn.type='button';
-        let cls=`tile ${typeClass(code)}`;
-        if (OWNER.has(code)) cls+=' own';
-        if (code===PATRON) cls+=' patron';
-        const sClass = st[code] || 'st-none';
-        cls += ` ${sClass}`;
-        btn.className=cls;
-        let keep = true;
-        if (filt==='done' && sClass!=='st-done') keep=false;
-        if (filt==='progress' && sClass!=='st-progress') keep=false;
-        if (filt==='none' && sClass!=='st-none') keep=false;
-        if (!keep) btn.style.display='none';
-        const ownerLbl = code===PATRON ? 'patronun villası 😄' : (OWNER.has(code)?'arsa sahibi':'müteahhit');
-        let stateLbl = 'başlanmadı';
-        if (sClass==='st-done') stateLbl='tamamlandı'; else if (sClass==='st-progress') stateLbl='devam/başladı';
-        btn.innerHTML = `${code}<span class="badge">${ownerLbl} • ${el('crewPick').value?stateLbl:''}</span>`;
-        btn.onclick = ()=>{
-          const cPick = el('crewPick').value;
-          if(!cPick){ alert('Önce ekip seç'); return; }
-          el('block').value = code;
-          el('crew').value  = cPick;
-          document.querySelectorAll('.card')[2].scrollIntoView({behavior:'smooth'});
-        };
-        wrap.appendChild(btn);
-      });
-    });
-    el('crewHint').textContent = el('crewPick').value ? 'Bir bloğa tıkla: form otomatik dolacak.' : 'İpucu: Ekip seç, sonra bloklara tıkla.';
-  }
-
-  const whoSel = el('who');
-  const savedWho = localStorage.getItem('santiye_who');
-  if (savedWho) whoSel.value = savedWho;
-  whoSel.addEventListener('change', ()=> localStorage.setItem('santiye_who', whoSel.value));
-
-  let editId=null;
-  function say(m){ const msg=el('msg'); msg.textContent=m; setTimeout(()=>msg.textContent='',2200) }
-  function validateInputs({who, block, crew, state}){
-    if(!who) return "İsim seç";
-    if(!crew) return "Ekip seç (üstten ekip seçip blok tıkla)";
-    if(!block) return "Blok seç (ızgaradan tıkla)";
-    if(!ALL_BLOCKS.includes(block)) return "Geçersiz blok kodu";
-    if(!CREWS.includes(crew)) return "Geçersiz ekip";
-    if(!STATES.includes(state)) return "Geçersiz durum";
-    return "";
-  }
-  function resetFormKeepCrewWho(){ el('text').value=''; el('state').value='başladı'; }
-
-  el('cancelEdit').onclick = ()=>{
-    editId=null; el('save').textContent='Kaydet'; el('cancelEdit').style.display='none';
-    resetFormKeepCrewWho(); say('Düzenleme iptal edildi');
-  };
-
-  el('save').onclick = async ()=>{
-    const who   = (whoSel.value||'').trim();
-    const block = (el('block').value||'').trim().toUpperCase();
-    const crew  = (el('crew').value||'').trim();
-    const state = el('state').value;
-    const text  = (el('text').value||'').trim();
-    const err = validateInputs({who,block,crew,state});
-    if (err) { say(err); return; }
-    try{
-      if(editId){
-        await updateDoc(doc(db,'notes',editId), { user:who, block, crew, state, text, ts: serverTimestamp() });
-        editId=null; el('save').textContent='Kaydet'; el('cancelEdit').style.display='none'; say('Güncellendi ✅');
-      }else{
-        await addDoc(collection(db,'notes'), { user:who, block, crew, state, text, ts: serverTimestamp() });
-        say('Kaydedildi ✅');
-      }
-      resetFormKeepCrewWho();
-    }catch(e){ console.error(e); say('Hata: ' + (e.code||e.message||'kayıt yazılamadı')); }
-  };
-
-  function renderList(){
-    const listEl = el('list');
-    if(!notes.length){ listEl.classList.add('muted'); listEl.textContent='Kayıt yok.'; return; }
-    listEl.classList.remove('muted'); listEl.innerHTML='';
-    notes.forEach(n=>{
-      const when = tsToString(n.ts);
-      const div = document.createElement('div');
-      div.className='note';
-      div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-          <div><b>${n.block}</b> <span class="chip">${n.crew}</span> <span class="chip">${n.state}</span> <span class="chip">${n.user}</span></div>
-          <span class="muted">${when}</span>
+    <!-- ÜST KONTROLLER -->
+    <div class="card">
+      <div class="topbar">
+        <div>
+          <label for="selWho" style="margin-top:0">Kullanıcı seç</label>
+          <select id="selWho">
+            <option value="">Seçiniz…</option>
+            <option>Muhammet</option>
+            <option>Harun</option>
+            <option>Metin</option>
+            <option>Mert</option>
+            <option>Fuat</option>
+            <option>Furkan</option>
+            <option>Misafir</option>
+          </select>
         </div>
-        <div style="margin-top:6px">${n.text? String(n.text).replace(/</g,"&lt;") : ''}</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-edit="${n.id}">Düzelt</button>
-          <button class="danger" data-del="${n.id}">Sil</button>
-        </div>`;
-      listEl.appendChild(div);
-    });
-    listEl.querySelectorAll('[data-edit]').forEach(b=>{
-      b.onclick = ()=>{
-        const id = b.getAttribute('data-edit');
-        const rec = notes.find(x=>x.id===id); if(!rec) return;
-        editId=id;
-        whoSel.value = rec.user||''; el('block').value = rec.block||''; el('crew').value  = rec.crew||'';
-        el('state').value = rec.state||'başladı'; el('text').value  = rec.text||'';
-        el('save').textContent='Güncelle'; el('cancelEdit').style.display='inline-block'; say('Düzenleme modundasın');
-      };
-    });
-    listEl.querySelectorAll('[data-del]').forEach(b=>{
-      b.onclick = async ()=>{
-        const id = b.getAttribute('data-del');
-        if(!confirm('Bu kaydı silmek istiyor musun?')) return;
-        await deleteDoc(doc(db,'notes',id)); say('Silindi');
-      };
-    });
-  }
 
-  // === Bildirim (Web Push) ===
-  const permStatus = el('permStatus');
-  const btnNotify  = el('btnNotify');
-  const VAPID_PUBLIC_KEY = "BJOemRk6vKqnI0Y_61OP9-AUbrt-RAepLnANXlz5JZ4jKRKOY_0AO9M0zG_fNO74DdJA2Kr4X0BQ07BNmih3vUY";
+        <div>
+          <label style="visibility:hidden">.</label>
+          <button id="btnNotify" class="btn ghost">🔕 Bildirim İzni Ver</button>
+        </div>
+      </div>
+      <small class="muted">Bildirimler yalnızca **izin verdikten** sonra çalışır. İzin verildiğinde butonda <span class="ok">🔔 Açık</span> yazar.</small>
+    </div>
 
-  function setPermText(){
-    permStatus.textContent = (Notification.permission === 'granted')
-      ? 'Bildirim: AÇIK'
-      : (Notification.permission === 'denied' ? 'Bildirim: ENGELLİ' : 'Bildirim: İZİN İSTENMEDİ');
-  }
-  setPermText();
+    <!-- HIZLI KAYIT -->
+    <section class="card">
+      <h2>Hızlı Kayıt</h2>
 
-  // SW kaydı (GitHub Pages altında kökte olmalı)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/Santiye-takip/firebase-messaging-sw.js');
-  }
+      <label>Blok</label>
+      <input id="inpBlock" placeholder="Örn. A, R, AC…" />
 
-  let fcmToken = null;
+      <div class="row">
+        <div>
+          <label>Ekip</label>
+          <select id="selTeam">
+            <option value="">Seçiniz…</option>
+            <option>Mekanik</option>
+            <option>Elektirik</option>
+            <option>Çatı(kereste)</option>
+            <option>Çatı(kiremit)</option>
+            <option>Çatı(oluk)</option>
+            <option>Denizlik</option>
+            <option>Parke</option>
+            <option>Seramik</option>
+            <option>Boya</option>
+            <option>Tg5</option>
+            <option>Pvc</option>
+            <option>Kör Kasa</option>
+            <option>Şap</option>
+            <option>Dış cephe</option>
+            <option>Makina Alçı</option>
+            <option>Saten alçı</option>
+            <option>Kaba sıva (iç)</option>
+          </select>
+        </div>
+        <div>
+          <label>Durum</label>
+          <select id="selStatus">
+            <option>Başladı</option>
+            <option>Devam</option>
+            <option>Bitti</option>
+            <option>Ertelendi</option>
+          </select>
+        </div>
+      </div>
 
-  btnNotify.onclick = async ()=>{
-    try{
-      if (!(await isSupported())) { alert('Tarayıcı push desteklemiyor'); return; }
-      const granted = await Notification.requestPermission();
-      setPermText();
-      if (granted !== 'granted') return;
+      <label>Not (opsiyonel)</label>
+      <textarea id="inpNote" placeholder="Kısa not…"></textarea>
 
-      const messaging = getMessaging(app);
-      fcmToken = await getToken(messaging, {
-        vapidKey: VAPID_PUBLIC_KEY,
-        serviceWorkerRegistration: await navigator.serviceWorker.getRegistration('/Santiye-takip/firebase-messaging-sw.js')
-      });
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="btnSave" class="btn">Kaydet</button>
+        <button id="btnUndo" class="btn ghost">Geri Al (son kayıt)</button>
+      </div>
+      <div id="msg" class="muted" style="margin-top:8px"></div>
+    </section>
 
-      if (!fcmToken) { alert('Token alınamadı'); return; }
+    <!-- SON KAYITLAR -->
+    <section class="card">
+      <h2>Son Kayıtlar</h2>
+      <div id="lastList"></div>
+    </section>
 
-      // Token'ı Firestore'a yaz (tekillik)
-      await addDoc(collection(db,'fcm_tokens'), {
-        token: fcmToken,
-        user: (localStorage.getItem('santiye_who')||'Bilinmiyor'),
-        ua: navigator.userAgent,
-        createdAt: serverTimestamp()
-      });
+    <!-- EKİP FİLTRESİ + BLOK DURUM GÖRSELİ (sade) -->
+    <section class="card">
+      <h2>Ekip Durumu (Hızlı Özet)</h2>
+      <div class="chips" id="teamChips"></div>
+      <div id="gridInfo" class="muted" style="margin-top:8px">Bir ekip seçtiğinizde ilgili bloklar işaretlenir.</div>
+      <div id="blockGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:10px"></div>
+      <small class="muted">🟦 Devam — 🟩 Bitti — ⬜ Kayıt yok</small>
+    </section>
 
-      btnNotify.textContent = '🔔 Bildirimler Açık';
-      say('Bildirim izni verildi ✅');
+  </main>
 
-      // Ön planda yeni mesaj geldiğinde küçük bip göster
-      onMessage(messaging, (payload)=>{
-        try {
-          // küçük bip: izin gerektirmiyor
-          const ctx = new (window.AudioContext||window.webkitAudioContext)();
-          const o = ctx.createOscillator(); const g = ctx.createGain();
-          o.connect(g); g.connect(ctx.destination); o.frequency.value=1200; g.gain.value=0.05;
-          o.start(); setTimeout(()=>{o.stop();ctx.close()},140);
-        } catch {}
-      });
+  <!-- Firebase SDK'ları -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js";
 
-    }catch(e){
-      console.error(e);
-      alert('Bildirim kurulamadı: ' + (e.code||e.message));
+    // --- Firebase Config (KENDİ PROJEN) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
+      authDomain: "santiye-takip-83874.firebaseapp.com",
+      projectId: "santiye-takip-83874",
+      storageBucket: "santiye-takip-83874.firebasestorage.app",
+      messagingSenderId: "893666575482",
+      appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
+    };
+    const VAPID_KEY = "BJOemRk6vKqnI0Y_61OP9-AUbrt-RAepLnANXlz5JZ4jKRKOY_0AO9M0zG_fNO74DdJA2Kr4X0BQ07BNmih3vUY";
+
+    // --- Init ---
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const canMessaging = await isSupported();
+    const messaging = canMessaging ? getMessaging(app) : null;
+
+    // --- UI Kısayolları ---
+    const $ = (s)=>document.querySelector(s);
+    const whoName = $("#whoName");
+    const selWho  = $("#selWho");
+    const btnNotify = $("#btnNotify");
+    const inpBlock = $("#inpBlock");
+    const selTeam  = $("#selTeam");
+    const selStatus= $("#selStatus");
+    const inpNote  = $("#inpNote");
+    const btnSave  = $("#btnSave");
+    const btnUndo  = $("#btnUndo");
+    const msg      = $("#msg");
+    const lastList = $("#lastList");
+    const teamChips= $("#teamChips");
+    const blockGrid= $("#blockGrid");
+
+    const TEAMS = ["Mekanik","Elektirik","Çatı(kereste)","Çatı(kiremit)","Çatı(oluk)","Denizlik","Parke","Seramik","Boya","Tg5","Pvc","Kör Kasa","Şap","Dış cephe","Makina Alçı","Saten alçı","Kaba sıva (iç)"];
+
+    // --- Kullanıcı seçimini yükle ---
+    function loadWho(){
+      const who = localStorage.getItem("santiye_who") || "Bilinmiyor";
+      whoName.textContent = who;
+      if (who && who !== "Bilinmiyor") selWho.value = who;
     }
-  };
+    loadWho();
+    selWho.addEventListener("change", ()=>{
+      const v = selWho.value || "Bilinmiyor";
+      localStorage.setItem("santiye_who", v);
+      whoName.textContent = v;
+    });
 
-  // Filtre ve ekip seçim
-  el('crewPick').addEventListener('change', ()=>{ el('crew').value = el('crewPick').value || ''; paintGrid(); });
-  el('statusFilter').addEventListener('change', paintGrid);
-  el('clearFilter').addEventListener('click', ()=>{ el('statusFilter').value=''; paintGrid(); });
+    // --- Bildirim izni / token kaydı ---
+    async function ensureSW(){
+      if (!('serviceWorker' in navigator)) return;
+      // sw dosyanı repo kökünde tutuyorsun: /service-worker.js
+      try{ await navigator.serviceWorker.register("./service-worker.js"); }catch{}
+      try{ await navigator.serviceWorker.register("./firebase-messaging-sw.js"); }catch{}
+    }
+    await ensureSW();
 
-  // İlk çizimler
-  paintGrid();
-</script>
+    async function askNotification(){
+      if (!canMessaging) { btnNotify.textContent="🚫 Bildirim desteklenmiyor"; return; }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted'){ btnNotify.textContent="🔕 Bildirim Kapalı"; say("Bildirim izni verilmedi.", "warn"); return; }
+
+      try{
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: await navigator.serviceWorker.ready });
+        if (!token){ say("Token alınamadı", "err"); return; }
+
+        await addDoc(collection(db,"fcm_tokens"),{
+          token,
+          user: localStorage.getItem("santiye_who") || "Bilinmiyor",
+          ua: navigator.userAgent,
+          createdAt: serverTimestamp()
+        });
+
+        btnNotify.textContent = "🔔 Bildirimler Açık";
+        say("Bildirim izni verildi ✅");
+      }catch(e){
+        say("Bildirim hatası: "+e.message, "err");
+      }
+    }
+    btnNotify.addEventListener("click", askNotification);
+
+    // Uygulama açıkken gelen bildirimi küçük toast gibi göster
+    if (canMessaging && messaging){
+      onMessage(messaging, (payload)=>{
+        try{
+          const t = payload?.notification?.title || "Yeni Bildirim";
+          const b = payload?.notification?.body || "";
+          say(`🔔 ${t} — ${b}`);
+        }catch{}
+      });
+    }
+
+    // --- Kayıt kaydet ---
+    btnSave.addEventListener("click", async ()=>{
+      const who   = localStorage.getItem("santiye_who") || "Bilinmiyor";
+      const block = inpBlock.value.trim().toUpperCase();
+      const team  = selTeam.value;
+      const status= selStatus.value;
+      const note  = inpNote.value.trim();
+
+      if (!block) return say("Blok boş olamaz.","warn");
+      if (!team)  return say("Ekip seçiniz.","warn");
+
+      try{
+        const ref = await addDoc(collection(db,"logs"),{
+          who, block, team, status, note,
+          createdAt: serverTimestamp()
+        });
+        say("Kaydedildi ✅");
+        lastPush = ref.id;
+        inpNote.value="";
+        renderLast();
+        flashBlock(block, status);
+      }catch(e){
+        say("Kayıt yazılamadı: "+e.message, "err");
+      }
+    });
+
+    // --- Geri al (son kayıt) ---
+    let lastPush = null;
+    btnUndo.addEventListener("click", async ()=>{
+      if (!lastPush) return say("Geri alınacak kayıt yok.","warn");
+      try{
+        await deleteDoc(doc(db,"logs", lastPush));
+        say("Son kayıt silindi ⤺");
+        lastPush = null;
+        renderLast();
+      }catch(e){ say("Silinemedi: "+e.message,"err"); }
+    });
+
+    // --- Son kayıtları listele ---
+    async function renderLast(){
+      const q = query(collection(db,"logs"), orderBy("createdAt","desc"), limit(20));
+      const snap = await getDocs(q);
+      lastList.innerHTML = "";
+      snap.forEach(d=>{
+        const v = d.data();
+        const div = document.createElement("div");
+        div.className = "note";
+        div.innerHTML = `<b>${v.block}</b> • <small>${v.team}</small> • <small class="muted">${v.status}</small><br>
+          <small class="muted">by ${v.who||"?"}</small>${v.note?`<div style="margin-top:6px">${v.note}</div>`:""}`;
+        lastList.appendChild(div);
+      });
+    }
+    renderLast();
+
+    // --- Ekip çipleri + blok ızgarası (temel) ---
+    function makeChips(){
+      teamChips.innerHTML = "";
+      TEAMS.forEach(t=>{
+        const c = document.createElement("button");
+        c.className="chip";
+        c.textContent=t;
+        c.onclick=()=>selectTeam(t,c);
+        teamChips.appendChild(c);
+      });
+    }
+    makeChips();
+
+    const ALL_BLOCKS = [
+      "AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN",
+      "AB","Y","V","S","R","P","O","N","M","L","K","J","I",
+      "AA","Z","U","T","A","B","C","D","E","F","G","H"
+    ];
+    function drawGrid(map={}){
+      blockGrid.innerHTML="";
+      ALL_BLOCKS.forEach(b=>{
+        const el=document.createElement("div");
+        const st=map[b]||"none"; // none | progress | done
+        const bg = st==="done"?"#064e3b": st==="progress"?"#0c4a6e":"#0b1222";
+        const bd = st==="done"?"#065f46": st==="progress"?"#075985":"#1f2937";
+        el.style.cssText=`border:1px solid ${bd};background:${bg};height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.82rem;`;
+        el.textContent=b;
+        blockGrid.appendChild(el);
+      });
+    }
+    drawGrid();
+
+    async function selectTeam(team,chipEl){
+      [...teamChips.children].forEach(c=>c.classList.remove("on"));
+      chipEl.classList.add("on");
+      $("#gridInfo").textContent=`Seçilen ekip: ${team}`;
+      const qy = query(collection(db,"logs"), orderBy("createdAt","desc"), limit(400));
+      const snap = await getDocs(qy);
+      const latest = new Map(); // block -> status
+      snap.forEach(d=>{
+        const v = d.data();
+        if (v.team!==team) return;
+        if (!latest.has(v.block)) latest.set(v.block, v.status);
+      });
+      const map = {};
+      ALL_BLOCKS.forEach(b=>{
+        const st = latest.get(b);
+        map[b] = st==="Bitti" ? "done" : st ? "progress" : "none";
+      });
+      drawGrid(map);
+    }
+
+    function flashBlock(block, status){
+      // Kaydettikten sonra gridde anlık parlat
+      const idx = ALL_BLOCKS.indexOf(block);
+      if (idx<0) return;
+      const el = blockGrid.children[idx];
+      if (!el) return;
+      const clr = status==="Bitti"?"#16a34a":"#0ea5e9";
+      el.style.boxShadow = `0 0 0 9999px #0000 inset, 0 0 0 2px ${clr}`;
+      setTimeout(()=>{ el.style.boxShadow=""; }, 1200);
+    }
+
+    function say(t, kind){
+      msg.textContent = t;
+      msg.className = kind==="err"?"err": kind==="warn"?"warn":"muted";
+    }
+  </script>
 </body>
 </html>
