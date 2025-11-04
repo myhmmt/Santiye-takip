@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Şantiye Takip Sistemi</title>
+<title>VİSTA PREMIUM — Şantiye Takip v0.2</title>
 
-<!-- Font & Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
@@ -17,8 +16,11 @@
 *{box-sizing:border-box} html,body{height:100%}
 body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .app{max-width:1000px;margin:0 auto;padding-bottom:74px}
-header{background:var(--primary);color:#fff;text-align:center;padding:18px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-header h1{margin:0;font-size:28px;letter-spacing:.3px}
+
+/* Header */
+header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+header h1{margin:0;font-size:24px;letter-spacing:.3px}
+header .sub{margin-top:6px;font-size:13px;opacity:.9}
 
 main{padding:16px}
 .page{display:none}
@@ -35,6 +37,7 @@ textarea{resize:vertical}
 .btn.icon{padding:8px 10px;border-radius:8px}
 .inline{display:flex;gap:10px;flex-wrap:wrap}
 
+/* Bottom nav */
 .nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
 .nav .bar{max-width:1000px;margin:0 auto;display:flex}
 .nav button{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
@@ -54,20 +57,20 @@ textarea{resize:vertical}
 .blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
 .blok.sosyal{width:120px}
 
-/* Özet listeleri */
+/* Lists */
 .list{list-style:none;margin:0;padding:0}
 .list li{padding:10px 6px;border-bottom:1px dashed var(--border)}
 
-/* Modal (Paftadan Seç) */
+/* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
 .modal.active{display:flex}
 .modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
 .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
 .modal .top h3{margin:6px 0 0}
-.modal .close{background:#f3f4f6;border:1px solid var(--border)}
+.modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1} /* daha belirgin gri */
 .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
 
-/* PDF alanı */
+/* Print */
 #printArea{display:none}
 @media print{
   .nav, header{display:none!important}
@@ -78,11 +81,14 @@ textarea{resize:vertical}
 <body>
 <div class="app">
 
-  <header><h1>Şantiye Takip Sistemi</h1></header>
+  <header>
+    <h1>VİSTA PREMIUM — Şantiye Takip <b>v0.2</b></h1>
+    <div class="sub">Muhammet Genç tarafından yapılmıştır</div>
+  </header>
 
   <main>
 
-    <!-- BÖLÜM 1: GÜNLÜK YOKLAMA -->
+    <!-- Bölüm 1 -->
     <section id="p1" class="page">
       <h2>Bölüm 1 — Günlük Şantiye Yoklama</h2>
 
@@ -120,7 +126,7 @@ textarea{resize:vertical}
       </div>
     </section>
 
-    <!-- BÖLÜM 2: HIZLI KAYIT -->
+    <!-- Bölüm 2 -->
     <section id="p2" class="page">
       <h2>Bölüm 2 — Hızlı Kayıt (İmalat)</h2>
 
@@ -175,6 +181,7 @@ textarea{resize:vertical}
                 <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Ekip</th>
                 <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Blok</th>
                 <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Durum</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Not</th>
                 <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">İşlem</th>
               </tr>
             </thead>
@@ -184,14 +191,14 @@ textarea{resize:vertical}
       </div>
     </section>
 
-    <!-- BÖLÜM 3: ANA PANO -->
+    <!-- Bölüm 3 -->
     <section id="p3" class="page active">
       <h2>Bölüm 3 — Proje Durum Panosu</h2>
 
       <div class="card">
         <div class="inline" style="align-items:flex-end;justify-content:space-between">
           <div style="min-width:240px">
-            <label for="pano-crew">Ekip seç:</label>
+            <label for="pano-crew">İmalat Durumunu Göster:</label>
             <select id="pano-crew"></select>
           </div>
           <button class="btn secondary" id="btnPdf"><i class="fa-solid fa-file-pdf"></i>İcmal PDF Al</button>
@@ -202,11 +209,8 @@ textarea{resize:vertical}
         <h3>Görsel Proje Paftası</h3>
         <div class="pafta-wrap">
           <div class="pafta" id="pafta">
-            <!-- Satır 1 -->
             <div class="row" id="row-top"></div>
-            <!-- Satır 2 -->
             <div class="row" id="row-mid"></div>
-            <!-- Satır 3 -->
             <div class="row" id="row-bot"></div>
           </div>
         </div>
@@ -215,7 +219,7 @@ textarea{resize:vertical}
 
   </main>
 
-  <!-- Paftadan Seç Modal -->
+  <!-- Modal: Paftadan Seç -->
   <div class="modal" id="modal">
     <div class="sheet">
       <div class="top">
@@ -235,11 +239,11 @@ textarea{resize:vertical}
 
   <!-- Yazdırılacak icmal -->
   <section id="printArea">
-    <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali</h2>
+    <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — VİSTA PREMIUM</h2>
     <div id="printTable" class="card"></div>
   </section>
 
-  <!-- Alt Menü -->
+  <!-- Bottom Nav -->
   <nav class="nav">
     <div class="bar">
       <button class="active" data-goto="p1"><i class="fa-solid fa-user-check"></i><span>Yoklama</span></button>
@@ -258,28 +262,22 @@ const CREWS = [
 ];
 const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
 
-/* Pafta sıraları */
 const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
 const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
 const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
 
-/* Blok sahipliği (kısaltma etiket) */
 const OWN = {};
 const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
-[...TOP,...MID,...BOT].forEach(b=>{
-  OWN[b] = asSet.has(b) ? "AS" : "MÜT";
-});
+[...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : "MÜT"; });
 
-/* Kayıtlar (localStorage) */
 const KEY_FAST = "st_fast_records";
 const KEY_DAILY = "st_daily_records";
-const readLS = (k)=>JSON.parse(localStorage.getItem(k)||"[]");
-const writeLS = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const readLS = k => JSON.parse(localStorage.getItem(k)||"[]");
+const writeLS = (k,v)=> localStorage.setItem(k,JSON.stringify(v));
 
-/* ---------- YARDIMCILAR ---------- */
+/* Helpers */
 const el = s=>document.querySelector(s);
 const els = s=>document.querySelectorAll(s);
-
 function fillSelect(id, list, placeholder="— Seçiniz —"){
   const s = el('#'+id);
   s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
@@ -290,7 +288,7 @@ function formatDate(ts){
          d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
 }
 
-/* ---------- SAYFA GEÇİŞİ ---------- */
+/* Nav */
 els(".nav button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     els(".nav button").forEach(b=>b.classList.remove("active"));
@@ -301,20 +299,18 @@ els(".nav button").forEach(btn=>{
   });
 });
 
-/* ---------- SELECTLERİ DOLDUR ---------- */
+/* Selects */
 fillSelect("yk-crew", CREWS);
 fillSelect("hk-crew", CREWS);
 fillSelect("pano-crew", CREWS, "Tüm Ekipler (Genel)");
 fillSelect("hk-user", USERS);
-fillSelect("f-crew", ["Tümü", ...CREWS], "Ekip: Tümü");
-
-/* Blok listeleri (formlar ve filtre) */
 const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
 fillSelect("yk-block", ALL_BLOCKS);
 fillSelect("hk-block", ALL_BLOCKS);
 fillSelect("f-block", ["Tümü", ...ALL_BLOCKS], "Blok: Tümü");
+fillSelect("f-crew", ["Tümü", ...CREWS], "Ekip: Tümü");
 
-/* ---------- PAFTA OLUŞTUR ---------- */
+/* Pafta çizimi */
 function makeBlok(label){
   const div = document.createElement("div");
   div.className = "blok"+(label==="Sosyal"?" sosyal":"");
@@ -334,13 +330,15 @@ drawPafta("#m-top", TOP);
 drawPafta("#m-mid", MID);
 drawPafta("#m-bot", BOT);
 
-/* ---------- P1: Günlük yoklama ---------- */
+/* P1 — Günlük yoklama */
 function renderDaily(){
   const list = readLS(KEY_DAILY).filter(x=>{
     const d = new Date(x.ts); const t = new Date();
     return d.toDateString()===t.toDateString();
   });
-  el("#yk-list").innerHTML = list.length? list.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDate(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("") : "<li>Bugün henüz kayıt yok.</li>";
+  el("#yk-list").innerHTML = list.length
+    ? list.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDate(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
+    : "<li>Bugün henüz kayıt yok.</li>";
 }
 el("#btnYokla").addEventListener("click",()=>{
   const crew = el("#yk-crew").value;
@@ -361,7 +359,7 @@ el("#btnClearDaily").addEventListener("click",()=>{
   renderDaily();
 });
 
-/* ---------- P2: Hızlı Kayıt ---------- */
+/* P2 — Hızlı kayıt */
 function renderTable(filter={}){
   const tbody = el("#rows");
   let data = readLS(KEY_FAST);
@@ -374,11 +372,12 @@ function renderTable(filter={}){
       <td style="padding:10px;border-bottom:1px solid var(--border)">${x.crew}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">${x.block}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)"><b>${x.status}</b></td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.note?x.note:"-"}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">
         <button class="btn icon secondary" onclick="editRow(${i})"><i class="fa-solid fa-pen"></i></button>
         <button class="btn icon" style="background:#ffe6e6;color:#c62828" onclick="delRow(${i})"><i class="fa-solid fa-trash"></i></button>
       </td>
-    </tr>`).join("") : `<tr><td colspan="6" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="7" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
 }
 window.editRow = (idx)=>{
   const data = readLS(KEY_FAST);
@@ -417,12 +416,10 @@ el("#btnResetFilter").addEventListener("click",()=>{
   el("#f-block").value=""; el("#f-crew").value=""; renderTable();
 });
 
-/* ---------- P3: Pano durumu ---------- */
-/* Bir ekip seçiliyken her blok için EN SON kayda göre renk verilir. */
+/* P3 — Pano boyama */
 function getLatestStatusFor(block, crew){
   const data = readLS(KEY_FAST).filter(x=>x.block===block && (!crew || x.crew===crew));
   if(!data.length) return "";
-  // zamana göre en son
   data.sort((a,b)=>b.ts-a.ts);
   const st = data[0].status;
   if(st==="Devam"||st==="Devam Ediyor") return "d-devam";
@@ -449,8 +446,8 @@ function renderPafta(){
 }
 el("#pano-crew").addEventListener("change", renderPafta);
 
-/* ---------- Paftadan Seç (Modal) ---------- */
-let activeTarget = null; // 'yk-block' veya 'hk-block'
+/* Paftadan Seç Modal */
+let activeTarget = null;
 function openPicker(targetId){
   activeTarget = targetId;
   el("#modal").classList.add("active");
@@ -460,7 +457,6 @@ el("#btnPickYoklama").addEventListener("click",()=>openPicker("yk-block"));
 el("#btnPickKayit").addEventListener("click",()=>openPicker("hk-block"));
 el("#btnClose").addEventListener("click",closePicker);
 el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
-
 ["#m-top","#m-mid","#m-bot"].forEach(sel=>{
   el(sel).addEventListener("click",(ev)=>{
     const box = ev.target.closest(".blok"); if(!box||!activeTarget) return;
@@ -470,23 +466,29 @@ el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePick
   });
 });
 
-/* ---------- İcmal PDF ---------- */
+/* İcmal — tablo ve genel ortalama */
 function buildIcmalHTML(){
-  const data = readLS(KEY_FAST);
-  const teams = CREWS;
   const totalBlocks = ALL_BLOCKS.length;
 
-  const rows = teams.map(t=>{
+  const rows = CREWS.map(t=>{
     const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
     const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-    const percent = Math.round((done/totalBlocks)*100);
+    const percent = totalBlocks ? (done/totalBlocks*100) : 0;
     return `<tr>
       <td style="padding:8px;border:1px solid #bbb">${t}</td>
       <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
       <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center">%${percent}</td>
+      <td style="padding:8px;border:1px solid #bbb;text-align:center">%${percent.toFixed(1)} <span style="color:#666">(${done}/${totalBlocks})</span></td>
     </tr>`;
   }).join("");
+
+  // Genel Ortalama (takımların yüzdelerinin ortalaması)
+  const percents = CREWS.map(t=>{
+    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
+    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
+    return ALL_BLOCKS.length ? (done/ALL_BLOCKS.length*100) : 0;
+  });
+  const avg = percents.reduce((a,b)=>a+b,0)/percents.length;
 
   return `
     <table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -499,6 +501,12 @@ function buildIcmalHTML(){
         </tr>
       </thead>
       <tbody>${rows}</tbody>
+      <tfoot>
+        <tr style="background:#f9fafb;font-weight:700">
+          <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
+          <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3">%${avg.toFixed(1)}</td>
+        </tr>
+      </tfoot>
     </table>
     <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
   `;
@@ -508,10 +516,9 @@ el("#btnPdf").addEventListener("click",()=>{
   window.print();
 });
 
-/* ---------- BAŞLANGIÇ RENDER ---------- */
-renderTable();
-renderDaily();
-renderPafta();
+/* Start */
+function renderAll(){ renderTable(); renderDaily(); renderPafta(); }
+renderAll();
 </script>
 </body>
 </html>
