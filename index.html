@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>VİSTA PREMIUM — Şantiye Takip v0.2</title>
+<title>VİSTA PREMIUM — Şantiye Takip v0.3</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -67,7 +67,7 @@ textarea{resize:vertical}
 .modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
 .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
 .modal .top h3{margin:6px 0 0}
-.modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1} /* daha belirgin gri */
+.modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1} /* belirgin gri */
 .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
 
 /* Print */
@@ -82,7 +82,7 @@ textarea{resize:vertical}
 <div class="app">
 
   <header>
-    <h1>VİSTA PREMIUM — Şantiye Takip <b>v0.2</b></h1>
+    <h1>VİSTA PREMIUM — Şantiye Takip <b>v0.3</b></h1>
     <div class="sub">Muhammet Genç tarafından yapılmıştır</div>
   </header>
 
@@ -253,7 +253,26 @@ textarea{resize:vertical}
   </nav>
 </div>
 
-<script>
+<!-- Firebase (modular CDN) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, serverTimestamp,
+  query, orderBy, onSnapshot, doc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+/* --------- Firebase CONFIG (senin proje) --------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
+  authDomain: "santiye-takip-83874.firebaseapp.com",
+  projectId: "santiye-takip-83874",
+  storageBucket: "santiye-takip-83874.firebasestorage.app",
+  messagingSenderId: "893666575482",
+  appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
 /* ---------- VERİLER ---------- */
 const CREWS = [
  "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke",
@@ -270,11 +289,6 @@ const OWN = {};
 const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
 [...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : "MÜT"; });
 
-const KEY_FAST = "st_fast_records";
-const KEY_DAILY = "st_daily_records";
-const readLS = k => JSON.parse(localStorage.getItem(k)||"[]");
-const writeLS = (k,v)=> localStorage.setItem(k,JSON.stringify(v));
-
 /* Helpers */
 const el = s=>document.querySelector(s);
 const els = s=>document.querySelectorAll(s);
@@ -282,10 +296,17 @@ function fillSelect(id, list, placeholder="— Seçiniz —"){
   const s = el('#'+id);
   s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
 }
-function formatDate(ts){
-  const d = new Date(ts);
+function formatDateFromTS(ts){
+  if (!ts) return "-";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+
          d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+}
+function todayKey(){
+  const d = new Date();
+  const m = (d.getMonth()+1).toString().padStart(2,'0');
+  const day = d.getDate().toString().padStart(2,'0');
+  return `${d.getFullYear()}-${m}-${day}`; // YYYY-MM-DD
 }
 
 /* Nav */
@@ -330,101 +351,71 @@ drawPafta("#m-top", TOP);
 drawPafta("#m-mid", MID);
 drawPafta("#m-bot", BOT);
 
-/* P1 — Günlük yoklama */
-function renderDaily(){
-  const list = readLS(KEY_DAILY).filter(x=>{
-    const d = new Date(x.ts); const t = new Date();
-    return d.toDateString()===t.toDateString();
-  });
-  el("#yk-list").innerHTML = list.length
-    ? list.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDate(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
+/* ---------- Firestore — Günlük Yoklama (yaz / canlı oku) ---------- */
+function renderDaily(entries){
+  el("#yk-list").innerHTML = entries.length
+    ? entries.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
     : "<li>Bugün henüz kayıt yok.</li>";
 }
-el("#btnYokla").addEventListener("click",()=>{
+el("#btnYokla").addEventListener("click", async ()=>{
   const crew = el("#yk-crew").value;
   const count = parseInt(el("#yk-count").value||"0",10);
   const block = el("#yk-block").value;
   const note = el("#yk-note").value.trim();
   if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok seçilmelidir.");return;}
-  const arr = readLS(KEY_DAILY);
-  arr.unshift({crew,count,block,note,ts:Date.now()});
-  writeLS(KEY_DAILY,arr);
+  await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
+    crew, count, block, note, user: "Sistem", ts: serverTimestamp()
+  });
   el("#yk-count").value=""; el("#yk-note").value="";
-  renderDaily();
 });
-el("#btnClearDaily").addEventListener("click",()=>{
-  const today = new Date().toDateString();
-  const remain = readLS(KEY_DAILY).filter(x=> (new Date(x.ts)).toDateString()!==today );
-  writeLS(KEY_DAILY, remain);
-  renderDaily();
+el("#btnClearDaily").addEventListener("click", async ()=>{
+  // Basit çözüm: Kullanıcıya bilgi verelim. (Toplu silme UI/Cloud Function sonra ekleriz.)
+  alert("Günlük yoklamayı sıfırlama için panelden tek tek silme/filtre ekleyeceğiz. Şimdilik liste canlıdır ve sadece bugünün kayıtlarını gösterir.");
 });
+// canlı dinleme (bugün)
+onSnapshot(
+  query(collection(db,"daily_attendance", todayKey(), "entries"), orderBy("ts","desc")),
+  (snap)=>{
+    const arr = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderDaily(arr);
+  }
+);
 
-/* P2 — Hızlı kayıt */
+/* ---------- Firestore — Hızlı Kayıt (yaz / canlı oku / sil / filtre / pano) ---------- */
+let FAST_ALL = []; // son snapshot cache
+
 function renderTable(filter={}){
   const tbody = el("#rows");
-  let data = readLS(KEY_FAST);
+  let data = FAST_ALL;
   if(filter.block && filter.block!=="Tümü") data = data.filter(x=>x.block===filter.block);
   if(filter.crew && filter.crew!=="Tümü") data = data.filter(x=>x.crew===filter.crew);
-  tbody.innerHTML = data.length? data.map((x,i)=>`
+  tbody.innerHTML = data.length? data.map((x)=>`
     <tr>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">${formatDate(x.ts)}</td>
+      <td style="padding:10px;border-bottom:1px solid var(--border)">${formatDateFromTS(x.ts)}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">${x.user}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">${x.crew}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">${x.block}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)"><b>${x.status}</b></td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">${x.note?x.note:"-"}</td>
       <td style="padding:10px;border-bottom:1px solid var(--border)">
-        <button class="btn icon secondary" onclick="editRow(${i})"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn icon" style="background:#ffe6e6;color:#c62828" onclick="delRow(${i})"><i class="fa-solid fa-trash"></i></button>
+        <button class="btn icon secondary" data-edit="${x.id}"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn icon" style="background:#ffe6e6;color:#c62828" data-del="${x.id}"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>`).join("") : `<tr><td colspan="7" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
 }
-window.editRow = (idx)=>{
-  const data = readLS(KEY_FAST);
-  const x = data[idx]; if(!x) return;
-  el("#hk-user").value = x.user;
-  el("#hk-crew").value = x.crew;
-  el("#hk-block").value = x.block;
-  el("#hk-status").value = x.status;
-  el("#hk-note").value = x.note||"";
-  data.splice(idx,1); writeLS(KEY_FAST,data); renderTable(); renderPafta();
-  alert("Kayıt düzenleme modunda forma alındı. Güncel halini Kaydet ile ekle.");
-};
-window.delRow = (idx)=>{
-  const data = readLS(KEY_FAST); data.splice(idx,1); writeLS(KEY_FAST,data); renderTable(); renderPafta();
-};
 
-el("#btnSave").addEventListener("click",()=>{
-  const rec = {
-    user: el("#hk-user").value,
-    crew: el("#hk-crew").value,
-    block: el("#hk-block").value,
-    status: el("#hk-status").value,
-    note: el("#hk-note").value.trim(),
-    ts: Date.now()
-  };
-  if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
-  const data = readLS(KEY_FAST); data.unshift(rec); writeLS(KEY_FAST,data);
-  el("#hk-note").value="";
-  renderTable(); renderPafta();
-});
-
-el("#btnFilter").addEventListener("click",()=>{
-  renderTable({block:el("#f-block").value, crew:el("#f-crew").value});
-});
-el("#btnResetFilter").addEventListener("click",()=>{
-  el("#f-block").value=""; el("#f-crew").value=""; renderTable();
-});
-
-/* P3 — Pano boyama */
 function getLatestStatusFor(block, crew){
-  const data = readLS(KEY_FAST).filter(x=>x.block===block && (!crew || x.crew===crew));
+  const data = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
   if(!data.length) return "";
-  data.sort((a,b)=>b.ts-a.ts);
+  data.sort((a,b)=>{
+    const ta = a.ts?.toMillis?.() ?? 0;
+    const tb = b.ts?.toMillis?.() ?? 0;
+    return tb - ta;
+  });
   const st = data[0].status;
   if(st==="Devam"||st==="Devam Ediyor") return "d-devam";
   if(st==="Bitti") return "d-bitti";
-  if(st==="Teslim"||st==="Teslim Alındı") return "d-teslim";
+  if(st==="Teslim"||st==="Teslim Alındı"||st==="TeslimAlindi") return "d-teslim";
   return "";
 }
 function paintRow(rowSel, arr, crew){
@@ -444,6 +435,61 @@ function renderPafta(){
   paintRow("#row-mid", MID, crew);
   paintRow("#row-bot", BOT, crew);
 }
+
+el("#btnSave").addEventListener("click", async ()=>{
+  const rec = {
+    user: el("#hk-user").value,
+    crew: el("#hk-crew").value,
+    block: el("#hk-block").value,
+    status: el("#hk-status").value,
+    note: el("#hk-note").value.trim(),
+    ts: serverTimestamp()
+  };
+  if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
+  await addDoc(collection(db,"fast_logs"), rec);
+  el("#hk-note").value="";
+});
+
+el("#btnFilter").addEventListener("click",()=>{
+  renderTable({block:el("#f-block").value, crew:el("#f-crew").value});
+});
+el("#btnResetFilter").addEventListener("click",()=>{
+  el("#f-block").value=""; el("#f-crew").value="";
+  renderTable();
+});
+
+document.addEventListener("click", async (e)=>{
+  const del = e.target.closest("[data-del]");
+  const edit = e.target.closest("[data-edit]");
+  if(del){
+    const id = del.getAttribute("data-del");
+    await deleteDoc(doc(db,"fast_logs", id));
+  }
+  if(edit){
+    const id = edit.getAttribute("data-edit");
+    const x = FAST_ALL.find(r=>r.id===id);
+    if(!x) return;
+    el("#hk-user").value = x.user||"";
+    el("#hk-crew").value = x.crew||"";
+    el("#hk-block").value = x.block||"";
+    el("#hk-status").value = x.status||"Basladi";
+    el("#hk-note").value = x.note||"";
+    await deleteDoc(doc(db,"fast_logs", id));
+    alert("Kayıt düzenleme modunda forma alındı. Güncel halini Kaydet ile ekle.");
+  }
+});
+
+/* canlı arşiv ve pano */
+onSnapshot(
+  query(collection(db,"fast_logs"), orderBy("ts","desc")),
+  (snap)=>{
+    FAST_ALL = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderTable();
+    renderPafta();
+  }
+);
+
+/* Pano crew filtresi */
 el("#pano-crew").addEventListener("change", renderPafta);
 
 /* Paftadan Seç Modal */
@@ -466,10 +512,9 @@ el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePick
   });
 });
 
-/* İcmal — tablo ve genel ortalama */
+/* İcmal — tablo + genel ortalama (yüzde daha net) */
 function buildIcmalHTML(){
   const totalBlocks = ALL_BLOCKS.length;
-
   const rows = CREWS.map(t=>{
     const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
     const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
@@ -478,17 +523,16 @@ function buildIcmalHTML(){
       <td style="padding:8px;border:1px solid #bbb">${t}</td>
       <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
       <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center">%${percent.toFixed(1)} <span style="color:#666">(${done}/${totalBlocks})</span></td>
+      <td style="padding:8px;border:1px solid #bbb;text-align:center"><b>%${percent.toFixed(1)}</b> <span style="color:#666">(${done}/${totalBlocks})</span></td>
     </tr>`;
   }).join("");
 
-  // Genel Ortalama (takımların yüzdelerinin ortalaması)
   const percents = CREWS.map(t=>{
     const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
     const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-    return ALL_BLOCKS.length ? (done/ALL_BLOCKS.length*100) : 0;
+    return totalBlocks ? (done/totalBlocks*100) : 0;
   });
-  const avg = percents.reduce((a,b)=>a+b,0)/percents.length;
+  const avg = percents.reduce((a,b)=>a+b,0)/(percents.length||1);
 
   return `
     <table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -504,7 +548,7 @@ function buildIcmalHTML(){
       <tfoot>
         <tr style="background:#f9fafb;font-weight:700">
           <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
-          <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3">%${avg.toFixed(1)}</td>
+          <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3"><b>%${avg.toFixed(1)}</b></td>
         </tr>
       </tfoot>
     </table>
@@ -516,9 +560,12 @@ el("#btnPdf").addEventListener("click",()=>{
   window.print();
 });
 
-/* Start */
-function renderAll(){ renderTable(); renderDaily(); renderPafta(); }
-renderAll();
+/* Başlangıç renderları (statik parçalar) */
+function initStatic(){
+  // başta boş tablolar/pafta; canlı snapshot’lar geldikçe dolacak
+  renderPafta();
+}
+initStatic();
 </script>
 </body>
 </html>
