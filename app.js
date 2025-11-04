@@ -13,12 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     "AA","Z","U","T","A","B","C","D","E","F","G","H"
   ];
 
-  /* ---------- BLOK SAHİPLİK HARİTASI (yazı etiketi) ---------- */
-  const OWNER_MAP = BLOK_LISTESI.reduce((acc, b) => (acc[b] = "Müteahhit", acc), {});
-  OWNER_MAP["R"] = "Patron";
-  // Arsa Sahibine ait 16 blok (senin verdiğin liste)
+  /* ---------- BLOK SAHİPLİK HARİTASI (kısaltma: AS / MÜT / P) ---------- */
+  const OWNER_MAP = BLOK_LISTESI.reduce((acc, b) => (acc[b] = "MÜT", acc), {});
+  OWNER_MAP["R"] = "P"; // Patron → P
+  // Arsa Sahibine ait 16 blok
   ["AC","AD","AH","AI","AJ","Y","P","O","N","J","I","Z","A","B","C","H"]
-    .forEach(b => OWNER_MAP[b] = "Arsa Sahibi");
+    .forEach(b => OWNER_MAP[b] = "AS");
 
   /* ---------- KÜÇÜK ARAÇLAR ---------- */
   const $ = (s) => document.querySelector(s);
@@ -61,14 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ---------- SAHİPLİK ETİKETLERİ (pano) ---------- */
+  /* ---------- SAHİPLİK ETİKETLERİ (kısaltma ile) ---------- */
   const addOwnerTags = (rootSel) => {
     $$(rootSel + ' .blok:not(.sosyal-tesis)').forEach(el=>{
-      if(el.querySelector('.owner-tag')) return; // tekrar ekleme
+      const old = el.querySelector('.owner-tag');
+      if (old) old.remove();
       const id = el.dataset.blokId;
       const tag = document.createElement('div');
       tag.className = 'owner-tag';
-      tag.textContent = OWNER_MAP[id] || '—';
+      tag.textContent = OWNER_MAP[id] || '—'; // AS / MÜT / P
       el.appendChild(tag);
     });
   };
@@ -88,61 +89,45 @@ document.addEventListener('DOMContentLoaded', () => {
     paftaTargetSelectId = null;
   };
 
-  // Modal kapatma
-  $$('.modal-close, .modal-backdrop').forEach(el=>{
-    el.addEventListener('click', ()=> closeModal());
+  // Kapama (X ve backdrop)
+  document.addEventListener('click', (e)=>{
+    if (e.target.closest('.modal-close') || (e.target.classList.contains('modal-backdrop'))){
+      closeModal();
+    }
   });
 
-  // “Paftadan Seç” butonları
-  $$('.btn-pafta').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const target = btn.dataset.target; // yoklamaBlok | kayitBlok
-      openModal(target);
-    });
+  // “Paftadan Seç” butonları (delegasyonla güvence)
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.btn-pafta');
+    if (!btn) return;
+    e.preventDefault();
+    const target = btn.dataset.target; // "yoklamaBlok" | "kayitBlok"
+    if (target) openModal(target);
   });
 
-  // Select’lere tıklayınca da modal aç (istenen davranış)
+  // Select’lere tıklayınca da modal aç (mobilde de çalışsın diye hem click hem focus)
   ['yoklamaBlok','kayitBlok'].forEach(id=>{
     const sel = $(`#${id}`);
-    // Mobilde native dropdown açılmasına izin veriyoruz ama önce modal açıyoruz
+    if (!sel) return;
     sel.addEventListener('mousedown', (e)=>{ e.preventDefault(); openModal(id); });
-    sel.addEventListener('focus', (e)=>{ /* klavye gezginleri için */ openModal(id); });
+    sel.addEventListener('click', (e)=>{ e.preventDefault(); openModal(id); });
+    sel.addEventListener('focus', ()=> openModal(id));
   });
 
   // Modal pafta içinde blok seçimi → hedef select’e yaz & modalı kapa
-  $$('#modalPafta .blok:not(.sosyal-tesis)').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      const id = el.dataset.blokId;
-      if(paftaTargetSelectId){
-        const sel = $(`#${paftaTargetSelectId}`);
-        if (sel){
-          sel.value = id;
-          // hangi formdaysak mesaj göster
-          if(paftaTargetSelectId==='yoklamaBlok') flashMsg('#yoklamaMsg', `${id} blok seçildi.`);
-          if(paftaTargetSelectId==='kayitBlok')   flashMsg('#kayitMsg',   `${id} blok seçildi.`);
-        }
+  document.addEventListener('click', (e)=>{
+    const blokEl = e.target.closest('#modalPafta .blok:not(.sosyal-tesis)');
+    if (!blokEl) return;
+    const id = blokEl.dataset.blokId;
+    if (paftaTargetSelectId){
+      const sel = $(`#${paftaTargetSelectId}`);
+      if (sel){
+        sel.value = id;
+        if(paftaTargetSelectId==='yoklamaBlok') flashMsg('#yoklamaMsg', `${id} blok seçildi.`);
+        if(paftaTargetSelectId==='kayitBlok')   flashMsg('#kayitMsg',   `${id} blok seçildi.`);
       }
-      closeModal();
-    });
-  });
-
-  /* ---------- PANO BLOK TIK → formda blok seçme ---------- */
-  $$('#projePaftasi .blok:not(.sosyal-tesis)').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      const id = el.dataset.blokId;
-      const activePage = $('.page.active')?.id;
-      if (activePage === 'bolum1') {
-        $('#yoklamaBlok').value = id;
-        flashMsg('#yoklamaMsg', `${id} blok seçildi.`);
-      } else if (activePage === 'bolum2') {
-        $('#kayitBlok').value = id;
-        flashMsg('#kayitMsg', `${id} blok seçildi.`);
-      } else {
-        $('[data-page="bolum2"]').click();
-        $('#kayitBlok').value = id;
-        flashMsg('#kayitMsg', `${id} blok seçildi.`);
-      }
-    });
+    }
+    closeModal();
   });
 
   /* ---------- BÖLÜM 1: GÜNLÜK YOKLAMA ---------- */
@@ -209,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tbody.innerHTML = '';
     if (!filtered.length){
       tbody.innerHTML = `<tr><td colspan="7" class="muted">Gösterilecek kayıt yok.</td></tr>`;
+      updatePanoFromRecords(); // pano yine güncellensin
       return;
     }
     filtered.sort((a,b)=>b.ts-a.ts).forEach(rec=>{
@@ -228,6 +214,9 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       tbody.appendChild(tr);
     });
+
+    // Her render sonrası pano güncelle
+    updatePanoFromRecords();
   }
   renderHK();
 
@@ -253,14 +242,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const arr = loadHK();
     arr.push(rec); saveHK(arr);
     $('#formHizliKayit').reset();
-    renderHK();
+    renderHK(); // pano da güncellenecek
     flashMsg('#kayitMsg','Kayıt eklendi.');
   });
 
   // Düzenle / Sil
-  $('#arsivTablosu').addEventListener('click', (e)=>{
-    const btn = e.target.closest('button'); if(!btn) return;
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('#arsivTablosu .btn-icon'); if(!btn) return;
     const tr = e.target.closest('tr'); const id = parseInt(tr?.dataset.id||'0',10); if(!id) return;
+
     const arr = loadHK(); const idx = arr.findIndex(x=>x.id===id); if(idx<0) return;
 
     if (btn.classList.contains('btn-del')){
@@ -287,8 +277,62 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#filtreBlok').value = ""; renderHK();
   });
 
-  /* ---------- PANO DEMO FİLTRE ---------- */
-  $('#panoEkipFiltre').addEventListener('change', ()=>{
-    // Şimdilik görsel işaretleme eklemiyoruz.
+  /* ---------- PANO: KAYITLARDAN DURUM BOYAMA ---------- */
+  function clearPanoClasses(){
+    $$('#projePaftasi .blok').forEach(b=>{
+      b.classList.remove('durum-devam','durum-bitti','durum-teslim');
+    });
+  }
+
+  function classForStatus(k){
+    if (k==="TeslimAlindi") return 'durum-teslim';
+    if (k==="Bitti")        return 'durum-bitti';
+    if (k==="Devam" || k==="Basladi") return 'durum-devam';
+    return null;
+  }
+
+  function updatePanoFromRecords(){
+    clearPanoClasses();
+    const all = loadHK();
+    const seciliEkip = $('#panoEkipFiltre').value || 'tum';
+
+    BLOK_LISTESI.forEach(blok=>{
+      let recs = all.filter(r => r.blok === blok);
+      if (seciliEkip && seciliEkip !== 'tum'){
+        recs = recs.filter(r => r.ekip === seciliEkip);
+      }
+      if (!recs.length) return;
+      // en yeni kayıt
+      const latest = recs.reduce((a,b)=> a.ts>b.ts ? a : b);
+      const cls = classForStatus(latest.durum);
+      if (!cls) return;
+      const el = document.querySelector(`#projePaftasi .blok[data-blok-id="${blok}"]`);
+      if (el) el.classList.add(cls);
+    });
+  }
+
+  // Ekip filtresi değiştiğinde pano güncellensin
+  $('#panoEkipFiltre').addEventListener('change', updatePanoFromRecords);
+
+  // Başlangıçta da güncelle
+  updatePanoFromRecords();
+
+  /* ---------- PANO BLOK TIK → formda blok seçme ---------- */
+  $$('#projePaftasi .blok:not(.sosyal-tesis)').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.dataset.blokId;
+      const activePage = $('.page.active')?.id;
+      if (activePage === 'bolum1') {
+        $('#yoklamaBlok').value = id;
+        flashMsg('#yoklamaMsg', `${id} blok seçildi.`);
+      } else if (activePage === 'bolum2') {
+        $('#kayitBlok').value = id;
+        flashMsg('#kayitMsg', `${id} blok seçildi.`);
+      } else {
+        $('[data-page="bolum2"]').click();
+        $('#kayitBlok').value = id;
+        flashMsg('#kayitMsg', `${id} blok seçildi.`);
+      }
+    });
   });
 });
