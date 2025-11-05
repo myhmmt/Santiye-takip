@@ -1,4 +1,4 @@
-const CACHE = "vista-v1.3";
+const CACHE = "vista-v1.4";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,7 +8,8 @@ const ASSETS = [
   "./assets/icon/icon-192.png",
   "./assets/icon/icon-512.png",
   "./assets/icon/apple-icon-152.png",
-  "./assets/icon/apple-icon-180.png"
+  "./assets/icon/apple-icon-180.png",
+  "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
 ];
 
 self.addEventListener("install", (e) => {
@@ -27,7 +28,6 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   const { request } = e;
-  // Network-first for dynamic (Firestore not cached here)
   if (request.url.includes("firestore.googleapis.com")) return;
   e.respondWith(
     caches.match(request).then(cached => 
