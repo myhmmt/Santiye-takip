@@ -1,571 +1,548 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>VİSTA PREMIUM — Şantiye Takip v0.3</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vista Premium – Şantiye Takip v1.0</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d47a1" />
+  <!-- iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-icon-180.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/apple-icon-152.png" />
 
-<style>
-:root{
-  --primary:#0d47a1; --primary-2:#1976d2; --bg:#f4f7f6; --card:#fff; --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
-  --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
-}
-*{box-sizing:border-box} html,body{height:100%}
-body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
-.app{max-width:1000px;margin:0 auto;padding-bottom:74px}
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
 
-/* Header */
-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-header h1{margin:0;font-size:24px;letter-spacing:.3px}
-header .sub{margin-top:6px;font-size:13px;opacity:.9}
+  <style>
+    :root{
+      --primary:#0d47a1; --primary-2:#1976d2; --bg:#f4f7f6; --card:#fff; --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
+      --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .app-container{max-width:1000px;margin:0 auto;padding-bottom:74px}
 
-main{padding:16px}
-.page{display:none}
-.page.active{display:block}
-h2{margin:10px 4px 14px;font-size:22px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;box-shadow:0 2px 6px rgba(0,0,0,.04)}
-.form-row{display:grid;gap:12px}
-label{display:block;font-weight:500;margin:2px 0 6px}
-input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}
-textarea{resize:vertical}
-.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;background:var(--primary-2);color:#fff;font-weight:700;cursor:pointer}
-.btn:active{transform:translateY(1px)}
-.btn.secondary{background:#e0e7ff;color:#0b3ea9}
-.btn.icon{padding:8px 10px;border-radius:8px}
-.inline{display:flex;gap:10px;flex-wrap:wrap}
+    /* Header */
+    .app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+    .app-header h1{margin:0;font-size:22px;letter-spacing:.2px}
+    .app-header .sub-info{margin:6px 0 0;font-size:13px;opacity:.9}
 
-/* Bottom nav */
-.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
-.nav .bar{max-width:1000px;margin:0 auto;display:flex}
-.nav button{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
-.nav i{font-size:20px}
-.nav button.active{color:var(--primary);font-weight:700}
+    .app-main{padding:16px}
+    .page{display:none}
+    .page.active{display:block}
+    h2{margin:10px 4px 14px;font-size:20px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+    .form-group{margin-bottom:14px}
+    label{display:block;font-weight:500;margin:2px 0 6px}
+    input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}
+    textarea{resize:vertical;min-height:72px}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;background:var(--primary-2);color:#fff;font-weight:700;cursor:pointer}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--primary-2);color:#fff}
+    .btn-secondary{background:#e0e7ff;color:#0b3ea9}
+    .btn-icon{padding:8px 10px;border-radius:8px}
+    .inline{display:flex;gap:10px;flex-wrap:wrap}
 
-/* Pafta */
-.pafta-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.pafta{min-width:760px}
-.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
-.blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
-.blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
-.blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
-.blok.d-devam{background:var(--devam);border-color:#f1c21b}
-.blok.d-bitti{background:var(--bitti);color:#fff;border-color:#2e7d32}
-.blok.d-teslim{background:var(--teslim);color:#fff}
-.blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
-.blok.sosyal{width:120px}
+    /* Bottom nav */
+    .app-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
+    .app-nav .nav-btn{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
+    .app-nav i{font-size:20px}
+    .app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
+    .nav-btn{flex:1}
+    .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* Lists */
-.list{list-style:none;margin:0;padding:0}
-.list li{padding:10px 6px;border-bottom:1px dashed var(--border)}
+    /* Pafta */
+    #projePaftasi{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .pafta{min-width:760px}
+    .pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
+    .blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
+    .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
+    .blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
+    .blok.d-devam{background:var(--devam);border-color:#f1c21b;color:#333}
+    .blok.d-bitti{background:var(--bitti);color:#fff;border-color:#2e7d32}
+    .blok.d-teslim{background:var(--teslim);color:#fff}
+    .blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
+    .blok.sosyal{width:120px}
 
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
-.modal.active{display:flex}
-.modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
-.modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
-.modal .top h3{margin:6px 0 0}
-.modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1} /* belirgin gri */
-.modal .help{color:#666;font-size:13px;margin:6px 8px 0}
+    /* Arşiv Tablosu */
+    .table-responsive{overflow-x:auto}
+    #arsivTablosu{width:100%;border-collapse:collapse;margin-top:6px}
+    #arsivTablosu th,#arsivTablosu td{padding:10px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
+    #arsivTablosu thead{background:#f2f2f7}
 
-/* Print */
-#printArea{display:none}
-@media print{
-  .nav, header{display:none!important}
-  #printArea{display:block}
-}
-</style>
+    /* Modal (Paftadan Seç) */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
+    .modal.active{display:flex}
+    .modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
+    .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
+    .modal .top h3{margin:6px 0 0}
+    .modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1}
+    .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
+
+    /* Print */
+    #printArea{display:none}
+    @media print{ .app-nav, .app-header{display:none!important} #printArea{display:block} }
+  </style>
 </head>
 <body>
-<div class="app">
+  <div class="app-container">
 
-  <header>
-    <h1>VİSTA PREMIUM — Şantiye Takip <b>v0.3</b></h1>
-    <div class="sub">Muhammet Genç tarafından yapılmıştır</div>
-  </header>
+    <!-- HEADER -->
+    <header class="app-header">
+      <h1>Vista Premium – Şantiye Takip v1.0</h1>
+      <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
+    </header>
 
-  <main>
+    <main class="app-main">
+      <!-- Bölüm 1: Günlük Yoklama -->
+      <section id="bolum1" class="page">
+        <h2>Bölüm 1: Günlük Yoklama</h2>
+        <form id="formYoklama" class="card">
+          <div class="form-group">
+            <label for="yoklamaEkip">Ekip Seçimi</label>
+            <select id="yoklamaEkip"></select>
+          </div>
+          <div class="form-group">
+            <label for="yoklamaKisi">Kişi Sayısı</label>
+            <input type="number" id="yoklamaKisi" placeholder="Örn: 5" min="1" />
+          </div>
+          <div class="form-group">
+            <label for="yoklamaBlok">Blok Seçimi</label>
+            <select id="yoklamaBlok"></select>
+            <button type="button" id="btnPaftaYoklama" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
+          </div>
+          <div class="form-group">
+            <label for="yoklamaNot">Not (Opsiyonel)</label>
+            <textarea id="yoklamaNot" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Giriş Yap</button>
+        </form>
 
-    <!-- Bölüm 1 -->
-    <section id="p1" class="page">
-      <h2>Bölüm 1 — Günlük Şantiye Yoklama</h2>
-
-      <div class="card">
-        <div class="form-row">
-          <div>
-            <label for="yk-crew">Ekip</label>
-            <select id="yk-crew"></select>
-          </div>
-          <div>
-            <label for="yk-count">Kişi Sayısı</label>
-            <input id="yk-count" type="number" min="1" placeholder="Örn: 5" />
-          </div>
-          <div>
-            <label for="yk-block">Blok</label>
-            <div class="inline">
-              <select id="yk-block" style="min-width:160px"></select>
-              <button class="btn secondary icon" id="btnPickYoklama"><i class="fa-solid fa-map"></i>Paftadan Seç</button>
-            </div>
-          </div>
-          <div>
-            <label for="yk-note">Not (opsiyonel)</label>
-            <textarea id="yk-note" rows="3" placeholder="Kısa not…"></textarea>
-          </div>
+        <div class="ozet-panel card">
+          <h3>Bugünkü Yoklama Özeti</h3>
+          <ul id="yoklamaListesi" style="list-style:none;margin:0;padding:0"></ul>
         </div>
-        <div class="inline" style="margin-top:6px">
-          <button class="btn" id="btnYokla"><i class="fa-solid fa-user-check"></i>Giriş Yap</button>
-          <button class="btn secondary" id="btnClearDaily"><i class="fa-regular fa-calendar-xmark"></i>Bugünü Sıfırla</button>
-        </div>
-      </div>
+      </section>
 
-      <div class="card">
-        <h3>Bugünkü Yoklama Özeti</h3>
-        <ul class="list" id="yk-list"></ul>
-      </div>
-    </section>
-
-    <!-- Bölüm 2 -->
-    <section id="p2" class="page">
-      <h2>Bölüm 2 — Hızlı Kayıt (İmalat)</h2>
-
-      <div class="card">
-        <div class="form-row">
-          <div>
-            <label for="hk-user">Kullanıcı</label>
-            <select id="hk-user"></select>
+      <!-- Bölüm 2: Hızlı Kayıt -->
+      <section id="bolum2" class="page">
+        <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
+        <form id="formHizliKayit" class="card">
+          <div class="form-group">
+            <label for="kayitKullanici">Kullanıcı</label>
+            <select id="kayitKullanici"></select>
           </div>
-          <div>
-            <label for="hk-crew">Ekip / İmalat Kalemi</label>
-            <select id="hk-crew"></select>
+          <div class="form-group">
+            <label for="kayitEkip">Ekip / İmalat Kalemi</label>
+            <select id="kayitEkip"></select>
           </div>
-          <div>
-            <label for="hk-block">Blok</label>
-            <div class="inline">
-              <select id="hk-block" style="min-width:160px"></select>
-              <button class="btn secondary icon" id="btnPickKayit"><i class="fa-solid fa-map"></i>Paftadan Seç</button>
-            </div>
+          <div class="form-group">
+            <label for="kayitBlok">Blok Seçimi</label>
+            <select id="kayitBlok"></select>
+            <button type="button" id="btnPaftaKayit" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
           </div>
-          <div>
-            <label for="hk-status">Durum</label>
-            <select id="hk-status">
+          <div class="form-group">
+            <label for="kayitDurum">Durum</label>
+            <select id="kayitDurum">
               <option value="Basladi">Başladı</option>
               <option value="Devam">Devam Ediyor</option>
               <option value="Bitti">Bitti</option>
               <option value="Teslim">Teslim Alındı</option>
             </select>
           </div>
-          <div>
-            <label for="hk-note">Not (opsiyonel)</label>
-            <textarea id="hk-note" rows="3" placeholder="Örn: eksik yerler var…"></textarea>
+          <div class="form-group">
+            <label for="kayitNot">Not (Opsiyonel)</label>
+            <textarea id="kayitNot" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+        </form>
+      </section>
+
+      <!-- Bölüm 3: Pano -->
+      <section id="bolum3" class="page active">
+        <h2>Bölüm 3: Proje Durum Panosu</h2>
+        <div class="inline" style="margin-bottom:12px">
+          <button id="btnPdfIcmal" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> İcmal PDF Al</button>
+          <div style="min-width:240px" class="card">
+            <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
+            <select id="panoEkipFiltre"></select>
           </div>
         </div>
-        <button class="btn" id="btnSave"><i class="fa-solid fa-floppy-disk"></i>Kaydet</button>
-      </div>
 
-      <div class="card">
-        <h3>Hızlı Kayıt Arşivi</h3>
-        <div class="inline" style="margin-bottom:8px">
-          <select id="f-block"></select>
-          <select id="f-crew"></select>
-          <button class="btn secondary" id="btnFilter"><i class="fa-solid fa-filter"></i>Filtrele</button>
-          <button class="btn secondary" id="btnResetFilter"><i class="fa-solid fa-rotate"></i>Sıfırla</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table id="tbl" style="width:100%;border-collapse:collapse">
-            <thead>
-              <tr style="background:#f2f2f7">
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Tarih</th>
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Kullanıcı</th>
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Ekip</th>
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Blok</th>
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Durum</th>
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">Not</th>
-                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--border)">İşlem</th>
-              </tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bölüm 3 -->
-    <section id="p3" class="page active">
-      <h2>Bölüm 3 — Proje Durum Panosu</h2>
-
-      <div class="card">
-        <div class="inline" style="align-items:flex-end;justify-content:space-between">
-          <div style="min-width:240px">
-            <label for="pano-crew">İmalat Durumunu Göster:</label>
-            <select id="pano-crew"></select>
-          </div>
-          <button class="btn secondary" id="btnPdf"><i class="fa-solid fa-file-pdf"></i>İcmal PDF Al</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Görsel Proje Paftası</h3>
-        <div class="pafta-wrap">
-          <div class="pafta" id="pafta">
-            <div class="row" id="row-top"></div>
-            <div class="row" id="row-mid"></div>
-            <div class="row" id="row-bot"></div>
+        <!-- Pafta -->
+        <div id="projePaftasi" class="card">
+          <h3>Görsel Proje Paftası</h3>
+          <div class="pafta">
+            <div class="pafta-row" id="row-top"></div>
+            <div class="pafta-row" id="row-mid"></div>
+            <div class="pafta-row" id="row-bot"></div>
           </div>
         </div>
-      </div>
-    </section>
 
-  </main>
+        <!-- Hızlı Kayıt Arşivi -->
+        <div id="hizliKayitArsivi" class="card">
+          <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
+          <div class="table-responsive">
+            <table id="arsivTablosu">
+              <thead>
+                <tr>
+                  <th>Tarih</th>
+                  <th>Kullanıcı</th>
+                  <th>Ekip</th>
+                  <th>Blok</th>
+                  <th>Durum</th>
+                  <th>Not</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="arsivBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Alt Menü -->
+    <nav class="app-nav">
+      <button class="nav-btn" data-page="bolum1">
+        <i class="fas fa-user-check"></i><span>Yoklama</span>
+      </button>
+      <button class="nav-btn" data-page="bolum2">
+        <i class="fas fa-plus-circle"></i><span>Hızlı Kayıt</span>
+      </button>
+      <button class="nav-btn active" data-page="bolum3">
+        <i class="fas fa-th-large"></i><span>Ana Pano</span>
+      </button>
+    </nav>
+  </div>
 
   <!-- Modal: Paftadan Seç -->
   <div class="modal" id="modal">
     <div class="sheet">
       <div class="top">
         <h3>Paftadan Blok Seç</h3>
-        <button class="btn close" id="btnClose"><i class="fa-solid fa-xmark"></i>Kapat</button>
+        <button class="btn close" id="btnClose"><i class="fa-solid fa-xmark"></i> Kapat</button>
       </div>
       <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
-      <div class="pafta-wrap" style="margin-top:8px">
-        <div class="pafta">
-          <div class="row" id="m-top"></div>
-          <div class="row" id="m-mid"></div>
-          <div class="row" id="m-bot"></div>
-        </div>
+      <div class="pafta" style="margin-top:8px">
+        <div class="row" id="m-top"></div>
+        <div class="row" id="m-mid"></div>
+        <div class="row" id="m-bot"></div>
       </div>
     </div>
   </div>
 
-  <!-- Yazdırılacak icmal -->
+  <!-- Print Alanı -->
   <section id="printArea">
-    <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — VİSTA PREMIUM</h2>
+    <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — Vista Premium</h2>
     <div id="printTable" class="card"></div>
   </section>
 
-  <!-- Bottom Nav -->
-  <nav class="nav">
-    <div class="bar">
-      <button class="active" data-goto="p1"><i class="fa-solid fa-user-check"></i><span>Yoklama</span></button>
-      <button data-goto="p2"><i class="fa-solid fa-plus"></i><span>Hızlı Kayıt</span></button>
-      <button data-goto="p3"><i class="fa-solid fa-table-cells"></i><span>Ana Pano</span></button>
-    </div>
-  </nav>
-</div>
+  <!-- Firebase & App (Modular CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, serverTimestamp,
+      query, orderBy, onSnapshot, doc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-<!-- Firebase (modular CDN) -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, serverTimestamp,
-  query, orderBy, onSnapshot, doc, deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+    /* Firebase config (senin proje) */
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
+      authDomain: "santiye-takip-83874.firebaseapp.com",
+      projectId: "santiye-takip-83874",
+      storageBucket: "santiye-takip-83874.firebasestorage.app",
+      messagingSenderId: "893666575482",
+      appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
 
-/* --------- Firebase CONFIG (senin proje) --------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
-  authDomain: "santiye-takip-83874.firebaseapp.com",
-  projectId: "santiye-takip-83874",
-  storageBucket: "santiye-takip-83874.firebasestorage.app",
-  messagingSenderId: "893666575482",
-  appId: "1:893666575482:web:762be4fb7feea74a7aa7c3"
-};
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+    /* Veri listeleri */
+    const CREWS = [
+      "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke",
+      "Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı",
+      "Kaba Sıva (İç)","Yerden Isıtma","Asma Tavan","Klima Tesisat","Mobilya","Çelik Kapı","Korkuluk"
+    ];
+    const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
 
-/* ---------- VERİLER ---------- */
-const CREWS = [
- "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke",
- "Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı",
- "Kaba Sıva (İç)","Yerden Isıtma","Asma Tavan","Klima Tesisat","Mobilya","Çelik Kapı","Korkuluk"
-];
-const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
+    const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
+    const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
+    const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
 
-const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
-const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
-const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
+    /* Mülkiyet rozetleri (AS/MÜT) */
+    const OWN = {};
+    const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
+    [...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : (b==="Sosyal"?"":"MÜT"); });
 
-const OWN = {};
-const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
-[...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : "MÜT"; });
+    /* Yardımcılar */
+    const el = s=>document.querySelector(s);
+    const els = s=>document.querySelectorAll(s);
+    function fillSelect(id, list, placeholder="— Seçiniz —"){
+      const s = el('#'+id);
+      s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
+    }
+    function formatDateFromTS(ts){
+      if (!ts) return "-";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+
+             d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+    }
+    function todayKey(){
+      const d = new Date();
+      const m = (d.getMonth()+1).toString().padStart(2,'0');
+      const day = d.getDate().toString().padStart(2,'0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
 
-/* Helpers */
-const el = s=>document.querySelector(s);
-const els = s=>document.querySelectorAll(s);
-function fillSelect(id, list, placeholder="— Seçiniz —"){
-  const s = el('#'+id);
-  s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
-}
-function formatDateFromTS(ts){
-  if (!ts) return "-";
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+
-         d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-}
-function todayKey(){
-  const d = new Date();
-  const m = (d.getMonth()+1).toString().padStart(2,'0');
-  const day = d.getDate().toString().padStart(2,'0');
-  return `${d.getFullYear()}-${m}-${day}`; // YYYY-MM-DD
-}
+    /* Nav */
+    els(".nav-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        els(".nav-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const id = btn.dataset.page;
+        els(".page").forEach(p=>p.classList.remove("active"));
+        el("#"+id).classList.add("active");
+      });
+    });
 
-/* Nav */
-els(".nav button").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    els(".nav button").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    const id = btn.dataset.goto;
-    els(".page").forEach(p=>p.classList.remove("active"));
-    el("#"+id).classList.add("active");
-  });
-});
+    /* Select doldurma */
+    const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
+    fillSelect("yoklamaEkip", CREWS);
+    fillSelect("kayitEkip", CREWS);
+    fillSelect("panoEkipFiltre", CREWS, "Tüm Ekipler (Genel)");
+    fillSelect("kayitKullanici", USERS);
+    fillSelect("yoklamaBlok", ALL_BLOCKS);
+    fillSelect("kayitBlok", ALL_BLOCKS);
 
-/* Selects */
-fillSelect("yk-crew", CREWS);
-fillSelect("hk-crew", CREWS);
-fillSelect("pano-crew", CREWS, "Tüm Ekipler (Genel)");
-fillSelect("hk-user", USERS);
-const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
-fillSelect("yk-block", ALL_BLOCKS);
-fillSelect("hk-block", ALL_BLOCKS);
-fillSelect("f-block", ["Tümü", ...ALL_BLOCKS], "Blok: Tümü");
-fillSelect("f-crew", ["Tümü", ...CREWS], "Ekip: Tümü");
+    /* Pafta çizimi */
+    function makeBlok(label){
+      const div = document.createElement("div");
+      div.className = "blok"+(label==="Sosyal"?" sosyal":"");
+      div.dataset.id = label;
+      div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${label!=="Sosyal"?`<span class="own">${OWN[label]||""}</span>`:""}`;
+      return div;
+    }
+    function drawPafta(rowSel, arr){
+      const row = el(rowSel);
+      row.innerHTML="";
+      arr.forEach(b=>row.appendChild(makeBlok(b)));
+    }
+    drawPafta("#row-top", TOP);
+    drawPafta("#row-mid", MID);
+    drawPafta("#row-bot", BOT);
+    drawPafta("#m-top", TOP);
+    drawPafta("#m-mid", MID);
+    drawPafta("#m-bot", BOT);
 
-/* Pafta çizimi */
-function makeBlok(label){
-  const div = document.createElement("div");
-  div.className = "blok"+(label==="Sosyal"?" sosyal":"");
-  div.dataset.id = label;
-  div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${label!=="Sosyal"?`<span class="own">${OWN[label]||""}</span>`:""}`;
-  return div;
-}
-function drawPafta(rowSel, arr){
-  const row = el(rowSel);
-  row.innerHTML="";
-  arr.forEach(b=>row.appendChild(makeBlok(b)));
-}
-drawPafta("#row-top", TOP);
-drawPafta("#row-mid", MID);
-drawPafta("#row-bot", BOT);
-drawPafta("#m-top", TOP);
-drawPafta("#m-mid", MID);
-drawPafta("#m-bot", BOT);
+    /* Günlük Yoklama — yaz */
+    el("#formYoklama").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const crew = el("#yoklamaEkip").value;
+      const count = parseInt(el("#yoklamaKisi").value||"0",10);
+      const block = el("#yoklamaBlok").value;
+      const note = el("#yoklamaNot").value.trim();
+      if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok zorunludur.");return;}
+      await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
+        crew, count, block, note, user: "Sistem", ts: serverTimestamp()
+      });
+      el("#yoklamaKisi").value=""; el("#yoklamaNot").value="";
+    });
 
-/* ---------- Firestore — Günlük Yoklama (yaz / canlı oku) ---------- */
-function renderDaily(entries){
-  el("#yk-list").innerHTML = entries.length
-    ? entries.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
-    : "<li>Bugün henüz kayıt yok.</li>";
-}
-el("#btnYokla").addEventListener("click", async ()=>{
-  const crew = el("#yk-crew").value;
-  const count = parseInt(el("#yk-count").value||"0",10);
-  const block = el("#yk-block").value;
-  const note = el("#yk-note").value.trim();
-  if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok seçilmelidir.");return;}
-  await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
-    crew, count, block, note, user: "Sistem", ts: serverTimestamp()
-  });
-  el("#yk-count").value=""; el("#yk-note").value="";
-});
-el("#btnClearDaily").addEventListener("click", async ()=>{
-  // Basit çözüm: Kullanıcıya bilgi verelim. (Toplu silme UI/Cloud Function sonra ekleriz.)
-  alert("Günlük yoklamayı sıfırlama için panelden tek tek silme/filtre ekleyeceğiz. Şimdilik liste canlıdır ve sadece bugünün kayıtlarını gösterir.");
-});
-// canlı dinleme (bugün)
-onSnapshot(
-  query(collection(db,"daily_attendance", todayKey(), "entries"), orderBy("ts","desc")),
-  (snap)=>{
-    const arr = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderDaily(arr);
-  }
-);
+    /* Günlük Yoklama — canlı oku (bugün) */
+    function renderDaily(entries){
+      const ul = el("#yoklamaListesi");
+      ul.innerHTML = entries.length
+        ? entries.map(x=>`<li style="padding:8px 0;border-bottom:1px dashed var(--border)"><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
+        : "<li>Bugün henüz kayıt yok.</li>";
+    }
+    onSnapshot(
+      query(collection(db,"daily_attendance", todayKey(), "entries"), orderBy("ts","desc")),
+      (snap)=>{ renderDaily(snap.docs.map(d=>({id:d.id, ...d.data()}))); }
+    );
 
-/* ---------- Firestore — Hızlı Kayıt (yaz / canlı oku / sil / filtre / pano) ---------- */
-let FAST_ALL = []; // son snapshot cache
+    /* Hızlı Kayıt — yaz */
+    el("#formHizliKayit").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const rec = {
+        user: el("#kayitKullanici").value,
+        crew: el("#kayitEkip").value,
+        block: el("#kayitBlok").value,
+        status: el("#kayitDurum").value,
+        note: el("#kayitNot").value.trim(),
+        ts: serverTimestamp()
+      };
+      if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
+      await addDoc(collection(db,"fast_logs"), rec);
+      el("#kayitNot").value="";
+    });
 
-function renderTable(filter={}){
-  const tbody = el("#rows");
-  let data = FAST_ALL;
-  if(filter.block && filter.block!=="Tümü") data = data.filter(x=>x.block===filter.block);
-  if(filter.crew && filter.crew!=="Tümü") data = data.filter(x=>x.crew===filter.crew);
-  tbody.innerHTML = data.length? data.map((x)=>`
-    <tr>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">${formatDateFromTS(x.ts)}</td>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.user}</td>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.crew}</td>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.block}</td>
-      <td style="padding:10px;border-bottom:1px solid var(--border)"><b>${x.status}</b></td>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">${x.note?x.note:"-"}</td>
-      <td style="padding:10px;border-bottom:1px solid var(--border)">
-        <button class="btn icon secondary" data-edit="${x.id}"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn icon" style="background:#ffe6e6;color:#c62828" data-del="${x.id}"><i class="fa-solid fa-trash"></i></button>
-      </td>
-    </tr>`).join("") : `<tr><td colspan="7" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
-}
+    /* Hızlı Kayıt — canlı oku / tablo / pafta boyama */
+    let FAST_ALL = [];
+    function getLatestStatusFor(block, crew){
+      const data = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
+      if(!data.length) return "";
+      data.sort((a,b)=>{
+        const ta = a.ts?.toMillis?.() ?? 0;
+        const tb = b.ts?.toMillis?.() ?? 0;
+        return tb - ta;
+      });
+      const st = data[0].status;
+      if(st==="Devam"||st==="Devam Ediyor") return "d-devam";
+      if(st==="Bitti") return "d-bitti";
+      if(st==="Teslim"||st==="Teslim Alındı"||st==="TeslimAlindi") return "d-teslim";
+      return "";
+    }
+    function paintRow(rowSel, arr, crew){
+      const row = el(rowSel);
+      row.querySelectorAll(".blok").forEach(b=>b.classList.remove("d-devam","d-bitti","d-teslim"));
+      arr.forEach(id=>{
+        const box = row.querySelector(`.blok[data-id="${id}"]`);
+        const cls = getLatestStatusFor(id, crew);
+        if(cls && box) box.classList.add(cls);
+      });
+    }
+    function renderPafta(){
+      const crew = el("#panoEkipFiltre").value || "";
+      paintRow("#row-top", TOP, crew);
+      paintRow("#row-mid", MID, crew);
+      paintRow("#row-bot", BOT, crew);
+    }
+    function renderTable(){
+      const tbody = el("#arsivBody");
+      tbody.innerHTML = FAST_ALL.length ? FAST_ALL.map((x)=>`
+        <tr>
+          <td>${formatDateFromTS(x.ts)}</td>
+          <td>${x.user}</td>
+          <td>${x.crew}</td>
+          <td>${x.block}</td>
+          <td><b>${x.status}</b></td>
+          <td>${x.note?x.note:"-"}</td>
+          <td>
+            <button class="btn btn-secondary btn-icon" data-edit="${x.id}"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-icon" style="background:#ffe6e6;color:#c62828" data-del="${x.id}"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>`).join("") : `<tr><td colspan="7" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
+    }
+    onSnapshot(
+      query(collection(db,"fast_logs"), orderBy("ts","desc")),
+      (snap)=>{
+        FAST_ALL = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        renderTable();
+        renderPafta();
+      }
+    );
 
-function getLatestStatusFor(block, crew){
-  const data = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
-  if(!data.length) return "";
-  data.sort((a,b)=>{
-    const ta = a.ts?.toMillis?.() ?? 0;
-    const tb = b.ts?.toMillis?.() ?? 0;
-    return tb - ta;
-  });
-  const st = data[0].status;
-  if(st==="Devam"||st==="Devam Ediyor") return "d-devam";
-  if(st==="Bitti") return "d-bitti";
-  if(st==="Teslim"||st==="Teslim Alındı"||st==="TeslimAlindi") return "d-teslim";
-  return "";
-}
-function paintRow(rowSel, arr, crew){
-  const row = el(rowSel);
-  row.querySelectorAll(".blok").forEach(b=>{
-    b.classList.remove("d-devam","d-bitti","d-teslim");
-  });
-  arr.forEach(id=>{
-    const box = row.querySelector(`.blok[data-id="${id}"]`);
-    const cls = getLatestStatusFor(id, crew);
-    if(cls && box) box.classList.add(cls);
-  });
-}
-function renderPafta(){
-  const crew = el("#pano-crew").value || "";
-  paintRow("#row-top", TOP, crew);
-  paintRow("#row-mid", MID, crew);
-  paintRow("#row-bot", BOT, crew);
-}
+    /* Edit / Delete */
+    document.addEventListener("click", async (e)=>{
+      const del = e.target.closest("[data-del]");
+      const edit = e.target.closest("[data-edit]");
+      if(del){
+        const id = del.getAttribute("data-del");
+        await deleteDoc(doc(db,"fast_logs", id));
+      }
+      if(edit){
+        const id = edit.getAttribute("data-edit");
+        const x = FAST_ALL.find(r=>r.id===id);
+        if(!x) return;
+        el("#kayitKullanici").value = x.user||"";
+        el("#kayitEkip").value = x.crew||"";
+        el("#kayitBlok").value = x.block||"";
+        el("#kayitDurum").value = x.status||"Basladi";
+        el("#kayitNot").value = x.note||"";
+        await deleteDoc(doc(db,"fast_logs", id));
+        alert("Kayıt düzenleme modunda forma alındı. Kaydet ile güncel halini ekle.");
+      }
+    });
 
-el("#btnSave").addEventListener("click", async ()=>{
-  const rec = {
-    user: el("#hk-user").value,
-    crew: el("#hk-crew").value,
-    block: el("#hk-block").value,
-    status: el("#hk-status").value,
-    note: el("#hk-note").value.trim(),
-    ts: serverTimestamp()
-  };
-  if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
-  await addDoc(collection(db,"fast_logs"), rec);
-  el("#hk-note").value="";
-});
+    /* Pafta modal */
+    let activeTarget = null;
+    function openPicker(targetId){ activeTarget = targetId; el("#modal").classList.add("active"); }
+    function closePicker(){ el("#modal").classList.remove("active"); activeTarget=null; }
+    el("#btnPaftaYoklama").addEventListener("click",()=>openPicker("yoklamaBlok"));
+    el("#btnPaftaKayit").addEventListener("click",()=>openPicker("kayitBlok"));
+    el("#btnClose").addEventListener("click",closePicker);
+    el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
+    ["#m-top","#m-mid","#m-bot"].forEach(sel=>{
+      el(sel).addEventListener("click",(ev)=>{
+        const box = ev.target.closest(".blok"); if(!box||!activeTarget) return;
+        const id = box.dataset.id; if(id==="Sosyal") return;
+        el("#"+activeTarget).value = id;
+        closePicker();
+      });
+    });
 
-el("#btnFilter").addEventListener("click",()=>{
-  renderTable({block:el("#f-block").value, crew:el("#f-crew").value});
-});
-el("#btnResetFilter").addEventListener("click",()=>{
-  el("#f-block").value=""; el("#f-crew").value="";
-  renderTable();
-});
+    /* Pano filtre */
+    fillSelect("panoEkipFiltre", CREWS, "Tüm Ekipler (Genel)");
+    el("#panoEkipFiltre").addEventListener("change", renderPafta);
 
-document.addEventListener("click", async (e)=>{
-  const del = e.target.closest("[data-del]");
-  const edit = e.target.closest("[data-edit]");
-  if(del){
-    const id = del.getAttribute("data-del");
-    await deleteDoc(doc(db,"fast_logs", id));
-  }
-  if(edit){
-    const id = edit.getAttribute("data-edit");
-    const x = FAST_ALL.find(r=>r.id===id);
-    if(!x) return;
-    el("#hk-user").value = x.user||"";
-    el("#hk-crew").value = x.crew||"";
-    el("#hk-block").value = x.block||"";
-    el("#hk-status").value = x.status||"Basladi";
-    el("#hk-note").value = x.note||"";
-    await deleteDoc(doc(db,"fast_logs", id));
-    alert("Kayıt düzenleme modunda forma alındı. Güncel halini Kaydet ile ekle.");
-  }
-});
+    /* İcmal (print) */
+    function buildIcmalHTML(){
+      const totalBlocks = ALL_BLOCKS.length;
+      const rows = CREWS.map(t=>{
+        const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
+        const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
+        const percent = totalBlocks ? (done/totalBlocks*100) : 0;
+        return `<tr>
+          <td style="padding:8px;border:1px solid #bbb">${t}</td>
+          <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
+          <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
+          <td style="padding:8px;border:1px solid #bbb;text-align:center"><b>%${percent.toFixed(1)}</b> <span style="color:#666">(${done}/${totalBlocks})</span></td>
+        </tr>`;
+      }).join("");
 
-/* canlı arşiv ve pano */
-onSnapshot(
-  query(collection(db,"fast_logs"), orderBy("ts","desc")),
-  (snap)=>{
-    FAST_ALL = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderTable();
-    renderPafta();
-  }
-);
+      const percents = CREWS.map(t=>{
+        const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
+        const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
+        return totalBlocks ? (done/totalBlocks*100) : 0;
+      });
+      const avg = percents.reduce((a,b)=>a+b,0)/(percents.length||1);
 
-/* Pano crew filtresi */
-el("#pano-crew").addEventListener("change", renderPafta);
+      return `
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:10px;border:1px solid #bbb;text-align:left">İMALAT KALEMİ</th>
+              <th style="padding:10px;border:1px solid #bbb">YAPILACAK BLOK</th>
+              <th style="padding:10px;border:1px solid #bbb">YAPILAN BLOK</th>
+              <th style="padding:10px;border:1px solid #bbb">İLERLEME</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr style="background:#f9fafb;font-weight:700">
+              <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
+              <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3"><b>%${avg.toFixed(1)}</b></td>
+            </tr>
+          </tfoot>
+        </table>
+        <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
+      `;
+    }
+    el("#btnPdfIcmal").addEventListener("click",()=>{
+      el("#printTable").innerHTML = buildIcmalHTML();
+      window.print();
+    });
 
-/* Paftadan Seç Modal */
-let activeTarget = null;
-function openPicker(targetId){
-  activeTarget = targetId;
-  el("#modal").classList.add("active");
-}
-function closePicker(){ el("#modal").classList.remove("active"); activeTarget=null; }
-el("#btnPickYoklama").addEventListener("click",()=>openPicker("yk-block"));
-el("#btnPickKayit").addEventListener("click",()=>openPicker("hk-block"));
-el("#btnClose").addEventListener("click",closePicker);
-el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
-["#m-top","#m-mid","#m-bot"].forEach(sel=>{
-  el(sel).addEventListener("click",(ev)=>{
-    const box = ev.target.closest(".blok"); if(!box||!activeTarget) return;
-    const id = box.dataset.id; if(id==="Sosyal") return;
-    el("#"+activeTarget).value = id;
-    closePicker();
-  });
-});
+    /* Modal pafta içerikleri */
+    function drawPicker(){
+      drawPafta("#m-top", TOP);
+      drawPafta("#m-mid", MID);
+      drawPafta("#m-bot", BOT);
+    }
+    drawPicker(); // güvence
 
-/* İcmal — tablo + genel ortalama (yüzde daha net) */
-function buildIcmalHTML(){
-  const totalBlocks = ALL_BLOCKS.length;
-  const rows = CREWS.map(t=>{
-    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
-    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-    const percent = totalBlocks ? (done/totalBlocks*100) : 0;
-    return `<tr>
-      <td style="padding:8px;border:1px solid #bbb">${t}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center"><b>%${percent.toFixed(1)}</b> <span style="color:#666">(${done}/${totalBlocks})</span></td>
-    </tr>`;
-  }).join("");
-
-  const percents = CREWS.map(t=>{
-    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
-    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-    return totalBlocks ? (done/totalBlocks*100) : 0;
-  });
-  const avg = percents.reduce((a,b)=>a+b,0)/(percents.length||1);
-
-  return `
-    <table style="width:100%;border-collapse:collapse;font-size:14px">
-      <thead>
-        <tr style="background:#f1f5f9">
-          <th style="padding:10px;border:1px solid #bbb;text-align:left">İMALAT KALEMİ</th>
-          <th style="padding:10px;border:1px solid #bbb">YAPILACAK BLOK</th>
-          <th style="padding:10px;border:1px solid #bbb">YAPILAN BLOK</th>
-          <th style="padding:10px;border:1px solid #bbb">İLERLEME</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-      <tfoot>
-        <tr style="background:#f9fafb;font-weight:700">
-          <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
-          <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3"><b>%${avg.toFixed(1)}</b></td>
-        </tr>
-      </tfoot>
-    </table>
-    <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
-  `;
-}
-el("#btnPdf").addEventListener("click",()=>{
-  el("#printTable").innerHTML = buildIcmalHTML();
-  window.print();
-});
-
-/* Başlangıç renderları (statik parçalar) */
-function initStatic(){
-  // başta boş tablolar/pafta; canlı snapshot’lar geldikçe dolacak
-  renderPafta();
-}
-initStatic();
-</script>
+    /* Başlangıç */
+    (function init(){
+      // Pafta ana görünümü çizildi; snapshot gelince boyanacak
+      renderPafta();
+    })();
+  </script>
 </body>
 </html>
