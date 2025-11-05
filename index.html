@@ -2,22 +2,21 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vista Premium – Şantiye Takip v1.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vista Premium – Şantiye Takip v1.1</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d47a1" />
-
   <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon/apple-icon-152.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icon/apple-icon-180.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon/apple-icon-152.png" />
 
   <!-- Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -25,7 +24,7 @@
   <div class="app-container">
     <!-- HEADER -->
     <header class="app-header">
-      <h1>[ Vista Premium – Şantiye Takip v1.0 ]</h1>
+      <h1>[ Vista Premium – Şantiye Takip v1.1 ]</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
@@ -44,19 +43,25 @@
           </div>
           <div class="form-group">
             <label for="yoklamaBlok">Blok Seçimi</label>
-            <select id="yoklamaBlok"></select>
-            <button type="button" id="btnPaftaYoklama" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
+            <div class="inline">
+              <select id="yoklamaBlok" class="grow"></select>
+              <button type="button" id="btnPaftaYoklama" class="btn btn-secondary">
+                <i class="fa-solid fa-map"></i> Paftadan Seç
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label for="yoklamaNot">Not (Opsiyonel)</label>
             <textarea id="yoklamaNot" rows="3"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Giriş Yap</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-user-check"></i> Giriş Yap
+          </button>
         </form>
 
         <div class="ozet-panel card">
           <h3>Bugünkü Yoklama Özeti</h3>
-          <ul id="yoklamaListesi" class="yoklama-list"></ul>
+          <ul id="yoklamaListesi" class="list"></ul>
         </div>
       </section>
 
@@ -74,8 +79,12 @@
           </div>
           <div class="form-group">
             <label for="kayitBlok">Blok Seçimi</label>
-            <select id="kayitBlok"></select>
-            <button type="button" id="btnPaftaKayit" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
+            <div class="inline">
+              <select id="kayitBlok" class="grow"></select>
+              <button type="button" id="btnPaftaKayit" class="btn btn-secondary">
+                <i class="fa-solid fa-map"></i> Paftadan Seç
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
@@ -90,15 +99,30 @@
             <label for="kayitNot">Not (Opsiyonel)</label>
             <textarea id="kayitNot" rows="3"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i> Kaydet
+          </button>
         </form>
+
+        <div class="card">
+          <h3>Hızlı Kayıt Arşivi – Filtre</h3>
+          <div class="inline">
+            <select id="filtreEkip" class="grow"></select>
+            <select id="filtreBlok" class="grow"></select>
+            <button id="btnFiltreTemizle" class="btn btn-secondary">
+              <i class="fa-solid fa-broom"></i> Temizle
+            </button>
+          </div>
+        </div>
       </section>
 
       <!-- Bölüm 3: Pano -->
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
         <div class="inline" style="margin-bottom:12px">
-          <button id="btnPdfIcmal" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> İcmal PDF/Print</button>
+          <button id="btnPdfIcmal" class="btn btn-primary">
+            <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
+          </button>
           <div style="min-width:240px" class="card">
             <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
             <select id="panoEkipFiltre"></select>
@@ -118,31 +142,13 @@
         <!-- Hızlı Kayıt Arşivi -->
         <div id="hizliKayitArsivi" class="card">
           <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
-
-          <div class="inline" id="arsivFiltreBar" style="margin:6px 0 10px">
-            <div class="card" style="padding:10px;min-width:220px">
-              <label for="filtreEkip">Ekip Filtresi</label>
-              <select id="filtreEkip"></select>
-            </div>
-            <div class="card" style="padding:10px;min-width:220px">
-              <label for="filtreBlok">Blok Filtresi</label>
-              <select id="filtreBlok"></select>
-            </div>
-            <button id="filtreTemizle" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i> Temizle</button>
-          </div>
-
           <div class="table-responsive">
             <table id="arsivTablosu">
               <thead>
-                <tr>
-                  <th>Tarih</th>
-                  <th>Kullanıcı</th>
-                  <th>Ekip</th>
-                  <th>Blok</th>
-                  <th>Durum</th>
-                  <th>Not</th>
-                  <th>İşlem</th>
-                </tr>
+              <tr>
+                <th>Tarih</th><th>Kullanıcı</th><th>Ekip</th><th>Blok</th>
+                <th>Durum</th><th>Not</th><th>İşlem</th>
+              </tr>
               </thead>
               <tbody id="arsivBody"></tbody>
             </table>
@@ -173,7 +179,7 @@
         <button class="btn close" id="btnClose"><i class="fa-solid fa-xmark"></i> Kapat</button>
       </div>
       <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
-      <div class="pafta" style="margin-top:8px">
+      <div class="pafta" id="modalPafta" style="margin-top:8px">
         <div class="row" id="m-top"></div>
         <div class="row" id="m-mid"></div>
         <div class="row" id="m-bot"></div>
@@ -187,6 +193,12 @@
     <div id="printTable" class="card"></div>
   </section>
 
+  <!-- Firebase + App -->
   <script type="module" src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
 </body>
 </html>
