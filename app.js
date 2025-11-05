@@ -1,11 +1,10 @@
-// app.js (module)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
   getFirestore, collection, addDoc, serverTimestamp,
-  query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc
+  query, orderBy, onSnapshot, doc, deleteDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-/* Firebase config */
+/* Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
   authDomain: "santiye-takip-83874.firebaseapp.com",
@@ -17,7 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-/* Data */
+/* Sabitler */
 const CREWS = [
   "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke",
   "Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı",
@@ -28,18 +27,19 @@ const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
 const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
 const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
 const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
+const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
 
-/* AS/MÜT */
+/* Mülkiyet etiketi (AS / MÜT) */
 const OWN = {};
 const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
 [...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : (b==="Sosyal"?"":"MÜT"); });
 
-/* Helpers */
-const el  = s=>document.querySelector(s);
+/* Kısayollar */
+const el = s=>document.querySelector(s);
 const els = s=>document.querySelectorAll(s);
-const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
 function fillSelect(id, list, placeholder="— Seçiniz —"){
   const s = el('#'+id);
+  if(!s) return;
   s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
 }
 function formatDateFromTS(ts){
@@ -66,7 +66,7 @@ els(".nav-btn").forEach(btn=>{
   });
 });
 
-/* Selects */
+/* Select doldurma */
 fillSelect("yoklamaEkip", CREWS);
 fillSelect("kayitEkip", CREWS);
 fillSelect("panoEkipFiltre", CREWS, "Tüm Ekipler (Genel)");
@@ -94,51 +94,65 @@ drawPafta("#m-top", TOP);
 drawPafta("#m-mid", MID);
 drawPafta("#m-bot", BOT);
 
-/* Günlük Yoklama — ekle/güncelle */
-let ATT_EDIT_ID = null;
-const btnYoklamaSubmit = el('#btnYoklamaSubmit');
-
+/* Günlük Yoklama — yaz */
 el("#formYoklama").addEventListener("submit", async (e)=>{
   e.preventDefault();
-  const crew  = el("#yoklamaEkip").value;
-  const count = parseInt(el("#yoklamaKisi").value || "0", 10);
+  const crew = el("#yoklamaEkip").value;
+  const count = parseInt(el("#yoklamaKisi").value||"0",10);
   const block = el("#yoklamaBlok").value;
-  const note  = el("#yoklamaNot").value.trim();
-  if(!crew || !count || !block){ alert("Ekip, kişi sayısı ve blok zorunludur."); return; }
-
-  if (ATT_EDIT_ID) {
-    await updateDoc(doc(db,"daily_attendance",todayKey(),"entries",ATT_EDIT_ID), { crew, count, block, note });
-    ATT_EDIT_ID = null;
-    btnYoklamaSubmit.innerHTML = `<i class="fa-solid fa-user-check"></i> Giriş Yap`;
-  } else {
-    await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
-      crew, count, block, note, user:"Sistem", ts: serverTimestamp()
-    });
-  }
+  const note = el("#yoklamaNot").value.trim();
+  if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok zorunludur.");return;}
+  await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
+    crew, count, block, note, user: "Sistem", ts: serverTimestamp()
+  });
   el("#yoklamaKisi").value=""; el("#yoklamaNot").value="";
 });
 
-/* Günlük Yoklama — canlı özet */
+/* Günlük Yoklama — canlı oku + düzenle/sil */
+let TODAY_ATT = [];
 function renderDaily(entries){
   const ul = el("#yoklamaListesi");
-  if (!entries.length){ ul.innerHTML = "<li>Bugün henüz kayıt yok.</li>"; return; }
-  ul.innerHTML = entries.map(x=>`
-    <li style="padding:10px 0;border-bottom:1px dashed var(--border)">
-      <b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b>
-      <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}
-      <span style="float:right;display:inline-flex;gap:6px">
-        <button class="btn btn-secondary btn-icon" data-att-edit="${x.id}" title="Düzenle"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-icon" style="background:#ffe6e6;color:#c62828" data-att-del="${x.id}" title="Sil"><i class="fa-solid fa-trash"></i></button>
-      </span>
-    </li>
-  `).join("");
+  ul.innerHTML = entries.length
+    ? entries.map(x=>`<li>
+        <b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b>
+        <span class="mini">(${formatDateFromTS(x.ts)})</span>
+        ${x.note?`— ${x.note}`:""}
+        <span class="act">
+          <button class="btn btn-secondary btn-icon" data-att-edit="${x.id}"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-icon btn-del" data-att-del="${x.id}"><i class="fa-solid fa-trash"></i></button>
+        </span>
+      </li>`).join("")
+    : "<li>Bugün henüz kayıt yok.</li>";
 }
 onSnapshot(
   query(collection(db,"daily_attendance", todayKey(), "entries"), orderBy("ts","desc")),
-  (snap)=>{ renderDaily(snap.docs.map(d=>({id:d.id, ...d.data()}))); }
+  (snap)=>{ TODAY_ATT = snap.docs.map(d=>({id:d.id, ref:d.ref, ...d.data()})); renderDaily(TODAY_ATT); }
 );
 
-/* Hızlı Kayıt — ekle */
+/* Yoklama: edit/sil */
+document.addEventListener("click", async (e)=>{
+  const del = e.target.closest("[data-att-del]");
+  const edit = e.target.closest("[data-att-edit]");
+  if(del){
+    const id = del.getAttribute("data-att-del");
+    const rec = TODAY_ATT.find(r=>r.id===id);
+    if(rec) await deleteDoc(rec.ref);
+  }
+  if(edit){
+    const id = edit.getAttribute("data-att-edit");
+    const x = TODAY_ATT.find(r=>r.id===id); if(!x) return;
+    // forma çek
+    el("#yoklamaEkip").value = x.crew;
+    el("#yoklamaKisi").value = x.count;
+    el("#yoklamaBlok").value = x.block;
+    el("#yoklamaNot").value = x.note || "";
+    // kaydı sil – kullanıcı tekrar kaydetsin (basit düzenleme akışı)
+    await deleteDoc(x.ref);
+    alert("Yoklama kaydı forma alındı. Güncelleyip 'Giriş Yap' ile kaydet.");
+  }
+});
+
+/* Hızlı Kayıt — yaz */
 el("#formHizliKayit").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const rec = {
@@ -154,14 +168,15 @@ el("#formHizliKayit").addEventListener("submit", async (e)=>{
   el("#kayitNot").value="";
 });
 
-/* Hızlı Kayıt — tablo + pafta boyama */
+/* Hızlı Kayıt — canlı oku / tablo / pafta boyama */
 let FAST_ALL = [];
 function getLatestStatusFor(block, crew){
   const data = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
   if(!data.length) return "";
   data.sort((a,b)=> (b.ts?.toMillis?.() ?? 0) - (a.ts?.toMillis?.() ?? 0));
   const st = data[0].status;
-  if(st==="Devam"||st==="Devam Ediyor") return "d-devam";
+  // Başladı = Devam (sarı)
+  if(st==="Basladi" || st==="Devam" || st==="Devam Ediyor") return "d-devam";
   if(st==="Bitti") return "d-bitti";
   if(st==="Teslim"||st==="Teslim Alındı"||st==="TeslimAlindi") return "d-teslim";
   return "";
@@ -182,8 +197,15 @@ function renderPafta(){
   paintRow("#row-bot", BOT, crew);
 }
 function renderTable(){
+  const ek = el("#filtreEkip")?.value || "Tümü";
+  const bl = el("#filtreBlok")?.value || "Tümü";
+  const data = FAST_ALL.filter(x =>
+    (ek==="Tümü" || x.crew===ek) &&
+    (bl==="Tümü" || x.block===bl)
+  );
+
   const tbody = el("#arsivBody");
-  tbody.innerHTML = FAST_ALL.length ? FAST_ALL.map((x)=>`
+  tbody.innerHTML = data.length ? data.map((x)=>`
     <tr>
       <td>${formatDateFromTS(x.ts)}</td>
       <td>${x.user}</td>
@@ -206,9 +228,9 @@ onSnapshot(
   }
 );
 
-/* Edit/Delete (fast_logs + yoklama) */
+/* Edit / Delete (Hızlı Kayıt) */
 document.addEventListener("click", async (e)=>{
-  const del  = e.target.closest("[data-del]");
+  const del = e.target.closest("[data-del]");
   const edit = e.target.closest("[data-edit]");
   if(del){
     const id = del.getAttribute("data-del");
@@ -216,49 +238,27 @@ document.addEventListener("click", async (e)=>{
   }
   if(edit){
     const id = edit.getAttribute("data-edit");
-    const xSnap = await getDoc(doc(db,"fast_logs", id));
-    const x = xSnap.data();
-    if (x){
-      el("#kayitKullanici").value = x.user||"";
-      el("#kayitEkip").value     = x.crew||"";
-      el("#kayitBlok").value     = x.block||"";
-      el("#kayitDurum").value    = x.status||"Basladi";
-      el("#kayitNot").value      = x.note||"";
-      await deleteDoc(doc(db,"fast_logs", id));
-      alert("Kayıt düzenleme modunda forma alındı. Kaydet ile güncel halini ekle.");
-      // Bölüm 2'ye geç
-      els(".nav-btn").forEach(b=>b.classList.remove("active"));
-      document.querySelector('.nav-btn[data-page="bolum2"]').classList.add("active");
-      els(".page").forEach(p=>p.classList.remove("active"));
-      el("#bolum2").classList.add("active");
-    }
+    const x = FAST_ALL.find(r=>r.id===id);
+    if(!x) return;
+    el("#kayitKullanici").value = x.user||"";
+    el("#kayitEkip").value = x.crew||"";
+    el("#kayitBlok").value = x.block||"";
+    el("#kayitDurum").value = x.status||"Basladi";
+    el("#kayitNot").value = x.note||"";
+    await deleteDoc(doc(db,"fast_logs", id));
+    alert("Kayıt düzenleme modunda forma alındı. Kaydet ile güncel halini ekle.");
   }
+});
 
-  const delA  = e.target.closest("[data-att-del]");
-  const editA = e.target.closest("[data-att-edit]");
-  if (delA){
-    const id = delA.getAttribute("data-att-del");
-    await deleteDoc(doc(db,"daily_attendance", todayKey(), "entries", id));
-  }
-  if (editA){
-    const id = editA.getAttribute("data-att-edit");
-    const snap = await getDoc(doc(db,"daily_attendance", todayKey(), "entries", id));
-    const x = snap.data();
-    if (x){
-      el("#yoklamaEkip").value = x.crew || "";
-      el("#yoklamaKisi").value = x.count || "";
-      el("#yoklamaBlok").value = x.block || "";
-      el("#yoklamaNot").value  = x.note  || "";
-      ATT_EDIT_ID = id;
-      btnYoklamaSubmit.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Güncelle`;
-      // Bölüm 1'e geç
-      els(".nav-btn").forEach(b=>b.classList.remove("active"));
-      document.querySelector('.nav-btn[data-page="bolum1"]').classList.add("active");
-      els(".page").forEach(p=>p.classList.remove("active"));
-      el("#bolum1").classList.add("active");
-      window.scrollTo({ top: el("#formYoklama").offsetTop - 12, behavior: "smooth" });
-    }
-  }
+/* Filtre selectleri */
+fillSelect("filtreEkip", ["Tümü", ...CREWS], "Tümü");
+fillSelect("filtreBlok", ["Tümü", ...ALL_BLOCKS], "Tümü");
+["#filtreEkip","#filtreBlok"].forEach(sel=>{
+  const s = el(sel); if (s) s.addEventListener("change", renderTable);
+});
+el("#filtreTemizle")?.addEventListener("click", ()=>{
+  el("#filtreEkip").value = ""; el("#filtreBlok").value = "";
+  renderTable();
 });
 
 /* Pafta modal */
@@ -278,10 +278,7 @@ el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePick
   });
 });
 
-/* Pano filtre */
-el("#panoEkipFiltre").addEventListener("change", renderPafta);
-
-/* İcmal (print) — sadece #printArea yazdırılır */
+/* İcmal (print) – sadece özet tablo, arşiv listeyi yazdırmaz */
 function buildIcmalHTML(){
   const totalBlocks = ALL_BLOCKS.length;
   const rows = CREWS.map(t=>{
@@ -329,5 +326,22 @@ el("#btnPdfIcmal").addEventListener("click",()=>{
   window.print();
 });
 
+/* Drag-to-scroll: basılı tutup sürükleyerek kaydır (pafta + modal) */
+function enableDragScroll(container){
+  if(!container) return;
+  let isDown=false, startX=0, scrollLeft=0;
+  container.addEventListener('pointerdown', e=>{ isDown=true; startX=e.pageX; scrollLeft=container.scrollLeft; container.setPointerCapture(e.pointerId); });
+  container.addEventListener('pointermove', e=>{ if(!isDown) return; container.scrollLeft = scrollLeft - (e.pageX - startX); });
+  ['pointerup','pointercancel','pointerleave'].forEach(evt=> container.addEventListener(evt, ()=> isDown=false));
+}
+enableDragScroll(document.querySelector('#projePaftasi .pafta'));
+document.querySelectorAll('.modal .pafta').forEach(enableDragScroll);
+
 /* Başlangıç */
-renderPafta();
+(function init(){
+  renderPafta();
+  // PWA SW
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+})();
