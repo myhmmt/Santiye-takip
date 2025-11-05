@@ -1,8 +1,8 @@
 {
   "name": "Vista Premium",
   "short_name": "Vista",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/Santiye-takip/",
+  "scope": "/Santiye-takip/",
   "display": "standalone",
   "background_color": "#0d47a1",
   "theme_color": "#0d47a1",
