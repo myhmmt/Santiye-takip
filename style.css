@@ -2,13 +2,14 @@
   --primary:#0d47a1; --primary-2:#1976d2; --bg:#f4f7f6; --card:#fff; --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
   --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
 }
-*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+
+*{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .app-container{max-width:1000px;margin:0 auto;padding-bottom:74px}
 
 .app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-.app-header h1{margin:0;font-size:20px;letter-spacing:.2px}
+.app-header h1{margin:0;font-size:22px;letter-spacing:.2px}
 .app-header .sub-info{margin:6px 0 0;font-size:13px;opacity:.9}
 
 .app-main{padding:16px}
@@ -24,42 +25,36 @@ textarea{resize:vertical;min-height:72px}
 .btn:active{transform:translateY(1px)}
 .btn-primary{background:var(--primary-2);color:#fff}
 .btn-secondary{background:#e0e7ff;color:#0b3ea9}
-.btn-icon{padding:10px}
+.btn-danger{background:#ffe6e6;color:#c62828}
+.btn-icon{padding:8px 10px;border-radius:8px}
 .inline{display:flex;gap:10px;flex-wrap:wrap}
-.inline-wrap{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-.grow{flex:1}
-.flex-head{display:flex;align-items:center;justify-content:space-between}
-.list{list-style:none;margin:0;padding:0}
-.list li{padding:8px 0;border-bottom:1px dashed var(--border)}
+.center{text-align:center}
+.muted{color:#666}
 
 .app-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
-.app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
-.nav-btn{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
+.app-nav .nav-btn{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
 .app-nav i{font-size:20px}
+.app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
+.nav-btn{flex:1}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-.filter-card{min-width:240px;display:flex;flex-direction:column;gap:6px}
+.list-reset{list-style:none;margin:0;padding:0}
+.list-item{padding:8px 0;border-bottom:1px dashed var(--border)}
 
-/* Kaydırma (ana pafta & modal pafta) */
-.scroller-x{
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
-}
-.scroller-x::-webkit-scrollbar{height:8px}
-.scroller-x::-webkit-scrollbar-thumb{background:#c8d0e7;border-radius:6px}
-
-/* Pafta */
-.pafta{min-width:940px}
+/* --- ANA PAFTA --- */
+#projePaftasi{overflow:visible}
+.pafta{min-width:980px}                 /* geniş pafta */
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action: pan-x pan-y;}
 .pafta-row{display:flex;gap:8px;justify-content:flex-start;margin:8px 0}
-.blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
+.blok{position:relative;flex:0 0 65px;height:65px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;letter-spacing:.3px;cursor:pointer;user-select:none;transition:.2s}
 .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
-.blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
-.blok.d-devam{background:var(--devam);border-color:#f1c21b;color:#333}
-.blok.d-bitti{background:var(--bitti);color:#fff;border-color:#2e7d32}
-.blok.d-teslim{background:var(--teslim);color:#fff}
-.blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
-.blok.sosyal{width:120px}
+.blok.sosyal-tesis{flex:0 0 110px;background:#9aa0a6;color:#fff;border-color:#8a8f94;font-weight:700}
+.owner-tag{position:absolute;left:4px;bottom:4px;font-size:10px;line-height:1;font-weight:700;color:#222;background:#ffffffcc;padding:2px 4px;border-radius:4px;border:1px solid var(--border)}
+
+/* Durum renkleri (pano) */
+.blok.durum-devam{background:var(--devam);border-color:#f1c21b;color:#333}
+.blok.durum-bitti{background:var(--bitti);color:#fff;border-color:#2e7d32}
+.blok.durum-teslim{background:var(--teslim);color:#fff}
 
 /* Tablo */
 .table-responsive{overflow-x:auto}
@@ -67,22 +62,22 @@ textarea{resize:vertical;min-height:72px}
 #arsivTablosu th,#arsivTablosu td{padding:10px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
 #arsivTablosu thead{background:#f2f2f7}
 
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
-.modal.active{display:flex}
-.modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
-.modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
-.modal .top h3{margin:6px 0 0}
-.modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1}
-.modal .help{color:#666;font-size:13px;margin:6px 8px 0}
-
-/* Print – yalnızca #printRoot yazdır */
-@media print {
-  body *{visibility:hidden !important}
-  #printRoot, #printRoot *{visibility:visible !important}
-  #printRoot{position:absolute;left:0;top:0;width:100%;padding:12mm;box-sizing:border-box}
-  #printRoot .pafta{min-width:0}
-  #printRoot .pafta-row{flex-wrap:wrap;gap:6px}
-  #printRoot table{width:100%;border-collapse:collapse}
-  #printRoot th, #printRoot td{border:1px solid #bbb;padding:8px;font-size:12px}
+/* --- MODAL (PAFTADAN SEÇ) — TÜM CİHAZLARDA KAYDIRMA FIX --- */
+.modal{position:fixed;inset:0;display:none;z-index:50}
+.modal.open{display:block}
+.modal .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.modal .sheet{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:92%;max-width:940px;background:#fff;border-radius:12px;border:1px solid var(--border);
+  padding:12px;box-shadow:0 12px 28px rgba(0,0,0,.25);
+  max-height:80vh;                 /* ✅ sabit yükseklik */
+  overflow-y:auto;                 /* ✅ dikey scroll */
+  -webkit-overflow-scrolling:touch;/* ✅ iOS/Android smooth */
+  touch-action: pan-y;             /* ✅ dokunma yönü izinli */
 }
+.modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 8px}
+.modal .help{color:#666;font-size:13px;margin:4px 4px 8px}
+
+/* Modal içindeki pafta — ANA PAFTA GİBİ SAĞA KAYAR */
+.pafta.picker{min-width:980px}
+#pickerScroll{overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action: pan-x pan-y;}  /* ✅ yatay scroll fix */
