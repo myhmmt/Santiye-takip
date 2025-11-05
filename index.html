@@ -18,77 +18,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
 
-  <style>
-    :root{
-      --primary:#0d47a1; --primary-2:#1976d2; --bg:#f4f7f6; --card:#fff; --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
-      --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .app-container{max-width:1000px;margin:0 auto;padding-bottom:74px}
-
-    /* Header */
-    .app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-    .app-header h1{margin:0;font-size:22px;letter-spacing:.2px}
-    .app-header .sub-info{margin:6px 0 0;font-size:13px;opacity:.9}
-
-    .app-main{padding:16px}
-    .page{display:none}
-    .page.active{display:block}
-    h2{margin:10px 4px 14px;font-size:20px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;box-shadow:0 2px 6px rgba(0,0,0,.04)}
-    .form-group{margin-bottom:14px}
-    label{display:block;font-weight:500;margin:2px 0 6px}
-    input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}
-    textarea{resize:vertical;min-height:72px}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;background:var(--primary-2);color:#fff;font-weight:700;cursor:pointer}
-    .btn:active{transform:translateY(1px)}
-    .btn-primary{background:var(--primary-2);color:#fff}
-    .btn-secondary{background:#e0e7ff;color:#0b3ea9}
-    .btn-icon{padding:8px 10px;border-radius:8px}
-    .inline{display:flex;gap:10px;flex-wrap:wrap}
-
-    /* Bottom nav */
-    .app-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
-    .app-nav .nav-btn{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
-    .app-nav i{font-size:20px}
-    .app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
-    .nav-btn{flex:1}
-    .nav-btn.active{color:var(--primary);font-weight:700}
-
-    /* Pafta */
-    #projePaftasi{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .pafta{min-width:760px}
-    .pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
-    .blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
-    .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
-    .blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
-    .blok.d-devam{background:var(--devam);border-color:#f1c21b;color:#333}
-    .blok.d-bitti{background:var(--bitti);color:#fff;border-color:#2e7d32}
-    .blok.d-teslim{background:var(--teslim);color:#fff}
-    .blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
-    .blok.sosyal{width:120px}
-
-    /* Arşiv Tablosu */
-    .table-responsive{overflow-x:auto}
-    #arsivTablosu{width:100%;border-collapse:collapse;margin-top:6px}
-    #arsivTablosu th,#arsivTablosu td{padding:10px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
-    #arsivTablosu thead{background:#f2f2f7}
-
-    /* Modal (Paftadan Seç) */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
-    .modal.active{display:flex}
-    .modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border)}
-    .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
-    .modal .top h3{margin:6px 0 0}
-    .modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1}
-    .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
-
-    /* Print */
-    #printArea{display:none}
-    @media print{ .app-nav, .app-header{display:none!important} #printArea{display:block} }
-  </style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app-container">
@@ -114,8 +45,12 @@
           </div>
           <div class="form-group">
             <label for="yoklamaBlok">Blok Seçimi</label>
-            <select id="yoklamaBlok"></select>
-            <button type="button" id="btnPaftaYoklama" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
+            <div class="inline">
+              <select id="yoklamaBlok"></select>
+              <button type="button" id="btnPaftaYoklama" class="btn btn-secondary">
+                <i class="fa-solid fa-map"></i> Paftadan Seç
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label for="yoklamaNot">Not (Opsiyonel)</label>
@@ -126,7 +61,7 @@
 
         <div class="ozet-panel card">
           <h3>Bugünkü Yoklama Özeti</h3>
-          <ul id="yoklamaListesi" style="list-style:none;margin:0;padding:0"></ul>
+          <ul id="yoklamaListesi" class="list-unstyled"></ul>
         </div>
       </section>
 
@@ -144,8 +79,12 @@
           </div>
           <div class="form-group">
             <label for="kayitBlok">Blok Seçimi</label>
-            <select id="kayitBlok"></select>
-            <button type="button" id="btnPaftaKayit" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
+            <div class="inline">
+              <select id="kayitBlok"></select>
+              <button type="button" id="btnPaftaKayit" class="btn btn-secondary">
+                <i class="fa-solid fa-map"></i> Paftadan Seç
+              </button>
+            </div>
           </div>
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
@@ -168,7 +107,9 @@
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
         <div class="inline" style="margin-bottom:12px">
-          <button id="btnPdfIcmal" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> İcmal PDF Al</button>
+          <button id="btnPdfIcmal" class="btn btn-primary">
+            <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
+          </button>
           <div style="min-width:240px" class="card">
             <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
             <select id="panoEkipFiltre"></select>
@@ -252,7 +193,7 @@
       query, orderBy, onSnapshot, doc, deleteDoc
     } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    /* Firebase config (senin proje) */
+    /* Firebase config */
     const firebaseConfig = {
       apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
       authDomain: "santiye-takip-83874.firebaseapp.com",
@@ -276,10 +217,14 @@
     const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
     const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
 
-    /* Mülkiyet rozetleri (AS/MÜT) */
+    /* Mülkiyet rozetleri (AS/MÜT/P) – R blok Patron */
     const OWN = {};
     const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
-    [...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : (b==="Sosyal"?"":"MÜT"); });
+    [...TOP,...MID,...BOT].forEach(b=>{
+      if (b==="Sosyal") { OWN[b] = ""; return; }
+      if (b==="R") { OWN[b] = "P"; return; }      // Patron (Harun Bey)
+      OWN[b] = asSet.has(b) ? "AS" : "MÜT";
+    });
 
     /* Yardımcılar */
     const el = s=>document.querySelector(s);
@@ -324,9 +269,10 @@
     /* Pafta çizimi */
     function makeBlok(label){
       const div = document.createElement("div");
-      div.className = "blok"+(label==="Sosyal"?" sosyal":"");
+      div.className = "blok"+(label==="Sosyal"?" sosyal-tesis":"");
       div.dataset.id = label;
-      div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${label!=="Sosyal"?`<span class="own">${OWN[label]||""}</span>`:""}`;
+      const tag = (OWN[label]||"");
+      div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL TESİS":label}</span>${tag?`<span class="owner-tag">${tag}</span>`:""}`;
       return div;
     }
     function drawPafta(rowSel, arr){
@@ -359,7 +305,10 @@
     function renderDaily(entries){
       const ul = el("#yoklamaListesi");
       ul.innerHTML = entries.length
-        ? entries.map(x=>`<li style="padding:8px 0;border-bottom:1px dashed var(--border)"><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
+        ? entries.map(x=>`<li style="padding:8px 0;border-bottom:1px dashed var(--border-color)">
+            <b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b>
+            <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}
+          </li>`).join("")
         : "<li>Bugün henüz kayıt yok.</li>";
     }
     onSnapshot(
@@ -387,7 +336,7 @@
     let FAST_ALL = [];
     function getLatestStatusFor(block, crew){
       const data = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
-      if(!data.length) return "";
+      if(!data.length) return ""; // sınıf yok
       data.sort((a,b)=>{
         const ta = a.ts?.toMillis?.() ?? 0;
         const tb = b.ts?.toMillis?.() ?? 0;
@@ -530,19 +479,17 @@
       window.print();
     });
 
-    /* Modal pafta içerikleri */
-    function drawPicker(){
-      drawPafta("#m-top", TOP);
-      drawPafta("#m-mid", MID);
-      drawPafta("#m-bot", BOT);
-    }
-    drawPicker(); // güvence
-
     /* Başlangıç */
     (function init(){
-      // Pafta ana görünümü çizildi; snapshot gelince boyanacak
-      renderPafta();
+      renderPafta(); // snapshot gelmeden boşlukları temiz çiz
     })();
+  </script>
+
+  <!-- Service Worker (PWA kurulum) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(console.error);
+    }
   </script>
 </body>
 </html>
