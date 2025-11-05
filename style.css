@@ -6,12 +6,11 @@
 html,body{height:100%}
 body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .app-container{max-width:1000px;margin:0 auto;padding-bottom:74px}
-
 .list-reset{list-style:none;margin:0;padding:0}
 
 /* Header */
 .app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
-.app-header h1{margin:0;font-size:20px;letter-spacing:.2px}
+.app-header h1{margin:0;font-size:20px}
 .app-header .sub-info{margin:6px 0 0;font-size:13px;opacity:.9}
 
 .app-main{padding:16px}
@@ -37,16 +36,14 @@ textarea{resize:vertical;min-height:72px}
 .app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* -------- Pafta (Ana + Modal) -------- */
+/* Pafta (ana + modal) */
 #projePaftasi .pafta,
 #modal .pafta{
-  overflow-x:auto;
-  overflow-y:hidden;
+  overflow-x:auto; overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
   touch-action:pan-x pinch-zoom;
   overscroll-behavior:contain;
 }
-
 .pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
 #projePaftasi .pafta-row,
 #modal .row{min-width:980px}
@@ -65,7 +62,6 @@ textarea{resize:vertical;min-height:72px}
 .modal.active{display:flex}
 .modal .sheet{background:#fff;max-width:940px;width:96%;border-radius:12px;padding:12px;border:1px solid var(--border);overflow:hidden}
 .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
-.modal .top h3{margin:6px 0 0}
 .modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1}
 .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
 
@@ -75,9 +71,13 @@ textarea{resize:vertical;min-height:72px}
 #arsivTablosu th,#arsivTablosu td{padding:10px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
 #arsivTablosu thead{background:#f2f2f7}
 
-/* Print: yalnızca #printArea görünsün */
-@media print{
-  body * { visibility: hidden !important; }
-  #printArea, #printArea * { visibility: visible !important; }
-  #printArea { position:absolute; inset:0 0 auto 0; padding:12px; }
-}
+/* Yoklama listesi action butonları */
+.yoklama-item{display:flex;align-items:center;gap:8px;justify-content:space-between;border-bottom:1px dashed var(--border);padding:8px 0}
+.yoklama-text{flex:1}
+.yoklama-actions{display:flex;gap:6px}
+.yoklama-actions .icon-btn{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer}
+.yoklama-actions .icon-btn.edit{color:#0b3ea9;background:#eaf1ff}
+.yoklama-actions .icon-btn.del{color:#c62828;background:#ffe6e6}
+
+/* Bilgi mesajı */
+.form-msg{font-size:13px;font-weight:600;margin-top:6px;opacity:.8}
