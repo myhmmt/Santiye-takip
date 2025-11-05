@@ -34,10 +34,10 @@ textarea{resize:vertical;min-height:72px}
 .nav-btn{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* Pafta */
+/* Pafta – native kaydırma */
 #projePaftasi{position:relative}
-.scroller{overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
-.pafta{min-width:760px; width:max-content}
+#projePaftasi .pafta{min-width:760px; width:max-content; overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
+#modal .pafta{min-width:760px; width:max-content; overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
 .pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
 .blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;user-select:none}
 .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
