@@ -1,27 +1,23 @@
-const CACHE_NAME = "vista-pwa-v13";
+const CACHE = "vista-v1.3";
 const ASSETS = [
-  "/", "index.html", "style.css", "app.js", "manifest.json",
-  "assets/icon/icon-192.png", "assets/icon/icon-512.png",
-  "assets/icon/apple-icon-180.png", "assets/icon/apple-icon-152.png"
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./manifest.json",
+  "./assets/icon/icon-192.png",
+  "./assets/icon/icon-512.png"
 ];
-
-self.addEventListener("install", (e)=>{
-  e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
+self.addEventListener("install", e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
 });
-
-self.addEventListener("activate", (e)=>{
+self.addEventListener("activate", e=>{
   e.waitUntil(
-    caches.keys().then(keys=>Promise.all(
-      keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k))
-    ))
+    caches.keys().then(keys=>Promise.all(keys.map(k=> k===CACHE?null:caches.delete(k))))
   );
-  self.clients.claim();
 });
-
-self.addEventListener("fetch", (e)=>{
-  const req = e.request;
+self.addEventListener("fetch", e=>{
   e.respondWith(
-    caches.match(req).then(cached=>cached || fetch(req))
+    caches.match(e.request).then(r=> r || fetch(e.request))
   );
 });
