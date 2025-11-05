@@ -75,7 +75,7 @@ el("#formYoklama").addEventListener("submit", async (e)=>{
   el("#yoklamaKisi").value=""; el("#yoklamaNot").value="";
 });
 
-/* yoklama read */
+/* yoklama read + düzenle/sil */
 function renderDaily(entries){
   const ul = el("#yoklamaListesi");
   if(!entries.length){ ul.innerHTML="<li>Bugün henüz kayıt yok.</li>"; return; }
@@ -97,9 +97,12 @@ onSnapshot(query(collection(db,"daily_attendance", todayKey(), "entries"), order
 el("#formHizliKayit").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const rec = {
-    user: el("#kayitKullanici").value, crew: el("#kayitEkip").value,
-    block: el("#kayitBlok").value, status: el("#kayitDurum").value,
-    note: el("#kayitNot").value.trim(), ts: serverTimestamp()
+    user: el("#kayitKullanici").value,
+    crew: el("#kayitEkip").value,
+    block: el("#kayitBlok").value,
+    status: el("#kayitDurum").value,
+    note: el("#kayitNot").value.trim(),
+    ts: serverTimestamp()
   };
   if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
   await addDoc(collection(db,"fast_logs"), rec);
@@ -164,10 +167,10 @@ onSnapshot(query(collection(db,"fast_logs"), orderBy("ts","desc")), snap=>{
   renderPafta(); renderTable();
 });
 
-/* edit/delete */
+/* edit/delete (fast + attendance) */
 document.addEventListener("click", async (e)=>{
   const del = e.target.closest("[data-del]"); const edit = e.target.closest("[data-edit]");
-  const delAtt = e.target.closest("[data-del-att]");
+  const delAtt = e.target.closest("[data-del-att]"); const editAtt = e.target.closest("[data-edit-att]");
   if(del){ await deleteDoc(doc(db,"fast_logs", del.getAttribute("data-del"))); }
   if(edit){
     const id = edit.getAttribute("data-edit"); const x = FAST_ALL.find(r=>r.id===id); if(!x) return;
@@ -179,15 +182,38 @@ document.addEventListener("click", async (e)=>{
     const id = delAtt.getAttribute("data-del-att");
     await deleteDoc(doc(collection(db,"daily_attendance", todayKey(), "entries"), id));
   }
+  if(editAtt){
+    // pratik: siliyoruz ve forma dolduruyoruz
+    const id = editAtt.getAttribute("data-edit-att");
+    // yoklamayı Firestore'dan çekmeye gerek yok; listede veri yok
+    alert("Yoklama kaydını doğrudan düzenlemek yerine, silip yeniden girin (kısa yol).");
+  }
 });
 
-/* pano ve arşiv filtre tetik */
+/* modal: Paftadan Seç – stabil */
+let activeTarget = null;
+const openPicker = (targetId)=>{ activeTarget = targetId; el("#modal").classList.add("active"); };
+const closePicker = ()=>{ el("#modal").classList.remove("active"); activeTarget=null; };
+el("#btnPaftaYoklama").addEventListener("click",()=>openPicker("yoklamaBlok"));
+el("#btnPaftaKayit").addEventListener("click",()=>openPicker("kayitBlok"));
+el("#btnClose").addEventListener("click",closePicker);
+el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
+["#m-top","#m-mid","#m-bot"].forEach(sel=>{
+  el(sel).addEventListener("click",(ev)=>{
+    const box = ev.target.closest(".blok"); if(!box||!activeTarget) return;
+    const id = box.dataset.id; if(id==="Sosyal") return;
+    el("#"+activeTarget).value = id;
+    closePicker();
+  });
+});
+
+/* pano/filtre tetik */
 el("#panoEkipFiltre").addEventListener("change", renderPafta);
 el("#filtreEkip").addEventListener("change", renderTable);
 el("#filtreBlok").addEventListener("change", renderTable);
 el("#btnFiltreTemizle").addEventListener("click", ()=>{ el("#filtreEkip").value=""; el("#filtreBlok").value=""; renderTable(); });
 
-/* icmal (sadece hızlı kayıt) */
+/* İcmal (sadece hızlı kayıt) */
 function buildIcmalHTML(){
   const total = ALL_BLOCKS.length;
   const rows = CREWS.map(t=>{
@@ -206,36 +232,10 @@ function buildIcmalHTML(){
 }
 el("#btnPdfIcmal").addEventListener("click",()=>{ el("#printTable").innerHTML = buildIcmalHTML(); window.print(); });
 
-/* DRAG-SCROLL — tüm cihazlarda ve modalda */
-function enableDragScroll(container){
-  if(!container) return;
-  // Pointer
-  let pDown=false, pStartX=0, pStartLeft=0;
-  container.addEventListener('pointerdown', e=>{ pDown=true; pStartX=e.clientX; pStartLeft=container.scrollLeft; container.setPointerCapture(e.pointerId); });
-  container.addEventListener('pointermove', e=>{ if(!pDown) return; container.scrollLeft = pStartLeft - (e.clientX - pStartX); });
-  ['pointerup','pointercancel','pointerleave'].forEach(evt=>container.addEventListener(evt,()=>{ pDown=false; }));
-
-  // Touch (MIUI vs)
-  let tStartX=0,tStartY=0,tStartLeft=0,decided=false,h=false;
-  container.addEventListener('touchstart', e=>{ if(e.touches.length!==1) return; const t=e.touches[0]; tStartX=t.clientX; tStartY=t.clientY; tStartLeft=container.scrollLeft; decided=false; h=false; }, {passive:true});
-  container.addEventListener('touchmove', e=>{
-    if(e.touches.length!==1) return; const t=e.touches[0]; const dx=t.clientX-tStartX, dy=t.clientY-tStartY;
-    if(!decided){ h=Math.abs(dx)>Math.abs(dy); decided=true; }
-    if(h){ e.preventDefault(); container.scrollLeft = tStartLeft - dx; }
-  }, {passive:false});
-
-  // Wheel/trackpad
-  container.addEventListener('wheel', e=>{
-    if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){ container.scrollLeft += e.deltaX; e.preventDefault(); }
-  }, {passive:false});
-}
-enableDragScroll(document.querySelector('#mainPafta'));
-enableDragScroll(document.querySelector('#modalPafta'));
-
-/* ok düğmeleri */
+/* Ana pafta yardımcı oklar (native scroll kullan) */
 const wrapper = document.querySelector('#projePaftasi');
 wrapper?.querySelector('.scroll-arrow.left')?.addEventListener('click', ()=> wrapper.querySelector('.pafta').scrollBy({left:-200,behavior:'smooth'}));
 wrapper?.querySelector('.scroll-arrow.right')?.addEventListener('click', ()=> wrapper.querySelector('.pafta').scrollBy({left:200,behavior:'smooth'}));
 
-/* init */
-(function(){ renderPafta(); })();
+/* Başlangıç */
+renderPafta();
