@@ -2,28 +2,30 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vista Premium – Şantiye Takip v1.0</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d47a1" />
-  <meta name="mobile-web-app-capable" content="yes">
+
   <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon/apple-icon-180.png" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <link rel="apple-touch-icon" sizes="152x152" href="assets/icon/apple-icon-152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icon/apple-icon-180.png" />
 
+  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app-container">
     <!-- HEADER -->
     <header class="app-header">
-      <h1>Vista Premium – Şantiye Takip v1.0</h1>
+      <h1>[ Vista Premium – Şantiye Takip v1.0 ]</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
@@ -43,22 +45,18 @@
           <div class="form-group">
             <label for="yoklamaBlok">Blok Seçimi</label>
             <select id="yoklamaBlok"></select>
-            <button type="button" id="btnPaftaYoklama" class="btn btn-secondary" style="margin-top:6px">
-              <i class="fa-solid fa-map"></i> Paftadan Seç
-            </button>
+            <button type="button" id="btnPaftaYoklama" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
           </div>
           <div class="form-group">
             <label for="yoklamaNot">Not (Opsiyonel)</label>
             <textarea id="yoklamaNot" rows="3"></textarea>
           </div>
-          <button type="submit" id="btnYoklamaSubmit" class="btn btn-primary">
-            <i class="fa-solid fa-user-check"></i> Giriş Yap
-          </button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Giriş Yap</button>
         </form>
 
         <div class="ozet-panel card">
           <h3>Bugünkü Yoklama Özeti</h3>
-          <ul id="yoklamaListesi" class="list-reset"></ul>
+          <ul id="yoklamaListesi" class="yoklama-list"></ul>
         </div>
       </section>
 
@@ -77,9 +75,7 @@
           <div class="form-group">
             <label for="kayitBlok">Blok Seçimi</label>
             <select id="kayitBlok"></select>
-            <button type="button" id="btnPaftaKayit" class="btn btn-secondary" style="margin-top:6px">
-              <i class="fa-solid fa-map"></i> Paftadan Seç
-            </button>
+            <button type="button" id="btnPaftaKayit" class="btn btn-secondary" style="margin-top:6px"><i class="fa-solid fa-map"></i> Paftadan Seç</button>
           </div>
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
@@ -94,18 +90,15 @@
             <label for="kayitNot">Not (Opsiyonel)</label>
             <textarea id="kayitNot" rows="3"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-floppy-disk"></i> Kaydet
-          </button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
         </form>
       </section>
 
       <!-- Bölüm 3: Pano -->
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
-
         <div class="inline" style="margin-bottom:12px">
-          <button id="btnPdfIcmal" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> İcmal PDF Al</button>
+          <button id="btnPdfIcmal" class="btn btn-primary"><i class="fa-solid fa-file-pdf"></i> İcmal PDF/Print</button>
           <div style="min-width:240px" class="card">
             <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
             <select id="panoEkipFiltre"></select>
@@ -125,6 +118,19 @@
         <!-- Hızlı Kayıt Arşivi -->
         <div id="hizliKayitArsivi" class="card">
           <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
+
+          <div class="inline" id="arsivFiltreBar" style="margin:6px 0 10px">
+            <div class="card" style="padding:10px;min-width:220px">
+              <label for="filtreEkip">Ekip Filtresi</label>
+              <select id="filtreEkip"></select>
+            </div>
+            <div class="card" style="padding:10px;min-width:220px">
+              <label for="filtreBlok">Blok Filtresi</label>
+              <select id="filtreBlok"></select>
+            </div>
+            <button id="filtreTemizle" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i> Temizle</button>
+          </div>
+
           <div class="table-responsive">
             <table id="arsivTablosu">
               <thead>
@@ -147,9 +153,15 @@
 
     <!-- Alt Menü -->
     <nav class="app-nav">
-      <button class="nav-btn" data-page="bolum1"><i class="fas fa-user-check"></i><span>Yoklama</span></button>
-      <button class="nav-btn" data-page="bolum2"><i class="fas fa-plus-circle"></i><span>Hızlı Kayıt</span></button>
-      <button class="nav-btn active" data-page="bolum3"><i class="fas fa-th-large"></i><span>Ana Pano</span></button>
+      <button class="nav-btn" data-page="bolum1">
+        <i class="fas fa-user-check"></i><span>Yoklama</span>
+      </button>
+      <button class="nav-btn" data-page="bolum2">
+        <i class="fas fa-plus-circle"></i><span>Hızlı Kayıt</span>
+      </button>
+      <button class="nav-btn active" data-page="bolum3">
+        <i class="fas fa-th-large"></i><span>Ana Pano</span>
+      </button>
     </nav>
   </div>
 
@@ -169,20 +181,12 @@
     </div>
   </div>
 
-  <!-- Print Alanı (sadece icmal için) -->
+  <!-- Print Alanı -->
   <section id="printArea">
     <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — Vista Premium</h2>
     <div id="printTable" class="card"></div>
   </section>
 
   <script type="module" src="app.js"></script>
-  <script>
-    // SW kaydı
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
-      });
-    }
-  </script>
 </body>
 </html>
