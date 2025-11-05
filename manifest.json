@@ -1,55 +1,15 @@
 {
   "name": "Vista Premium – Şantiye Takip",
-  "short_name": "VP Şantiye",
-  "description": "Günlük yoklama, hızlı imalat kayıtları ve pafta üzerinde anlık durum takibi.",
-  "id": "/Santiye-takip/",
-  "start_url": "/Santiye-takip/",
-  "scope": "/Santiye-takip/",
+  "short_name": "Vista",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
-  "theme_color": "#0d47a1",
   "background_color": "#0d47a1",
-  "orientation": "portrait",
+  "theme_color": "#0d47a1",
   "icons": [
-    {
-      "src": "assets/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "assets/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "assets/icons/apple-icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/icons/apple-icon-180.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Yoklama",
-      "short_name": "Yoklama",
-      "url": "/Santiye-takip/#bolum1"
-    },
-    {
-      "name": "Hızlı Kayıt",
-      "short_name": "Kayıt",
-      "url": "/Santiye-takip/#bolum2"
-    },
-    {
-      "name": "Ana Pano",
-      "short_name": "Pano",
-      "url": "/Santiye-takip/#bolum3"
-    }
-  ],
-  "prefer_related_applications": false
+    { "src": "assets/icon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon/apple-icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "assets/icon/apple-icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
 }
