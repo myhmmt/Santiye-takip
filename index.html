@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Vista Premium – Şantiye Takip v1.3</title>
+  <title>Vista Premium – Şantiye Takip v1.4</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
@@ -24,9 +24,8 @@
 <body>
   <div class="app-container">
 
-    <!-- HEADER -->
     <header class="app-header">
-      <h1>[ Vista Premium – Şantiye Takip v1.3 ]</h1>
+      <h1>[ Vista Premium – Şantiye Takip v1.4 ]</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
@@ -54,12 +53,20 @@
             <label for="yoklamaNot">Not (Opsiyonel)</label>
             <textarea id="yoklamaNot" rows="3"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Giriş Yap</button>
+          <div class="inline">
+            <button type="submit" id="btnYoklamaKaydet" class="btn btn-primary">
+              <i class="fa-solid fa-user-check"></i> Giriş Yap
+            </button>
+            <button type="button" id="btnYoklamaIptal" class="btn btn-secondary" style="display:none">
+              <i class="fa-solid fa-xmark"></i> İptal
+            </button>
+          </div>
         </form>
 
         <div class="ozet-panel card">
           <h3>Bugünkü Yoklama Özeti</h3>
           <ul id="yoklamaListesi" class="list-reset"></ul>
+          <p class="form-msg" id="yoklamaMsg" style="display:none;"></p>
         </div>
       </section>
 
@@ -157,7 +164,6 @@
       </section>
     </main>
 
-    <!-- Alt Menü -->
     <nav class="app-nav">
       <button class="nav-btn" data-page="bolum1">
         <i class="fas fa-user-check"></i><span>Yoklama</span>
@@ -171,7 +177,7 @@
     </nav>
   </div>
 
-  <!-- Modal: Paftadan Seç -->
+  <!-- Modal: Pafta Seç -->
   <div class="modal" id="modal">
     <div class="sheet">
       <div class="top">
@@ -188,12 +194,19 @@
     </div>
   </div>
 
-  <!-- PRINT alanı (PDF için yalnızca Pafta + İcmal) -->
-  <section id="printArea" style="display:none"></section>
+  <!-- PDF çıktısı için geçici alan -->
+  <div id="pdfArea" style="position:fixed;left:-99999px;top:-99999px;"></div>
 
+  <!-- App -->
   <script type="module" src="app.js"></script>
+
+  <!-- İcmal PDF için: html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+          integrity="sha512-YcsIPGm4f8Qqz1Y1s+Wm9O9oMsbM3xwqJ9lVf1mHqyH2l6JZ0csg1qGZ8e4Oja2NniGZc0g8w7/2G8nY67fU2g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- SW -->
   <script>
-    // SW register
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js');
