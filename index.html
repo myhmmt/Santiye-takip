@@ -2,215 +2,83 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Vista Premium – Şantiye Takip v1.4</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Vista Premium – Şantiye Takip v1.5.1</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="manifest.json?v=1.5.1" />
   <meta name="theme-color" content="#0d47a1" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="apple-touch-icon" href="assets/icon/apple-icon-180.png" />
-  <link rel="apple-touch-icon" sizes="152x152" href="assets/icon/apple-icon-152.png" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-icon-180.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/apple-icon-152.png" />
 
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css?v=1.5.1" />
 </head>
+
 <body>
   <div class="app-container">
-
     <header class="app-header">
-      <h1>[ Vista Premium – Şantiye Takip v1.4 ]</h1>
+      <h1>Vista Premium – Şantiye Takip v1.5.1</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
     <main class="app-main">
-      <!-- Bölüm 1: Günlük Yoklama -->
-      <section id="bolum1" class="page">
-        <h2>Bölüm 1: Günlük Yoklama</h2>
-        <form id="formYoklama" class="card">
-          <div class="form-group">
-            <label for="yoklamaEkip">Ekip Seçimi</label>
-            <select id="yoklamaEkip"></select>
-          </div>
-          <div class="form-group">
-            <label for="yoklamaKisi">Kişi Sayısı</label>
-            <input type="number" id="yoklamaKisi" placeholder="Örn: 5" min="1" />
-          </div>
-          <div class="form-group">
-            <label for="yoklamaBlok">Blok Seçimi</label>
-            <select id="yoklamaBlok"></select>
-            <button type="button" id="btnPaftaYoklama" class="btn btn-secondary" style="margin-top:6px">
-              <i class="fa-solid fa-map"></i> Paftadan Seç
-            </button>
-          </div>
-          <div class="form-group">
-            <label for="yoklamaNot">Not (Opsiyonel)</label>
-            <textarea id="yoklamaNot" rows="3"></textarea>
-          </div>
-          <div class="inline">
-            <button type="submit" id="btnYoklamaKaydet" class="btn btn-primary">
-              <i class="fa-solid fa-user-check"></i> Giriş Yap
-            </button>
-            <button type="button" id="btnYoklamaIptal" class="btn btn-secondary" style="display:none">
-              <i class="fa-solid fa-xmark"></i> İptal
-            </button>
-          </div>
-        </form>
-
-        <div class="ozet-panel card">
-          <h3>Bugünkü Yoklama Özeti</h3>
-          <ul id="yoklamaListesi" class="list-reset"></ul>
-          <p class="form-msg" id="yoklamaMsg" style="display:none;"></p>
-        </div>
-      </section>
-
-      <!-- Bölüm 2: Hızlı Kayıt -->
-      <section id="bolum2" class="page">
-        <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
-        <form id="formHizliKayit" class="card">
-          <div class="form-group">
-            <label for="kayitKullanici">Kullanıcı</label>
-            <select id="kayitKullanici"></select>
-          </div>
-          <div class="form-group">
-            <label for="kayitEkip">Ekip / İmalat Kalemi</label>
-            <select id="kayitEkip"></select>
-          </div>
-          <div class="form-group">
-            <label for="kayitBlok">Blok Seçimi</label>
-            <select id="kayitBlok"></select>
-            <button type="button" id="btnPaftaKayit" class="btn btn-secondary" style="margin-top:6px">
-              <i class="fa-solid fa-map"></i> Paftadan Seç
-            </button>
-          </div>
-          <div class="form-group">
-            <label for="kayitDurum">Durum</label>
-            <select id="kayitDurum">
-              <option value="Basladi">Başladı</option>
-              <option value="Devam">Devam Ediyor</option>
-              <option value="Bitti">Bitti</option>
-              <option value="Teslim">Teslim Alındı</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="kayitNot">Not (Opsiyonel)</label>
-            <textarea id="kayitNot" rows="3"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
-        </form>
-      </section>
-
-      <!-- Bölüm 3: Pano -->
-      <section id="bolum3" class="page active">
-        <h2>Bölüm 3: Proje Durum Panosu</h2>
-
-        <div class="inline" style="margin-bottom:12px">
-          <button id="btnPdfIcmal" class="btn btn-primary">
-            <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
-          </button>
-
-          <div style="min-width:240px" class="card">
-            <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
-            <select id="panoEkipFiltre"></select>
-          </div>
-        </div>
-
-        <!-- Pafta -->
-        <div id="projePaftasi" class="card">
-          <h3>Görsel Proje Paftası</h3>
-          <div class="pafta" id="paftaMain">
-            <div class="pafta-row" id="row-top"></div>
-            <div class="pafta-row" id="row-mid"></div>
-            <div class="pafta-row" id="row-bot"></div>
-          </div>
-        </div>
-
-        <!-- Hızlı Kayıt Arşivi – Filtre -->
-        <div id="arsivFiltre" class="card">
-          <h3>Hızlı Kayıt Arşivi – Filtre</h3>
-          <div class="inline">
-            <select id="filtreEkip"></select>
-            <select id="filtreBlok"></select>
-            <button id="btnFiltreTemizle" class="btn btn-secondary"><i class="fa-solid fa-broom"></i> Temizle</button>
-          </div>
-        </div>
-
-        <!-- Hızlı Kayıt Arşivi – Tablo -->
-        <div id="hizliKayitArsivi" class="card">
-          <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
-          <div class="table-responsive">
-            <table id="arsivTablosu">
-              <thead>
-                <tr>
-                  <th>Tarih</th>
-                  <th>Kullanıcı</th>
-                  <th>Ekip</th>
-                  <th>Blok</th>
-                  <th>Durum</th>
-                  <th>Not</th>
-                  <th>İşlem</th>
-                </tr>
-              </thead>
-              <tbody id="arsivBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      <!-- Bölümler dinamik olarak app.js içinden dolduruluyor -->
+      <section id="bolum1" class="page active"></section>
+      <section id="bolum2" class="page"></section>
+      <section id="bolum3" class="page"></section>
     </main>
 
+    <!-- Alt Menü -->
     <nav class="app-nav">
-      <button class="nav-btn" data-page="bolum1">
+      <button class="nav-btn active" data-page="bolum1">
         <i class="fas fa-user-check"></i><span>Yoklama</span>
       </button>
       <button class="nav-btn" data-page="bolum2">
         <i class="fas fa-plus-circle"></i><span>Hızlı Kayıt</span>
       </button>
-      <button class="nav-btn active" data-page="bolum3">
+      <button class="nav-btn" data-page="bolum3">
         <i class="fas fa-th-large"></i><span>Ana Pano</span>
       </button>
     </nav>
   </div>
 
-  <!-- Modal: Pafta Seç -->
-  <div class="modal" id="modal">
-    <div class="sheet">
-      <div class="top">
-        <h3>Paftadan Blok Seç</h3>
-        <button class="btn close" id="btnClose"><i class="fa-solid fa-xmark"></i> Kapat</button>
-      </div>
-      <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
+  <!-- Print / İcmal -->
+  <section id="printArea">
+    <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — Vista Premium</h2>
+    <div id="printTable" class="card"></div>
+  </section>
 
-      <div class="pafta" id="paftaModal" style="margin-top:8px">
-        <div class="row" id="m-top"></div>
-        <div class="row" id="m-mid"></div>
-        <div class="row" id="m-bot"></div>
+  <!-- Modal: Paftadan Seç -->
+  <div class="modal" id="modal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="btnClose"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="margin:0 0 6px">Paftadan Blok Seç</h3>
+      <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
+      <div class="pafta-wrap">
+        <div class="pafta">
+          <div class="pafta-row" id="m-top"></div>
+          <div class="pafta-row" id="m-mid"></div>
+          <div class="pafta-row" id="m-bot"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- PDF çıktısı için geçici alan -->
-  <div id="pdfArea" style="position:fixed;left:-99999px;top:-99999px;"></div>
-
   <!-- App -->
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=1.5.1"></script>
 
-  <!-- İcmal PDF için: html2pdf -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-          integrity="sha512-YcsIPGm4f8Qqz1Y1s+Wm9O9oMsbM3xwqJ9lVf1mHqyH2l6JZ0csg1qGZ8e4Oja2NniGZc0g8w7/2G8nY67fU2g=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-  <!-- SW -->
+  <!-- Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
+      navigator.serviceWorker.register('./sw.js?v=1.5.1');
     }
   </script>
 </body>
