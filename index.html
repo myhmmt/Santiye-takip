@@ -34,7 +34,7 @@
         <h2>Bölüm 1: Günlük Yoklama</h2>
         <form id="formYoklama" class="card">
           <div class="form-group">
-            <label for="yoklamaEkip">Ekip Seçimi</label>
+            <label for="yoklamaEkip">Ekip Seçimi (Alfabetik)</label>
             <select id="yoklamaEkip"></select>
           </div>
           <div class="form-group">
@@ -68,15 +68,18 @@
       <!-- Bölüm 2: Hızlı Kayıt -->
       <section id="bolum2" class="page">
         <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
+
         <form id="formHizliKayit" class="card">
           <div class="form-group">
             <label for="kayitKullanici">Kullanıcı</label>
             <select id="kayitKullanici"></select>
           </div>
+
           <div class="form-group">
-            <label for="kayitEkip">Ekip / İmalat Kalemi</label>
+            <label for="kayitEkip">İmalat Kalemi (Alfabetik)</label>
             <select id="kayitEkip"></select>
           </div>
+
           <div class="form-group">
             <label for="kayitBlok">Blok Seçimi</label>
             <div class="inline">
@@ -86,6 +89,7 @@
               </button>
             </div>
           </div>
+
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
             <select id="kayitDurum">
@@ -93,18 +97,21 @@
               <option value="Devam">Devam Ediyor</option>
               <option value="Bitti">Bitti</option>
               <option value="Teslim">Teslim Alındı</option>
-              <option value="Baslanmadi">Başlanmadı</option>
+              <option value="">Başlanmadı</option>
             </select>
           </div>
+
           <div class="form-group">
             <label for="kayitNot">Not (Opsiyonel)</label>
             <textarea id="kayitNot" rows="3"></textarea>
           </div>
+
           <button type="submit" class="btn btn-primary">
             <i class="fa-solid fa-floppy-disk"></i> Kaydet
           </button>
         </form>
 
+        <!-- Arşiv Filtre -->
         <div class="card">
           <h3>Hızlı Kayıt Arşivi – Filtre</h3>
           <div class="inline">
@@ -116,14 +123,20 @@
           </div>
         </div>
 
-        <div id="hizliKayitArsivi" class="card">
+        <!-- Arşiv Tablosu -->
+        <div class="card">
           <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
           <div class="table-responsive">
             <table id="arsivTablosu">
               <thead>
               <tr>
-                <th>Tarih</th><th>Kullanıcı</th><th>Ekip</th><th>Blok</th>
-                <th>Durum</th><th>Not</th><th>İşlem</th>
+                <th>Tarih</th>
+                <th>Kullanıcı</th>
+                <th>Ekip</th>
+                <th>Blok</th>
+                <th>Durum</th>
+                <th>Not</th>
+                <th>İşlem</th>
               </tr>
               </thead>
               <tbody id="arsivBody"></tbody>
@@ -132,15 +145,29 @@
         </div>
       </section>
 
-      <!-- Bölüm 3: Pano -->
+      <!-- Bölüm 3: Proje Durum Panosu -->
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
-        <button id="btnPdfIcmal" class="btn btn-primary" style="margin-bottom:12px">
-          <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
-        </button>
 
-        <!-- Genel pafta ve tüm kalem paftaları burada dinamik olarak üretilecek -->
-        <div id="panoContainer"></div>
+        <div class="inline" style="margin-bottom:12px">
+          <button id="btnPdfIcmal" class="btn btn-primary">
+            <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
+          </button>
+          <div style="min-width:240px" class="card">
+            <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
+            <select id="panoEkipFiltre"></select>
+          </div>
+        </div>
+
+        <!-- Pafta -->
+        <div id="projePaftasi" class="card">
+          <h3>Görsel Proje Paftası</h3>
+          <div class="pafta">
+            <div class="pafta-row" id="row-top"></div>
+            <div class="pafta-row" id="row-mid"></div>
+            <div class="pafta-row" id="row-bot"></div>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -166,17 +193,15 @@
         <button class="btn close" id="btnClose"><i class="fa-solid fa-xmark"></i> Kapat</button>
       </div>
       <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
-      <div class="pafta-wrap">
-        <div class="pafta" id="modalPafta">
-          <div class="row" id="m-top"></div>
-          <div class="row" id="m-mid"></div>
-          <div class="row" id="m-bot"></div>
-        </div>
+      <div class="pafta" id="modalPafta" style="margin-top:8px">
+        <div class="row" id="m-top"></div>
+        <div class="row" id="m-mid"></div>
+        <div class="row" id="m-bot"></div>
       </div>
     </div>
   </div>
 
-  <!-- Print Alanı -->
+  <!-- Print Alanı (sadece İcmal) -->
   <section id="printArea">
     <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — Vista Premium</h2>
     <div id="printTable" class="card"></div>
@@ -190,4 +215,4 @@
     }
   </script>
 </body>
-  </html>
+</html>
