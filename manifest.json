@@ -1,36 +1,29 @@
 {
   "name": "Vista Premium – Şantiye Takip",
-  "short_name": "Vista Premium",
-  "description": "Şantiye günlük yoklama, hızlı imalat kaydı ve görsel pafta takibi.",
-  "start_url": "./?source=pwa&v=1.5.1",
-  "scope": "./",
+  "short_name": "Şantiye Takip",
+  "description": "Vista Premium sahası için günlük yoklama, hızlı imalat kaydı, pafta/pano ve icmal PDF.",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d47a1",
   "theme_color": "#0d47a1",
-  "background_color": "#ffffff",
   "icons": [
+    { "src": "assets/icon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
     {
-      "src": "assets/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "name": "Hızlı Kayıt",
+      "short_name": "Hızlı Kayıt",
+      "url": "?page=bolum2"
     },
     {
-      "src": "assets/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/icons/apple-icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/icons/apple-icon-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
+      "name": "Ana Pano",
+      "short_name": "Pano",
+      "url": "?page=bolum3"
     }
   ]
 }
