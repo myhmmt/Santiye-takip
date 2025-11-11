@@ -1,5 +1,5 @@
 // Vista Premium – Şantiye Takip PWA SW (v1.6.1)
-const CACHE_NAME = "vista-pwa-v161";
+const CACHE_NAME = "vista-pwa-v162";
 const ASSETS = [
   "./",
   "./index.html",
