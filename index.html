@@ -2,8 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vista Premium – Şantiye Takip v1.6</title>
+  <!-- Mobilde zoomu kapat, uygulama gibi çalışsın -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Vista Premium – Şantiye Takip v1.6.1</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
@@ -24,7 +25,7 @@
   <div class="app-container">
     <!-- HEADER -->
     <header class="app-header">
-      <h1>[ Vista Premium – Şantiye Takip v1.6 ]</h1>
+      <h1>[ Vista Premium – Şantiye Takip v1.6.1 ]</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
@@ -73,12 +74,10 @@
             <label for="kayitKullanici">Kullanıcı</label>
             <select id="kayitKullanici"></select>
           </div>
-
           <div class="form-group">
             <label for="kayitEkip">İmalat Kalemi</label>
             <select id="kayitEkip"></select>
           </div>
-
           <div class="form-group">
             <label for="kayitBlok">Blok Seçimi</label>
             <div class="inline">
@@ -88,32 +87,36 @@
               </button>
             </div>
           </div>
-
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
             <select id="kayitDurum">
-              <option value="Basladi">Başladı</option>
-              <option value="Devam">Devam Ediyor</option>
-              <option value="Bitti">Bitti</option>
-              <option value="Teslim">Teslim Alındı</option>
-              <option value="">Başlanmadı</option>
+              <option>Başlanmadı</option>
+              <option>Başladı</option>
+              <option>Devam Ediyor</option>
+              <option>Bitti</option>
+              <option>Teslim Alındı</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="kayitNot">Not (Opsiyonel)</label>
             <textarea id="kayitNot" rows="3"></textarea>
           </div>
-
           <button type="submit" class="btn btn-primary">
             <i class="fa-solid fa-floppy-disk"></i> Kaydet
           </button>
         </form>
 
-        <!-- (Bölüm 2) Seçili kalem için pafta önizleme: app.js otomatik ekler -->
-        <!-- <div id="kayitPreviewHost" class="card"> ... app.js oluşturuyor ... </div> -->
+        <!-- Seçilen imalat kalemine ait canlı pafta önizleme -->
+        <div id="hizliOnizleme" class="card">
+          <h3>Pafta Önizleme</h3>
+          <div class="pafta preview">
+            <div class="pafta-row" id="pv-top"></div>
+            <div class="pafta-row" id="pv-mid"></div>
+            <div class="pafta-row" id="pv-bot"></div>
+          </div>
+        </div>
 
-        <!-- Hızlı Kayıt Arşivi (Bölüm 2'ye taşındı) -->
+        <!-- Hızlı Kayıt Arşivi + Filtreler -->
         <div class="card">
           <h3>Hızlı Kayıt Arşivi – Filtre</h3>
           <div class="inline">
@@ -125,19 +128,14 @@
           </div>
         </div>
 
-        <div id="hizliKayitArsivi" class="card">
+        <div class="card">
           <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
           <div class="table-responsive">
             <table id="arsivTablosu">
               <thead>
                 <tr>
-                  <th>Tarih</th>
-                  <th>Kullanıcı</th>
-                  <th>Ekip</th>
-                  <th>Blok</th>
-                  <th>Durum</th>
-                  <th>Not</th>
-                  <th>İşlem</th>
+                  <th>Tarih</th><th>Kullanıcı</th><th>Ekip</th><th>Blok</th>
+                  <th>Durum</th><th>Not</th><th>İşlem</th>
                 </tr>
               </thead>
               <tbody id="arsivBody"></tbody>
@@ -146,7 +144,7 @@
         </div>
       </section>
 
-      <!-- Bölüm 3: Proje Durum Panosu -->
+      <!-- Bölüm 3: Pano -->
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
 
@@ -156,18 +154,8 @@
           </button>
         </div>
 
-        <!-- (Geri uyum) Eski tek pafta alanı – app.js boyayabilir -->
-        <div id="projePaftasi" class="card">
-          <h3>Görsel Proje Paftası (Genel)</h3>
-          <div class="pafta">
-            <div class="pafta-row" id="row-top"></div>
-            <div class="pafta-row" id="row-mid"></div>
-            <div class="pafta-row" id="row-bot"></div>
-          </div>
-        </div>
-
-        <!-- v1.6: Her imalat kalemi için ayrı pafta – app.js doldurur -->
-        <div id="crewPanels"></div>
+        <!-- Her imalat kalemi için ayrı paftalar buraya çizilecek -->
+        <div id="panoList"></div>
       </section>
     </main>
 
@@ -201,7 +189,7 @@
     </div>
   </div>
 
-  <!-- Print Alanı – İcmal -->
+  <!-- Print Alanı: yalnız İcmal tablosu -->
   <section id="printArea">
     <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — Vista Premium</h2>
     <div id="printTable" class="card"></div>
@@ -215,4 +203,4 @@
     }
   </script>
 </body>
-</html>
+                </html>
