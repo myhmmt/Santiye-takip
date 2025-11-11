@@ -9,25 +9,21 @@ html,body{height:100%}
 body{
   margin:0;
   font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;
-  background:var(--bg);color:var(--text);
-  -webkit-text-size-adjust:100%;
+  background:var(--bg); color:var(--text);
+  overscroll-behavior-y:contain; /* sayfa zıplamasın */
 }
-.app-container{max-width:1000px;margin:0 auto;padding-bottom:74px}
+.app-container{max-width:1000px;margin:0 auto;padding-bottom:74px;min-height:100vh}
 
 /* Header */
-.app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
 .app-header h1{margin:0;font-size:22px;letter-spacing:.2px}
 .app-header .sub-info{margin:6px 0 0;font-size:13px;opacity:.9}
 
-.app-main{padding:16px; min-height:calc(100vh - 120px)}
+.app-main{padding:16px}
 .page{display:none}
 .page.active{display:block}
 h2{margin:10px 4px 14px;font-size:20px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;box-shadow:0 2px 6px rgba(0,0,0,.04)}
-.card.soft{background:#f9fafb}
-.card .card-inner{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:6px}
-.card.stack > .crew-pafta + .crew-pafta{margin-top:12px}
-
 .form-group{margin-bottom:14px}
 label{display:block;font-weight:500;margin:2px 0 6px}
 input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}
@@ -48,10 +44,22 @@ textarea{resize:vertical;min-height:72px}
 .nav-btn{flex:1}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* Pafta genel */
-.pafta{min-width:760px; width:max-content; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab; -webkit-overflow-scrolling:touch}
-.pafta-row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
-.blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
+/* Pafta – yalnız pafta yatay kayar */
+.pafta-wrap{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+  overscroll-behavior-x:contain;
+  cursor:grab;
+}
+#panoContainer .pafta-wrap{margin-top:8px}
+.pafta{min-width:760px;width:max-content}
+.pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
+.blok{
+  position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;
+  background:#f8fafc;display:flex;align-items:center;justify-content:center;
+  font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none
+}
 .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
 .blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
 .blok.d-devam{background:var(--devam);border-color:#f1c21b;color:#333}
@@ -60,23 +68,15 @@ textarea{resize:vertical;min-height:72px}
 .blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
 .blok.sosyal{width:120px}
 
-#projePaftasi{overflow-x:auto;-webkit-overflow-scrolling:touch}
-#miniPaftaWrap{overflow-x:auto}
-#crewPaftaHost .crew-pafta{padding:12px;border:1px dashed var(--border);border-radius:10px;background:#fff}
-#crewPaftaHost .crew-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
-#crewPaftaHost .crew-title h3{margin:0;font-size:16px}
-
 /* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px;z-index:20}
 .modal.active{display:flex}
 .modal .sheet{background:#fff;max-width:940px;width:100%;border-radius:12px;padding:12px;border:1px solid var(--border);overscroll-behavior:contain}
 .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
 .modal .top h3{margin:6px 0 0}
 .modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1}
 .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
-
-/* Modal pafta scroll */
-.modal .pafta{width:max-content; overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
+.modal .pafta-wrap{margin-top:8px} /* modal içinde de sadece pafta scroll */
 
 /* Tablo */
 .table-responsive{overflow-x:auto}
@@ -88,10 +88,9 @@ textarea{resize:vertical;min-height:72px}
 .list{list-style:none;margin:0;padding:0}
 .list li{padding:8px 0;border-bottom:1px dashed var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
-/* Print: sadece icmal alanını göster */
+/* Print */
 #printArea{display:none}
 @media print{
-  .app-nav, .app-header, .app-main > .page{display:none!important}
+  .app-nav, .app-header, .page:not(#printArea){display:none!important}
   #printArea{display:block}
-  @page{size:auto;margin:12mm}
 }
