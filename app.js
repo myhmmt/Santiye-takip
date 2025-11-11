@@ -1,10 +1,14 @@
-/* =====================  Firebase  ===================== */
+// app.js  — Vista Premium v1.6.1
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
   getFirestore, collection, addDoc, serverTimestamp,
   query, orderBy, onSnapshot, doc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
+/* =========================
+   Firebase config (senin proje)
+   ========================= */
 const firebaseConfig = {
   apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
   authDomain: "santiye-takip-83874.firebaseapp.com",
@@ -16,45 +20,45 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-/* =====================  Sabitler  ===================== */
-/** Blok dizilimi (pafta) */
+/* =========================
+   Sabitler / Listeler
+   ========================= */
+const CREWS_RAW = [
+  "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik",
+  "Parke","Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı",
+  "Saten Alçı","Kaba Sıva (İç)","Yerden Isıtma","Asma Tavan","Klima Tesisat",
+  "Mobilya","Çelik Kapı","Korkuluk",
+  // eklenenler
+  "Dış Cephe Bordex","Dış Cephe Sıva","Dış Cephe Çizgi Sıva","Dış Cephe Kenet","İç Boya"
+];
+// Form açılırlarında alfabetik
+const CREWS = [...new Set(CREWS_RAW)].sort((a,b)=>a.localeCompare(b,"tr"));
+
+const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
+
 const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
 const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
 const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
-const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
+const ALL_BLOCKS = [...TOP, ...MID, ...BOT].filter(b => b !== "Sosyal");
 
-/** Mülkiyet rozetleri */
+/* AS/MÜT kısa rozet haritası — onaylı set */
 const OWN = {};
 const AS_SET = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
 [...TOP,...MID,...BOT].forEach(b=>{
   OWN[b] = (b==="Sosyal") ? "" : (AS_SET.has(b) ? "AS" : "MÜT");
 });
 
-/** Kullanıcı & ekip listeleri */
-const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
+/* =========================
+   Yardımcılar
+   ========================= */
+const el  = s => document.querySelector(s);
+const els = s => document.querySelectorAll(s);
 
-// Panoda sıralama (senin verdiğin kesin sıra)
-const CREW_ORDER = [
-  "Elektrik","Mekanik","Kör Kasa","TG5","Çatı (Kereste)","Çatı (Oluk)","Çatı (Kiremit)",
-  "Kaba Sıva (İç)","Makina Alçı","Saten Alçı","Dış Cephe Sıva","Dış Cephe Kenet",
-  "Denizlik","Dış Cephe Bordex","Dış Cephe Çizgi Sıva","PVC","Klima Tesisat",
-  "Asma Tavan","Yerden Isıtma","Şap","İç Boya","Parke","Seramik","Mobilya","Çelik Kapı"
-];
-// Form açılırları alfabetik görünmeli
-const CREW_FORMS = [...new Set(CREW_ORDER)].slice().sort((a,b)=>a.localeCompare(b,"tr"));
-
-/* =====================  Yardımcılar  ===================== */
-const el  = s=>document.querySelector(s);
-const els = s=>document.querySelectorAll(s);
-
-function fillSelect(id, list, placeholder="— Seçiniz —"){
+function fillSelect(id, list, placeholder="— Seçiniz —") {
   const s = el('#'+id);
   if(!s) return;
-  s.innerHTML =
-    `<option value="">${placeholder}</option>` +
-    list.map(v=>`<option value="${v}">${v}</option>`).join("");
+  s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
 }
-
 function formatDateFromTS(ts){
   if (!ts) return "-";
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -63,12 +67,14 @@ function formatDateFromTS(ts){
 }
 function todayKey(){
   const d = new Date();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
+  const m = (d.getMonth()+1).toString().padStart(2,'0');
+  const day = d.getDate().toString().padStart(2,'0');
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
-/* =====================  Navigasyon  ===================== */
+/* =========================
+   Nav
+   ========================= */
 els(".nav-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
     els(".nav-btn").forEach(b=>b.classList.remove("active"));
@@ -79,95 +85,67 @@ els(".nav-btn").forEach(btn=>{
   });
 });
 
-/* =====================  Açılırları doldur  ===================== */
-fillSelect("yoklamaEkip", CREW_FORMS);
-fillSelect("kayitEkip",  CREW_FORMS);
+/* =========================
+   Select doldurma
+   ========================= */
+fillSelect("yoklamaEkip", CREWS);
+fillSelect("kayitEkip",   CREWS);
 fillSelect("kayitKullanici", USERS);
+
 fillSelect("yoklamaBlok", ALL_BLOCKS);
 fillSelect("kayitBlok",   ALL_BLOCKS);
-// Arşiv filtre
-fillSelect("filtreEkip", ["Tümü", ...CREW_FORMS], "Ekip (Tümü)");
+
+// arşiv filtre (Bölüm 2)
+fillSelect("filtreEkip", ["Tümü", ...CREWS], "Ekip (Tümü)");
 fillSelect("filtreBlok", ["Tümü", ...ALL_BLOCKS], "Blok (Tümü)");
 
-/* =====================  Pafta çizim yardımcıları  ===================== */
+/* =========================
+   Pafta çizimi (ana ve modal)
+   ========================= */
 function makeBlok(label){
-  const d = document.createElement("div");
-  d.className = "blok"+(label==="Sosyal"?" sosyal":"");
-  d.dataset.id = label;
-  d.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${label!=="Sosyal" ? `<span class="own">${OWN[label]||""}</span>` : ""}`;
-  return d;
+  const div = document.createElement("div");
+  div.className = "blok"+(label==="Sosyal"?" sosyal":"");
+  div.dataset.id = label;
+  const owner = OWN[label] || "";
+  // AS/MÜT kısa rozet, yazıyı kapatmasın
+  div.innerHTML = `
+    <span>${label==="Sosyal"?"SOSYAL":label}</span>
+    ${label!=="Sosyal" ? `<span class="own">${owner}</span>` : ""}
+  `;
+  return div;
 }
-function drawPaftaRows(host, idsTop=TOP, idsMid=MID, idsBot=BOT){
-  // host: element (container with 3 rows inside or we create)
-  host.innerHTML = `
-    <div class="pafta-row r-top"></div>
-    <div class="pafta-row r-mid"></div>
-    <div class="pafta-row r-bot"></div>`;
-  const rt = host.querySelector(".r-top");
-  const rm = host.querySelector(".r-mid");
-  const rb = host.querySelector(".r-bot");
-  idsTop.forEach(b=>rt.appendChild(makeBlok(b)));
-  idsMid.forEach(b=>rm.appendChild(makeBlok(b)));
-  idsBot.forEach(b=>rb.appendChild(makeBlok(b)));
+function drawPafta(rowSel, arr){
+  const row = el(rowSel);
+  if(!row) return;
+  row.innerHTML="";
+  arr.forEach(b=>row.appendChild(makeBlok(b)));
 }
+// ana pafta
+drawPafta("#row-top", TOP);
+drawPafta("#row-mid", MID);
+drawPafta("#row-bot", BOT);
+// modal pafta
+drawPafta("#m-top", TOP);
+drawPafta("#m-mid", MID);
+drawPafta("#m-bot", BOT);
 
-/* ====== Drag-scroll (tüm cihazlar) ====== */
-function enableDragScroll(container){
-  if(!container) return;
-  container.style.overflowX = "auto";
-  // Pointer
-  let pDown=false, sx=0, sl=0;
-  container.addEventListener("pointerdown", (e)=>{ pDown=true; sx=e.clientX; sl=container.scrollLeft; container.setPointerCapture(e.pointerId); });
-  container.addEventListener("pointermove", (e)=>{ if(!pDown) return; container.scrollLeft = sl - (e.clientX - sx); });
-  ["pointerup","pointercancel","pointerleave"].forEach(t=>container.addEventListener(t,()=>pDown=false));
-  // Touch yön kararı (MIUI vb.)
-  let tx=0, ty=0, tsl=0, decided=false, horiz=false;
-  container.addEventListener("touchstart", e=>{ if(e.touches.length!==1) return; const t=e.touches[0]; tx=t.clientX; ty=t.clientY; tsl=container.scrollLeft; decided=false; horiz=false; }, {passive:true});
-  container.addEventListener("touchmove", e=>{
-    if(e.touches.length!==1) return;
-    const t=e.touches[0]; const dx=t.clientX-tx; const dy=t.clientY-ty;
-    if(!decided){ horiz = Math.abs(dx) > Math.abs(dy); decided=true; }
-    if(horiz){ e.preventDefault(); container.scrollLeft = tsl - dx; }
-  }, {passive:false});
-  // Wheel
-  container.addEventListener("wheel", e=>{
-    if(Math.abs(e.deltaX) > Math.abs(e.deltaY)){ container.scrollLeft += e.deltaX; e.preventDefault(); }
-  }, {passive:false});
-}
-
-/* =====================  Pano: çoklu pafta (alt alta)  ===================== */
-const crewHost = el("#crewPaftaHost");
-const crewPaftaRefs = new Map(); // crew -> {wrap, rows}
-if (crewHost){
-  CREW_ORDER.forEach((crewName)=>{
-    const card = document.createElement("div");
-    card.className = "crew-pafta";
-    card.innerHTML = `
-      <div class="crew-title"><h3>${crewName}</h3></div>
-      <div class="pafta"></div>`;
-    crewHost.appendChild(card);
-    const wrap = card.querySelector(".pafta");
-    drawPaftaRows(wrap);
-    enableDragScroll(wrap);
-    crewPaftaRefs.set(crewName, { wrap });
+/* =========================
+   Yoklama — yaz / oku / düzenle-sil
+   ========================= */
+el("#formYoklama")?.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const crew = el("#yoklamaEkip").value;
+  const count = parseInt(el("#yoklamaKisi").value||"0",10);
+  const block = el("#yoklamaBlok").value;
+  const note  = el("#yoklamaNot").value.trim();
+  if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok zorunludur.");return;}
+  await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
+    crew, count, block, note, user:"Sistem", ts: serverTimestamp()
   });
-}
+  el("#yoklamaKisi").value="";
+  el("#yoklamaNot").value="";
+});
 
-/* =====================  Modal pafta & mini önizleme  ===================== */
-// Modal (seçici)
-const modalPafta = el("#modalPafta");
-if (modalPafta){
-  drawPaftaRows(modalPafta);
-  enableDragScroll(modalPafta);
-}
-// Mini önizleme (Bölüm 2)
-const miniWrap = el("#miniPaftaWrap");
-if (miniWrap){
-  drawPaftaRows(miniWrap);
-  enableDragScroll(miniWrap);
-}
-
-/* =====================  Günlük Yoklama  ===================== */
 function renderDaily(entries){
   const ul = el("#yoklamaListesi");
   if(!ul) return;
@@ -187,45 +165,33 @@ onSnapshot(
   (snap)=>{ renderDaily(snap.docs.map(d=>({id:d.id, ...d.data()}))); }
 );
 
-el("#formYoklama")?.addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const crew = el("#yoklamaEkip").value;
-  const count = parseInt(el("#yoklamaKisi").value||"0",10);
-  const block = el("#yoklamaBlok").value;
-  const note = el("#yoklamaNot").value.trim();
-  if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok zorunludur.");return;}
-  await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
-    crew, count, block, note, user: "Sistem", ts: serverTimestamp()
-  });
-  el("#yoklamaKisi").value=""; el("#yoklamaNot").value="";
-});
-
-/* =====================  Hızlı Kayıt  ===================== */
+/* =========================
+   Hızlı Kayıt — yaz / oku / tablo / boyama
+   ========================= */
 el("#formHizliKayit")?.addEventListener("submit", async (e)=>{
   e.preventDefault();
   const rec = {
-    user: el("#kayitKullanici").value,
-    crew: el("#kayitEkip").value,
+    user:  el("#kayitKullanici").value,
+    crew:  el("#kayitEkip").value,
     block: el("#kayitBlok").value,
-    status: el("#kayitDurum").value || "Baslanmadi",
-    note: el("#kayitNot").value.trim(),
-    ts: serverTimestamp()
+    status:el("#kayitDurum").value, // "Basladi" da olabilir
+    note:  el("#kayitNot").value.trim(),
+    ts:    serverTimestamp()
   };
   if(!rec.user||!rec.crew||!rec.block){alert("Kullanıcı, ekip ve blok zorunludur.");return;}
   await addDoc(collection(db,"fast_logs"), rec);
   el("#kayitNot").value="";
 });
 
-/* ====== Kayıtları oku + tablo ve pafta boyama ====== */
 let FAST_ALL = [];
-
 function latestClass(status){
-  if(status==="Devam"||status==="Devam Ediyor"||status==="Basladi"||status==="Basladı") return "d-devam";
+  // Başladı = Devam rengi
+  if(status==="Basladi" || status==="Devam" || status==="Devam Ediyor") return "d-devam";
   if(status==="Bitti") return "d-bitti";
-  if(status==="Teslim"||status==="Teslim Alındı"||status==="TeslimAlindi") return "d-teslim";
-  return ""; // Başlanmadı -> boş
+  if(status==="Teslim" || status==="Teslim Alındı" || status==="TeslimAlindi") return "d-teslim";
+  return ""; // Başlanmadı
 }
-function getLatestStatusFor(block, crew){
+function getLatestStatusFor(block, crew){ // crew boşsa blok için en son durum
   const rows = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
   if(!rows.length) return "";
   rows.sort((a,b)=>{
@@ -235,23 +201,24 @@ function getLatestStatusFor(block, crew){
   });
   return latestClass(rows[0].status);
 }
-function clearRowColors(wrap){
-  wrap.querySelectorAll(".blok").forEach(b=>b.classList.remove("d-devam","d-bitti","d-teslim"));
+function clearStatus(box){
+  box.classList.remove("d-devam","d-bitti","d-teslim","durum-devam","durum-bitti","durum-teslim");
 }
-function paintWrap(wrap, crew){
-  clearRowColors(wrap);
-  [...TOP,...MID,...BOT].forEach(id=>{
-    const box = wrap.querySelector(`.blok[data-id="${id}"]`);
+function paintRow(rowSel, arr, crew){
+  const row = el(rowSel);
+  if(!row) return;
+  row.querySelectorAll(".blok").forEach(clearStatus);
+  arr.forEach(id=>{
+    const box = row.querySelector(`.blok[data-id="${id}"]`);
     const cls = getLatestStatusFor(id, crew);
     if(box && cls) box.classList.add(cls);
   });
 }
-function renderAllCrews(){
-  // Pano (alt alta)
-  crewPaftaRefs.forEach((ref, crew)=> paintWrap(ref.wrap, crew));
-  // Mini önizleme (seçili ekip)
-  const sel = el("#kayitEkip")?.value || "";
-  if (miniWrap) paintWrap(miniWrap, sel || null);
+function renderPafta(){ // tek pafta (filtreli)
+  const crew = el("#panoEkipFiltre")?.value || "";
+  paintRow("#row-top", TOP, crew);
+  paintRow("#row-mid", MID, crew);
+  paintRow("#row-bot", BOT, crew);
 }
 function matchFilter(x){
   const e = el("#filtreEkip")?.value;
@@ -278,20 +245,20 @@ function renderTable(){
       </td>
     </tr>`).join("") : `<tr><td colspan="7" style="padding:14px;text-align:center;color:#666">Kayıt yok</td></tr>`;
 }
-
 onSnapshot(
   query(collection(db,"fast_logs"), orderBy("ts","desc")),
   (snap)=>{
     FAST_ALL = snap.docs.map(d=>({id:d.id, ...d.data()}));
     renderTable();
-    renderAllCrews();
+    renderPafta();
   }
 );
 
-/* ====== Edit / Delete ====== */
+/* Düzenle / Sil (fast_logs + daily_attendance) */
 document.addEventListener("click", async (e)=>{
-  const del = e.target.closest?.("[data-del]");
-  const edit = e.target.closest?.("[data-edit]");
+  // fast_logs
+  const del = e.target.closest("[data-del]");
+  const edit = e.target.closest("[data-edit]");
   if(del){
     const id = del.getAttribute("data-del");
     await deleteDoc(doc(db,"fast_logs", id));
@@ -303,46 +270,72 @@ document.addEventListener("click", async (e)=>{
     el("#kayitKullanici").value = x.user||"";
     el("#kayitEkip").value     = x.crew||"";
     el("#kayitBlok").value     = x.block||"";
-    el("#kayitDurum").value    = x.status||"Baslanmadi";
+    el("#kayitDurum").value    = x.status||"Basladi";
     el("#kayitNot").value      = x.note||"";
     await deleteDoc(doc(db,"fast_logs", id));
     alert("Kayıt düzenleme modunda forma alındı. Kaydet ile güncel halini ekle.");
   }
+
+  // daily_attendance (bugünkü)
+  const delAtt  = e.target.closest("[data-del-att]");
+  if(delAtt){
+    const id = delAtt.getAttribute("data-del-att");
+    await deleteDoc(doc(collection(db,"daily_attendance", todayKey(), "entries"), id));
+  }
 });
 
-/* ====== Modal aç/kapat + seçim ====== */
+/* =========================
+   Pafta modal aç/kapat + seçim
+   ========================= */
 let activeTarget = null;
-const openPicker  = (targetId)=>{ activeTarget = targetId; el("#modal")?.classList.add("active"); };
-const closePicker = ()=>{ el("#modal")?.classList.remove("active"); activeTarget=null; };
+function openPicker(targetId){
+  activeTarget = targetId;
+  el("#modal").classList.add("active");
+}
+function closePicker(){
+  el("#modal").classList.remove("active");
+  activeTarget = null;
+}
 el("#btnPaftaYoklama")?.addEventListener("click",()=>openPicker("yoklamaBlok"));
-el("#btnPaftaKayit")?.addEventListener("click",()=>openPicker("kayitBlok"));
-el("#btnClose")?.addEventListener("click",closePicker);
-el("#modal")?.addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
-modalPafta?.addEventListener("click",(ev)=>{
-  const box = ev.target.closest(".blok"); if(!box||!activeTarget) return;
-  const id = box.dataset.id; if(id==="Sosyal") return;
-  el("#"+activeTarget).value = id;
-  closePicker();
+el("#btnPaftaKayit")  ?.addEventListener("click",()=>openPicker("kayitBlok"));
+el("#btnClose")       ?.addEventListener("click",closePicker);
+el("#modal")          ?.addEventListener("click",(e)=>{ if(e.target.id==="modal") closePicker(); });
+
+// modal blok tıklama
+["#m-top","#m-mid","#m-bot"].forEach(sel=>{
+  const container = el(sel);
+  container?.addEventListener("click",(ev)=>{
+    const box = ev.target.closest(".blok");
+    if(!box || !activeTarget) return;
+    const id = box.dataset.id;
+    if(id==="Sosyal") return;
+    el("#"+activeTarget).value = id;
+    closePicker();
+  });
 });
 
-/* ====== Form değişimleri ====== */
-el("#kayitEkip")?.addEventListener("change", ()=> renderAllCrews());
-el("#filtreEkip")?.addEventListener("change", ()=> renderTable());
-el("#filtreBlok")?.addEventListener("change", ()=> renderTable());
+/* =========================
+   Filtre değişimleri
+   ========================= */
+el("#panoEkipFiltre")?.addEventListener("change", renderPafta);
+el("#filtreEkip")?.addEventListener("change", renderTable);
+el("#filtreBlok")?.addEventListener("change", renderTable);
 el("#btnFiltreTemizle")?.addEventListener("click", ()=>{
-  if(el("#filtreEkip")) el("#filtreEkip").value = "";
-  if(el("#filtreBlok")) el("#filtreBlok").value = "";
+  if(el("#filtreEkip")) el("#filtreEkip").value="";
+  if(el("#filtreBlok")) el("#filtreBlok").value="";
   renderTable();
 });
 
-/* =====================  İcmal (yalnız tablo + paftaların durumu)  ===================== */
+/* =========================
+   İcmal (print) — sadece pafta durumu
+   ========================= */
 function buildIcmalHTML(){
   const totalBlocks = ALL_BLOCKS.length;
 
-  const rows = CREW_ORDER.map(t=>{
-    const done = ALL_BLOCKS
-      .map(b=>getLatestStatusFor(b, t))
-      .filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
+  // tek tablo: her ekip için yapılan blok sayısı + yüzde
+  const rows = CREWS.map(t=>{
+    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
+    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
     const percent = totalBlocks ? (done/totalBlocks*100) : 0;
     return `<tr>
       <td style="padding:8px;border:1px solid #bbb">${t}</td>
@@ -352,15 +345,12 @@ function buildIcmalHTML(){
     </tr>`;
   }).join("");
 
-  const avg = (()=>{
-    const list = CREW_ORDER.map(t=>{
-      const done = ALL_BLOCKS
-        .map(b=>getLatestStatusFor(b, t))
-        .filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-      return totalBlocks ? (done/totalBlocks*100) : 0;
-    });
-    return list.reduce((a,b)=>a+b,0)/(list.length||1);
-  })();
+  const percents = CREWS.map(t=>{
+    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
+    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
+    return totalBlocks ? (done/totalBlocks*100) : 0;
+  });
+  const avg = percents.reduce((a,b)=>a+b,0)/(percents.length||1);
 
   return `
     <table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -383,14 +373,76 @@ function buildIcmalHTML(){
     <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
   `;
 }
-el("#btnPdfIcmal")?.addEventListener("click",()=>{
-  el("#printTable").innerHTML = buildIcmalHTML();
-  window.print(); // Sadece tek sayfalık icmal çıktısı
+el("#btnPdfIcmal")?.addEventListener("click", ()=>{
+  const area = el("#printTable");
+  if(!area) return;
+  area.innerHTML = buildIcmalHTML();
+  window.print();
 });
 
-/* =====================  Başlat  ===================== */
+/* =========================
+   Drag-scroll — sadece pafta konteynerlerinde
+   ========================= */
+function enableDragScroll(container){
+  if(!container) return;
+
+  // Pointer (mouse/pen)
+  let pDown=false, pStartX=0, pStartLeft=0;
+  container.addEventListener('pointerdown', e=>{
+    pDown=true; pStartX=e.clientX; pStartLeft=container.scrollLeft;
+    container.style.cursor='grabbing';
+    container.setPointerCapture(e.pointerId);
+  });
+  container.addEventListener('pointermove', e=>{
+    if(!pDown) return;
+    container.scrollLeft = pStartLeft - (e.clientX - pStartX);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(evt=>{
+    container.addEventListener(evt, ()=>{ pDown=false; container.style.cursor='grab'; });
+  });
+
+  // Touch — yatay kaydırma öncelikli
+  let tStartX=0, tStartY=0, tStartLeft=0, decided=false, horizontal=false;
+  container.addEventListener('touchstart', e=>{
+    if(e.touches.length!==1) return;
+    const t = e.touches[0];
+    tStartX=t.clientX; tStartY=t.clientY; tStartLeft=container.scrollLeft;
+    decided=false; horizontal=false;
+  }, {passive:true});
+
+  container.addEventListener('touchmove', e=>{
+    if(e.touches.length!==1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - tStartX;
+    const dy = t.clientY - tStartY;
+    if(!decided){
+      horizontal = Math.abs(dx) > Math.abs(dy);
+      decided = true;
+    }
+    if(horizontal){
+      e.preventDefault();
+      container.scrollLeft = tStartLeft - dx;
+    }
+  }, {passive:false});
+
+  // Wheel/trackpad
+  container.addEventListener('wheel', e=>{
+    if(Math.abs(e.deltaX) > Math.abs(e.deltaY)){
+      container.scrollLeft += e.deltaX;
+      e.preventDefault();
+    }
+  }, {passive:false});
+}
+
+// Ana pafta sadece kendi içinde kayar
+enableDragScroll(document.querySelector('#projePaftasi .pafta'));
+// Modal pafta da kendi içinde kayar
+document.querySelectorAll('#modal .pafta').forEach(enableDragScroll);
+
+/* =========================
+   Başlangıç
+   ========================= */
 (function init(){
-  // Pano ve modal/mini zaten çizildi; kayıtlar gelince boyanacak.
-  // Eski SW cache’lerinde takılanlar için ufak log:
-  console.log("Şantiye v1.6.1 app.js yüklendi");
+  // İlk boyama, veriler geldikçe güncellenir
+  renderPafta();
 })();
