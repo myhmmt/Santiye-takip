@@ -1,8 +1,8 @@
 {
   "name": "Vista Premium – Şantiye Takip v1.6.1",
   "short_name": "Vista",
-  "start_url": "./?source=pwa",
-  "scope": "./",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d47a1",
