@@ -93,7 +93,6 @@
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
             <select id="kayitDurum">
-              <!-- Seçeneklerin mantığı app.js'te -->
               <option value="Basladi">Başladı</option>
               <option value="Devam">Devam Ediyor</option>
               <option value="Bitti">Bitti</option>
@@ -166,17 +165,7 @@
 
         <!-- Çoklu pafta (her ekip için alt alta) -->
         <div id="panoMulti" class="card">
-          <!-- app.js ekiplere göre başlık + pafta satırlarını oluşturacak -->
-          <!-- Her ekip için:
-              <div class="pano-group">
-                <h3>Elektrik</h3>
-                <div class="pafta">
-                  <div class="pafta-row">...</div>
-                  <div class="pafta-row">...</div>
-                  <div class="pafta-row">...</div>
-                </div>
-              </div>
-          -->
+          <!-- app.js ekip sırasına göre başlık + pafta satırlarını burada oluşturacak -->
         </div>
       </section>
     </main>
@@ -205,9 +194,9 @@
       <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
 
       <div class="pafta" id="paftaModal" style="margin-top:8px">
-        <div class="row" id="m-top"></div>
-        <div class="row" id="m-mid"></div>
-        <div class="row" id="m-bot"></div>
+        <div class="pafta-row" id="m-top"></div>
+        <div class="pafta-row" id="m-mid"></div>
+        <div class="pafta-row" id="m-bot"></div>
       </div>
     </div>
   </div>
