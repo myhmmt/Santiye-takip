@@ -56,13 +56,26 @@ textarea{resize:vertical;min-height:72px}
 .app-nav i{font-size:20px}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* PAFTA GENEL (yalnızca pafta kayar) */
+/* PAFTA GENEL */
 .pafta{
-  overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
-  touch-action:pan-x pinch-zoom; overscroll-behavior:contain; scrollbar-width:thin;
+  overflow-x:auto;
+  overflow-y:hidden;                 /* dikey kaydırma sayfaya geçsin */
+  -webkit-overflow-scrolling:touch;
+  touch-action: pan-x pan-y;         /* ⬅️ dikey hareketi de açtık */
+  overscroll-behavior-x: contain;    /* yatay taşmayı içeride tut */
+  overscroll-behavior-y: auto;       /* dikeyde sayfaya izin ver */
+  scrollbar-width:thin;
 }
-.pafta-row{display:flex; gap:10px; justify-content:flex-start; margin:8px 0; min-width:980px}
 
+/* (Varsa) modal içindeki pafta için de aynı ayar */
+#modal .pafta{
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+}
 /* BLOK KUTULARI */
 .blok{
   position:relative; flex:0 0 64px; height:64px;
