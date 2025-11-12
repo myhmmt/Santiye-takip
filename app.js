@@ -383,7 +383,9 @@ function enableDragScroll(container){
     }
   }, {passive:false});
 }
-enableDragScroll(document.querySelector('#projePaftasi .pafta'));
+
+// DEĞİŞİKLİK 3: Sürükleme fonksiyonu artık .pafta'yı değil, #projePaftasi'nin kendisini hedef alıyor
+enableDragScroll(document.querySelector('#projePaftasi'));
 document.querySelectorAll('.modal .pafta').forEach(enableDragScroll);
 
 /* Başlangıç */
