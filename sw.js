@@ -1,4 +1,4 @@
-const CACHE_NAME = "vista-pwa-v11";
+const CACHE_NAME = "ggmt-v2"; // SAFE cache etiketi
 const ASSETS = [
   "/", "index.html", "style.css", "app.js", "manifest.json",
   "assets/icon/icon-192.png", "assets/icon/icon-512.png",
