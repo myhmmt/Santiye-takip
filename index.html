@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=141" />
 </head>
 <body>
   <div class="app-container">
@@ -31,7 +31,9 @@
     </header>
 
     <main class="app-main">
-      <!-- Bölüm 1: Günlük Yoklama -->
+      <!-- ===================================================== -->
+      <!-- BÖLÜM 1: GÜNLÜK YOKLAMA                               -->
+      <!-- ===================================================== -->
       <section id="bolum1" class="page">
         <h2>Bölüm 1: Günlük Yoklama</h2>
         <form id="formYoklama" class="card">
@@ -62,16 +64,18 @@
               <i class="fa-solid fa-xmark"></i> İptal
             </button>
           </div>
+          <p class="form-msg" id="yoklamaMsg" style="display:none;"></p>
         </form>
 
         <div class="ozet-panel card">
           <h3>Bugünkü Yoklama Özeti</h3>
           <ul id="yoklamaListesi" class="list-reset"></ul>
-          <p class="form-msg" id="yoklamaMsg" style="display:none;"></p>
         </div>
       </section>
 
-      <!-- Bölüm 2: Hızlı Kayıt -->
+      <!-- ===================================================== -->
+      <!-- BÖLÜM 2: HIZLI KAYIT (İMALAT GİRİŞİ)                  -->
+      <!-- ===================================================== -->
       <section id="bolum2" class="page">
         <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
         <form id="formHizliKayit" class="card">
@@ -153,7 +157,9 @@
         </div>
       </section>
 
-      <!-- Bölüm 3: Proje Durum Panosu -->
+      <!-- ===================================================== -->
+      <!-- BÖLÜM 3: PROJE DURUM PANOSU (ÇOKLU PAFTA)             -->
+      <!-- ===================================================== -->
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
 
@@ -165,7 +171,7 @@
 
         <!-- Çoklu pafta (her ekip için alt alta) -->
         <div id="panoMulti" class="card">
-          <!-- app.js ekip sırasına göre başlık + pafta satırlarını burada oluşturacak -->
+          <!-- app.js ekiplere göre başlık + pafta satırlarını oluşturacak -->
         </div>
       </section>
     </main>
@@ -194,22 +200,21 @@
       <p class="help">Bir bloğa dokunduğunda seçili form alanına aktarılır.</p>
 
       <div class="pafta" id="paftaModal" style="margin-top:8px">
-        <div class="pafta-row" id="m-top"></div>
-        <div class="pafta-row" id="m-mid"></div>
-        <div class="pafta-row" id="m-bot"></div>
+        <div class="row" id="m-top"></div>
+        <div class="row" id="m-mid"></div>
+        <div class="row" id="m-bot"></div>
       </div>
     </div>
   </div>
 
-  <!-- PDF için geçici alan (sadece tablo üretilecek) -->
+  <!-- PDF için geçici alan (tablo oluşturmak için) -->
   <div id="pdfArea" style="position:fixed;left:-99999px;top:-99999px;"></div>
 
   <!-- App -->
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=141"></script>
 
   <!-- İcmal PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-          integrity="sha512-YcsIPGm4f8Qqz1Y1s+Wm9O9oMsbM3xwqJ9lVf1mHqyH2l6JZ0csg1qGZ8e4Oja2NniGZc0g8w7/2G8nY67fU2g=="
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <!-- SW -->
