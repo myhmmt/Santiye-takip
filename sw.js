@@ -1,9 +1,11 @@
-// Vista Premium – Şantiye Takip v1.4.1
+// v1.4.1 – offline cache
 const CACHE = "vista-v1.4.1";
+
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
+  "./style.css?v=141",   // olası versiyon parametresi için
   "./app.js",
   "./manifest.json",
   "./assets/icon/icon-192.png",
@@ -13,13 +15,13 @@ const ASSETS = [
   "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
 ];
 
-// Kurulum (önbelleğe alma)
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE).then((c) => c.addAll(ASSETS))
+  );
   self.skipWaiting();
 });
 
-// Eski cache'leri temizle
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -29,20 +31,22 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
-// İstek yakalama
 self.addEventListener("fetch", (e) => {
   const req = e.request;
-  // Firestore gibi dinamik istekleri hariç tut
+
+  // Firestore canlı kalsın
   if (req.url.includes("firestore.googleapis.com")) return;
-  
+
   e.respondWith(
-    caches.match(req).then(cached =>
-      cached ||
-      fetch(req).then(resp => {
-        const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
-        return resp;
-      }).catch(() => cached)
-    )
+    caches.match(req).then(cached => {
+      if (cached) return cached;
+      return fetch(req)
+        .then(resp => {
+          const copy = resp.clone();
+          caches.open(CACHE).then(c => c.put(req, copy));
+          return resp;
+        })
+        .catch(() => cached);
+    })
   );
 });
