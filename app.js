@@ -1,9 +1,19 @@
+// v1.4.1 — Vista Premium – Şantiye Takip
+// Değişiklikler:
+// - İcmal PDF artık YALNIZCA tablo üretir (pafta klonu yok) -> html2pdf ile direkt indirir.
+// - Ekip/Blok açılır listeleri alfabetik (tr-TR) doldurulur.
+// - Yeni imalat kalemleri eklendi: "Çatı (Oluk)", "Dış Cephe Bordex", "Dış Cephe Sıva",
+//   "Dış Cephe Çizgi Sıva", "Dış Cephe Kenet", "İç Boya".
+// - Durum eşlemesi: Başladı=Devam rengi; "Başlanmadı" renksiz kabul edilir.
+// - AS / PATRON / MÜT blok rozetleri, senin verdiğin dağılıma göre güncellendi.
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
   getFirestore, collection, addDoc, serverTimestamp,
   query, orderBy, onSnapshot, doc, deleteDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
+/* Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
   authDomain: "santiye-takip-83874.firebaseapp.com",
@@ -15,24 +25,56 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-/* Listeler */
-const CREWS = ["Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke","Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı","Kaba Sıva (İç)","Yerden Isıtma","Asma Tavan","Klima Tesisat","Mobilya","Çelik Kapı","Korkuluk"];
+/* --- Listeler --- */
+// Çalışan set + yeni kalemler (tekrarsız)
+const CREWS_BASE = [
+  "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Denizlik","Parke","Seramik","Boya","TG5","PVC",
+  "Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı","Kaba Sıva (İç)","Yerden Isıtma","Asma Tavan",
+  "Klima Tesisat","Mobilya","Çelik Kapı","Korkuluk"
+];
+// Eklenenler
+const CREWS_EXTRA = [
+  "Çatı (Oluk)",
+  "Dış Cephe Bordex",
+  "Dış Cephe Sıva",
+  "Dış Cephe Çizgi Sıva",
+  "Dış Cephe Kenet",
+  "İç Boya"
+];
+// Birleştir + alfabetik (tr)
+const CREWS = Array.from(new Set([...CREWS_BASE, ...CREWS_EXTRA]))
+  .sort((a,b)=>a.localeCompare(b,"tr"));
+
 const USERS = ["Muhammet","Harun","Metin","Mert","Fuat","Furkan","Misafir"];
 
+// Pafta blokları (aynı)
 const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
 const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
 const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
 
+// AS / PATRON / MÜT dağılımı (senin verdiğin listeye göre)
+// Not: "AL" hem AS hem MÜT listelerinde geçiyordu; çakışmada "AS" öncelik verdim.
+// PATRON: R
+const AS_LIST = new Set(["AC","AD","AH","AL","AJ","Y","P","O","N","J","I","Z","A","B","C","H"]);
+const PATRON_LIST = new Set(["R"]);
+const ALL_BLOCKS_ORDERED = [...TOP, ...MID, ...BOT.filter(x=>"Sosyal"!==x)];
 const OWN = {};
-const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
-[...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = (b==="Sosyal") ? "" : (asSet.has(b) ? "AS" : "MÜT"); });
+ALL_BLOCKS_ORDERED.forEach(b=>{
+  if(b==="Sosyal"){ OWN[b] = ""; return; }
+  if (AS_LIST.has(b)) OWN[b] = "AS";
+  else if (PATRON_LIST.has(b)) OWN[b] = "P";
+  else OWN[b] = "MÜT";
+});
 
 /* Helpers */
-const el = s=>document.querySelector(s);
+const el  = s=>document.querySelector(s);
 const els = s=>document.querySelectorAll(s);
-function fillSelect(id, list, placeholder="— Seçiniz —"){
+const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
+
+function fillSelect(id, list, placeholder="— Seçiniz —", sort=true){
   const s = el('#'+id);
-  s.innerHTML = `<option value="">${placeholder}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join("");
+  const arr = sort ? [...list].sort((a,b)=>a.localeCompare(b,"tr")) : list;
+  s.innerHTML = `<option value="">${placeholder}</option>` + arr.map(v=>`<option value="${v}">${v}</option>`).join("");
 }
 function formatDateFromTS(ts){
   if (!ts) return "-";
@@ -58,23 +100,23 @@ els(".nav-btn").forEach(btn=>{
   });
 });
 
-/* Selectler */
-const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
+/* Select doldurma (alfabetik) */
 fillSelect("yoklamaEkip", CREWS);
 fillSelect("kayitEkip", CREWS);
 fillSelect("panoEkipFiltre", CREWS, "Tüm Ekipler (Genel)");
-fillSelect("kayitKullanici", USERS);
+fillSelect("kayitKullanici", USERS, "— Kullanıcı —", true);
 fillSelect("yoklamaBlok", ALL_BLOCKS);
 fillSelect("kayitBlok", ALL_BLOCKS);
-fillSelect("filtreEkip", ["(Tümü)",...CREWS], "Ekip (Tümü)");
-fillSelect("filtreBlok", ["(Tümü)",...ALL_BLOCKS], "Blok (Tümü)");
+fillSelect("filtreEkip", ["(Tümü)", ...CREWS], "Ekip (Tümü)");
+fillSelect("filtreBlok", ["(Tümü)", ...ALL_BLOCKS], "Blok (Tümü)");
 
 /* Pafta */
 function makeBlok(label){
   const div = document.createElement("div");
   div.className = "blok"+(label==="Sosyal"?" sosyal":"");
   div.dataset.id = label;
-  div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${label!=="Sosyal"?`<span class="own">${OWN[label]||""}</span>`:""}`;
+  const badge = label!=="Sosyal" ? `<span class="own">${OWN[label]||""}</span>` : "";
+  div.innerHTML = `<span>${label==="Sosyal"?"SOSYAL":label}</span>${badge}`;
   return div;
 }
 function drawPafta(rowSel, arr){
@@ -89,9 +131,9 @@ drawPafta("#m-top", TOP);
 drawPafta("#m-mid", MID);
 drawPafta("#m-bot", BOT);
 
-/* --------- BÖLÜM 1: GÜNLÜK YOKLAMA (Edit/Sil + Update) --------- */
-let ATT_TODAY = [];          // bugünkü yoklama listesi cache
-let EDIT_ATT_ID = null;      // düzenlenen belge id
+/* --------- BÖLÜM 1: GÜNLÜK YOKLAMA (edit/sil + update) --------- */
+let ATT_TODAY = [];
+let EDIT_ATT_ID = null;
 const yoklamaMsg = el("#yoklamaMsg");
 
 function setEditMode(on, data=null){
@@ -100,8 +142,7 @@ function setEditMode(on, data=null){
   if(on){
     btnSave.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Güncelle`;
     btnCancel.style.display = "inline-flex";
-    yoklamaMsg.style.display = "block";
-    yoklamaMsg.textContent = "Düzenleme modundasın. Kaydet ile güncellersin.";
+    if(yoklamaMsg){ yoklamaMsg.style.display = "block"; yoklamaMsg.textContent = "Düzenleme modundasın. Kaydet ile güncellersin."; }
     if(data){
       el("#yoklamaEkip").value = data.crew || "";
       el("#yoklamaKisi").value = data.count || "";
@@ -111,16 +152,14 @@ function setEditMode(on, data=null){
   }else{
     btnSave.innerHTML = `<i class="fa-solid fa-user-check"></i> Giriş Yap`;
     btnCancel.style.display = "none";
-    yoklamaMsg.style.display = "none";
+    if(yoklamaMsg){ yoklamaMsg.style.display = "none"; }
     el("#formYoklama").reset();
   }
 }
-
-el("#btnYoklamaIptal").addEventListener("click", ()=>{
+el("#btnYoklamaIptal")?.addEventListener("click", ()=>{
   EDIT_ATT_ID = null;
   setEditMode(false);
 });
-
 el("#formYoklama").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const crew = el("#yoklamaEkip").value;
@@ -130,20 +169,17 @@ el("#formYoklama").addEventListener("submit", async (e)=>{
   if(!crew||!count||!block){alert("Ekip, kişi sayısı ve blok zorunludur.");return;}
 
   if(EDIT_ATT_ID){
-    // UPDATE
     const ref = doc(db, "daily_attendance", todayKey(), "entries", EDIT_ATT_ID);
     await updateDoc(ref, { crew, count, block, note, ts: serverTimestamp() });
     EDIT_ATT_ID = null;
     setEditMode(false);
   }else{
-    // CREATE
     await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
       crew, count, block, note, user: "Sistem", ts: serverTimestamp()
     });
     el("#yoklamaKisi").value=""; el("#yoklamaNot").value="";
   }
 });
-
 function renderDaily(entries){
   const ul = el("#yoklamaListesi");
   ul.innerHTML = entries.length
@@ -172,12 +208,9 @@ onSnapshot(
     renderDaily(ATT_TODAY);
   }
 );
-
-// Yoklama Edit/Sil Event Delegation
 document.addEventListener("click", async (e)=>{
   const editBtn = e.target.closest("[data-att-edit]");
   const delBtn  = e.target.closest("[data-att-del]");
-
   if(editBtn){
     const id = editBtn.getAttribute("data-att-edit");
     const data = ATT_TODAY.find(x=>x.id===id);
@@ -194,14 +227,14 @@ document.addEventListener("click", async (e)=>{
   }
 });
 
-/* --------- BÖLÜM 2: HIZLI KAYIT (aynı) --------- */
+/* --------- BÖLÜM 2: HIZLI KAYIT (aynı akış) --------- */
 el("#formHizliKayit").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const rec = {
     user: el("#kayitKullanici").value,
     crew: el("#kayitEkip").value,
     block: el("#kayitBlok").value,
-    status: el("#kayitDurum").value,
+    status: el("#kayitDurum").value,   // "Başlanmadı" seçeneği indexte yoksa da boş/gri kabul edilir
     note: el("#kayitNot").value.trim(),
     ts: serverTimestamp()
   };
@@ -213,10 +246,11 @@ el("#formHizliKayit").addEventListener("submit", async (e)=>{
 /* Hızlı Kayıt — canlı oku / tablo / pafta boyama */
 let FAST_ALL = [];
 function statusClass(st){
+  // Başladı = Devam rengi, Başlanmadı = renksiz
   if(st==="Devam"||st==="Devam Ediyor"||st==="Basladi"||st==="Başladı") return "d-devam";
   if(st==="Bitti") return "d-bitti";
   if(st==="Teslim"||st==="Teslim Alındı"||st==="TeslimAlindi") return "d-teslim";
-  return "";
+  return ""; // "Başlanmadı" vb. renksiz
 }
 function getLatestStatusFor(block, crew){
   const data = FAST_ALL.filter(x=>x.block===block && (!crew || x.crew===crew));
@@ -295,7 +329,7 @@ document.addEventListener("click", async (e)=>{
   }
 });
 
-/* Pafta modal (seçim) */
+/* Pafta modal (seçim) — mevcut akış */
 let activeTarget = null;
 function openPicker(targetId){ activeTarget = targetId; el("#modal").classList.add("active"); }
 function closePicker(){ el("#modal").classList.remove("active"); activeTarget=null; }
@@ -312,7 +346,7 @@ el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePick
   });
 });
 
-/* Filtre */
+/* Filtreler */
 el("#panoEkipFiltre").addEventListener("change", renderPafta);
 el("#filtreEkip").addEventListener("change", renderTable);
 el("#filtreBlok").addEventListener("change", renderTable);
@@ -322,20 +356,9 @@ el("#btnFiltreTemizle").addEventListener("click",()=>{
   renderTable();
 });
 
-/* --------- İCMAL → PDF EXPORT (yalnız pafta + tablo) --------- */
-function clonePaftaForExport() {
-  const src = document.querySelector('#projePaftasi .pafta');
-  const clone = src ? src.cloneNode(true) : document.createElement('div');
-  // A4’e daha iyi sığması için hafif küçült
-  clone.style.transform = 'scale(0.95)';
-  clone.style.transformOrigin = 'top left';
-  clone.style.marginBottom = '12px';
-  // Yatay taşmaları gizlemesin; html2pdf genişliği okuyacak
-  clone.style.overflow = 'visible';
-  return clone;
-}
+/* --------- İCMAL → PDF EXPORT (YALNIZCA TABLO) --------- */
 function buildIcmalHTML(){
-  const totalBlocks = ALL_BLOCKS.length;
+  const totalBlocks = ALL_BLOCKS.length; // Sosyal hariç
   const rows = CREWS.map(t=>{
     const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
     const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
@@ -356,43 +379,32 @@ function buildIcmalHTML(){
   const avg = percents.reduce((a,b)=>a+b,0)/(percents.length||1);
 
   return `
-    <table style="width:100%;border-collapse:collapse;font-size:14px">
-      <thead>
-        <tr style="background:#f1f5f9">
-          <th style="padding:10px;border:1px solid #bbb;text-align:left">İMALAT KALEMİ</th>
-          <th style="padding:10px;border:1px solid #bbb">YAPILACAK BLOK</th>
-          <th style="padding:10px;border:1px solid #bbb">YAPILAN BLOK</th>
-          <th style="padding:10px;border:1px solid #bbb">İLERLEME</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-      <tfoot>
-        <tr style="background:#f9fafb;font-weight:700">
-          <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
-          <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3"><b>%${avg.toFixed(1)}</b></td>
-        </tr>
-      </tfoot>
-    </table>
-    <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
+    <div style="font-family:Roboto,Arial,sans-serif">
+      <h2 style="margin:0 0 10px">Şantiye İlerleme İcmali — Vista Premium</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="background:#f1f5f9">
+            <th style="padding:10px;border:1px solid #bbb;text-align:left">İMALAT KALEMİ</th>
+            <th style="padding:10px;border:1px solid #bbb">YAPILACAK BLOK</th>
+            <th style="padding:10px;border:1px solid #bbb">YAPILAN BLOK</th>
+            <th style="padding:10px;border:1px solid #bbb">İLERLEME</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr style="background:#f9fafb;font-weight:700">
+            <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
+            <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3"><b>%${avg.toFixed(1)}</b></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   `;
 }
-
 function exportIcmalPDF(){
-  const container = el("#pdfArea");
-  container.innerHTML = ""; // temizle
-
-  const head = document.createElement("div");
-  head.innerHTML = `<h2 style="margin:0 0 10px;font-family:Roboto,Arial">Şantiye İlerleme İcmali — Vista Premium</h2>
-                    <h4 style="margin:0 0 12px;color:#555;font-family:Roboto,Arial">Görsel Proje Paftası</h4>`;
-  container.appendChild(head);
-
-  const paftaClone = clonePaftaForExport();
-  container.appendChild(paftaClone);
-
-  const tableWrap = document.createElement("div");
-  tableWrap.style.marginTop = "10px";
-  tableWrap.innerHTML = buildIcmalHTML();
-  container.appendChild(tableWrap);
+  // Sadece tabloyu üret
+  const container = document.createElement("div");
+  container.innerHTML = buildIcmalHTML();
 
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -404,19 +416,15 @@ function exportIcmalPDF(){
   const opt = {
     margin:       10,
     filename:     fileName,
-    image:        { type: 'jpeg', quality: 0.95 },
+    image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2, useCORS: true, allowTaint: true },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
-  // İndir
-  // @ts-ignore (CDN global)
-  html2pdf().from(container).set(opt).save().then(()=>{
-    // iş bittiğinde istersen temizleyebilirsin
-    // container.innerHTML = "";
-  });
+  // CDN global
+  // @ts-ignore
+  html2pdf().from(container).set(opt).save();
 }
-
 el("#btnPdfIcmal")?.addEventListener("click", exportIcmalPDF);
 
 /* Başlangıç */
