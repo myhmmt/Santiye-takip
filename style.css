@@ -3,7 +3,6 @@
   --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
   --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
 }
-
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -40,10 +39,8 @@ textarea{resize:vertical;min-height:72px}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
 /* Pafta */
-/* DEĞİŞİKLİK 3: Ana paftanın tamamından sürüklemek için cursor:grab buraya eklendi */
-#projePaftasi{overflow-x:auto;-webkit-overflow-scrolling:touch; cursor:grab}
-/* DEĞİŞİKLİK 3: cursor:grab buradan kaldırıldı */
-.pafta{min-width:760px; width:max-content; touch-action:pan-x; overscroll-behavior-x:contain;}
+#projePaftasi{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pafta{min-width:760px; width:max-content; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
 .pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
 .blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
 .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
@@ -64,8 +61,7 @@ textarea{resize:vertical;min-height:72px}
 .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
 
 /* Modal pafta (ayrıca scrollable) */
-/* DEĞİŞİKLİK 1: Modal içi kaydırma için "width:max-content;" kaldırıldı */
-.modal .pafta{overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
+.modal .pafta{width:max-content; overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x; overscroll-behavior-x:contain; cursor:grab}
 
 /* Tablo */
 .table-responsive{overflow-x:auto}
