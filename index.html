@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Vista Premium – Şantiye Takip v1.1</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d47a1" />
-  <!-- iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icon/apple-icon-180.png" />
   <link rel="apple-touch-icon" sizes="152x152" href="assets/icon/apple-icon-152.png" />
 
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
@@ -22,14 +19,12 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- HEADER -->
     <header class="app-header">
       <h1>[ Vista Premium – Şantiye Takip v1.1 ]</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
     <main class="app-main">
-      <!-- Bölüm 1: Günlük Yoklama -->
       <section id="bolum1" class="page">
         <h2>Bölüm 1: Günlük Yoklama</h2>
         <form id="formYoklama" class="card">
@@ -65,7 +60,6 @@
         </div>
       </section>
 
-      <!-- Bölüm 2: Hızlı Kayıt -->
       <section id="bolum2" class="page">
         <h2>Bölüm 2: Hızlı Kayıt (İmalat Girişi)</h2>
         <form id="formHizliKayit" class="card">
@@ -104,19 +98,8 @@
           </button>
         </form>
 
-        <div class="card">
-          <h3>Hızlı Kayıt Arşivi – Filtre</h3>
-          <div class="inline">
-            <select id="filtreEkip" class="grow"></select>
-            <select id="filtreBlok" class="grow"></select>
-            <button id="btnFiltreTemizle" class="btn btn-secondary">
-              <i class="fa-solid fa-broom"></i> Temizle
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Bölüm 3: Pano -->
       <section id="bolum3" class="page active">
         <h2>Bölüm 3: Proje Durum Panosu</h2>
         <div class="inline" style="margin-bottom:12px">
@@ -129,7 +112,6 @@
           </div>
         </div>
 
-        <!-- Pafta -->
         <div id="projePaftasi" class="card">
           <h3>Görsel Proje Paftası</h3>
           <div class="pafta">
@@ -139,7 +121,17 @@
           </div>
         </div>
 
-        <!-- Hızlı Kayıt Arşivi -->
+        <div class="card">
+          <h3>Hızlı Kayıt Arşivi – Filtre</h3>
+          <div class="inline">
+            <select id="filtreEkip" class="grow"></select>
+            <select id="filtreBlok" class="grow"></select>
+            <button id="btnFiltreTemizle" class="btn btn-secondary">
+              <i class="fa-solid fa-broom"></i> Temizle
+            </button>
+          </div>
+        </div>
+
         <div id="hizliKayitArsivi" class="card">
           <h3>Hızlı Kayıt Arşivi (Tüm İmalatlar)</h3>
           <div class="table-responsive">
@@ -157,7 +149,6 @@
       </section>
     </main>
 
-    <!-- Alt Menü -->
     <nav class="app-nav">
       <button class="nav-btn" data-page="bolum1">
         <i class="fas fa-user-check"></i><span>Yoklama</span>
@@ -171,7 +162,6 @@
     </nav>
   </div>
 
-  <!-- Modal: Paftadan Seç -->
   <div class="modal" id="modal">
     <div class="sheet">
       <div class="top">
@@ -187,13 +177,11 @@
     </div>
   </div>
 
-  <!-- Print Alanı -->
   <section id="printArea">
     <h2 style="text-align:center;margin:8px 0 14px">Şantiye İlerleme İcmali — Vista Premium</h2>
     <div id="printTable" class="card"></div>
   </section>
 
-  <!-- Firebase + App -->
   <script type="module" src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
