@@ -4,7 +4,7 @@ import {
   query, orderBy, onSnapshot, doc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-/* Firebase config */
+/* Firebase config (SAFE) */
 const firebaseConfig = {
   apiKey: "AIzaSyAdvmca8C-RXTrnvhH4dEX1bFhYrMlyhSE",
   authDomain: "santiye-takip-83874.firebaseapp.com",
@@ -16,7 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-/* Veri listeleri */
+/* Veri listeleri (SAFE) */
 const CREWS = [
   "Mekanik","Elektrik","Çatı (Kereste)","Çatı (Kiremit)","Çatı (Oluk)","Denizlik","Parke",
   "Seramik","Boya","TG5","PVC","Kör Kasa","Şap","Dış Cephe","Makina Alçı","Saten Alçı",
@@ -28,7 +28,7 @@ const TOP = ["AC","AD","AE","AF","AG","AH","AI","AJ","AK","AL","AM","AN"];
 const MID = ["AB","Y","V","S","R","P","O","N","M","L","K","J","I"];
 const BOT = ["AA","Z","U","T","Sosyal","A","B","C","D","E","F","G","H"];
 
-/* Mülkiyet rozetleri (AS/MÜT) */
+/* AS/MÜT rozetleri (kısaltma) — blok adını kapatmayacak */
 const OWN = {};
 const asSet = new Set(["AC","AE","AG","AI","AK","AM","AB","V","R","O","M","K","I","AA","U","A","C","E","G"]);
 [...TOP,...MID,...BOT].forEach(b=>{ OWN[b] = asSet.has(b) ? "AS" : (b==="Sosyal"?"":"MÜT"); });
@@ -68,13 +68,9 @@ els(".nav-btn").forEach(btn=>{
 const ALL_BLOCKS = [...TOP, ...MID.filter(x=>"Sosyal"!==x), ...BOT.filter(x=>"Sosyal"!==x)];
 fillSelect("yoklamaEkip", CREWS);
 fillSelect("kayitEkip", CREWS);
-fillSelect("panoEkipFiltre", CREWS, "Tüm Ekipler (Genel)");
 fillSelect("kayitKullanici", USERS);
 fillSelect("yoklamaBlok", ALL_BLOCKS);
 fillSelect("kayitBlok", ALL_BLOCKS);
-/* arşiv filtre */
-fillSelect("filtreEkip", ["Tümü", ...CREWS], "Ekip (Tümü)");
-fillSelect("filtreBlok", ["Tümü", ...ALL_BLOCKS], "Blok (Tümü)");
 
 /* Pafta çizimi */
 function makeBlok(label){
@@ -110,33 +106,26 @@ el("#formYoklama").addEventListener("submit", async (e)=>{
   el("#yoklamaKisi").value=""; el("#yoklamaNot").value="";
 });
 
-/* Günlük Yoklama — canlı oku (bugün) + düzenle/sil */
+/* Günlük Yoklama — canlı oku (bugün) */
 function renderDaily(entries){
   const ul = el("#yoklamaListesi");
-  if(!entries.length){ ul.innerHTML="<li>Bugün henüz kayıt yok.</li>"; return; }
-  ul.innerHTML = entries.map(x=>`
-    <li>
-      <b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b>
-      <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}
-      <span class="inline" style="gap:6px;margin-left:auto">
-        <button class="btn btn-secondary btn-icon" data-edit-att="${x.id}"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-icon" style="background:#ffe6e6;color:#c62828" data-del-att="${x.id}"><i class="fa-solid fa-trash"></i></button>
-      </span>
-    </li>`).join("");
+  ul.innerHTML = entries.length
+    ? entries.map(x=>`<li><b>${x.crew}</b> — <b>${x.count}</b> kişi — <b>${x.block}</b> <span style="color:#777">(${formatDateFromTS(x.ts)})</span>${x.note?` — ${x.note}`:""}</li>`).join("")
+    : "<li>Bugün henüz kayıt yok.</li>";
 }
 onSnapshot(
   query(collection(db,"daily_attendance", todayKey(), "entries"), orderBy("ts","desc")),
   (snap)=>{ renderDaily(snap.docs.map(d=>({id:d.id, ...d.data()}))); }
 );
 
-/* Hızlı Kayıt — yaz (Başladı = Devam rengi) */
+/* Hızlı Kayıt — yaz */
 el("#formHizliKayit").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const rec = {
     user: el("#kayitKullanici").value,
     crew: el("#kayitEkip").value,
     block: el("#kayitBlok").value,
-    status: el("#kayitDurum").value,  // Basladi da olabilir
+    status: el("#kayitDurum").value,
     note: el("#kayitNot").value.trim(),
     ts: serverTimestamp()
   };
@@ -145,7 +134,7 @@ el("#formHizliKayit").addEventListener("submit", async (e)=>{
   el("#kayitNot").value="";
 });
 
-/* Hızlı Kayıt — canlı oku / tablo / pafta boyama + filtreler */
+/* Hızlı Kayıt — canlı oku / tablo / pafta boyama */
 let FAST_ALL = [];
 function latestClass(status){
   if(status==="Devam"||status==="Devam Ediyor"||status==="Basladi") return "d-devam";
@@ -168,30 +157,21 @@ function clearStatusClasses(elm){
 }
 function paintRow(rowSel, arr, crew){
   const row = document.querySelector(rowSel);
-  row.querySelectorAll(".blok").forEach(clearStatusClasses);  // her filtre değişiminde tam temizle
+  row.querySelectorAll(".blok").forEach(clearStatusClasses);
   arr.forEach(id=>{
     const box = row.querySelector(`.blok[data-id="${id}"]`);
-    const cls = getLatestStatusFor(id, crew);   // yoksa "" döner
+    const cls = getLatestStatusFor(id, crew);
     if (box && cls) box.classList.add(cls);
   });
 }
 function renderPafta(){
-  const crew = el("#panoEkipFiltre").value || "";
-  paintRow("#row-top", TOP, crew);
-  paintRow("#row-mid", MID, crew);
-  paintRow("#row-bot", BOT, crew);
-}
-function matchFilter(x){
-  const e = el("#filtreEkip").value;
-  const b = el("#filtreBlok").value;
-  const ekipOk = !e || e==="Tümü" || x.crew===e;
-  const blokOk = !b || b==="Tümü" || x.block===b;
-  return ekipOk && blokOk;
+  paintRow("#row-top", TOP, "");
+  paintRow("#row-mid", MID, "");
+  paintRow("#row-bot", BOT, "");
 }
 function renderTable(){
   const tbody = el("#arsivBody");
-  const rows = FAST_ALL.filter(matchFilter);
-  tbody.innerHTML = rows.length ? rows.map((x)=>`
+  tbody.innerHTML = FAST_ALL.length ? FAST_ALL.map((x)=>`
     <tr>
       <td>${formatDateFromTS(x.ts)}</td>
       <td>${x.user}</td>
@@ -214,13 +194,10 @@ onSnapshot(
   }
 );
 
-/* Edit / Delete (fast_logs + daily_attendance) */
+/* Edit / Delete */
 document.addEventListener("click", async (e)=>{
   const del = e.target.closest("[data-del]");
   const edit = e.target.closest("[data-edit]");
-  const delAtt = e.target.closest("[data-del-att]");
-  const editAtt = e.target.closest("[data-edit-att]");
-
   if(del){
     const id = del.getAttribute("data-del");
     await deleteDoc(doc(db,"fast_logs", id));
@@ -236,27 +213,6 @@ document.addEventListener("click", async (e)=>{
     el("#kayitNot").value = x.note||"";
     await deleteDoc(doc(db,"fast_logs", id));
     alert("Kayıt düzenleme modunda forma alındı. Kaydet ile güncel halini ekle.");
-  }
-
-  if(delAtt){
-    const id = delAtt.getAttribute("data-del-att");
-    await deleteDoc(doc(collection(db,"daily_attendance", todayKey(), "entries"), id));
-  }
-  if(editAtt){
-    const id = editAtt.getAttribute("data-edit-att");
-    // firestoredan okunanlar listede var; formu doldurup eski kaydı sil
-    const li = e.target.closest("li");
-    const parts = li?.textContent || "";
-    // Kısaca sadece not ve sayı manuel düzenlensin:
-    const yeniSayi = prompt("Yeni kişi sayısı?", "");
-    const yeniNot  = prompt("Yeni not (boş kalabilir)", "");
-    if(yeniSayi){
-      await addDoc(collection(db,"daily_attendance", todayKey(), "entries"), {
-        crew: li.querySelector ? "" : "", // hızlı çözüm: aynı satırı silip yeni eklemek yerine sadece notu güncelleyemiyoruz; bu basit yol:
-        // pratikte düzenlemek için günlük özet kartından silip formdan tekrar ekle daha sağlıklı.
-      });
-    }
-    // Not: Firestore'da tek alan güncelleme için doc id ve set gerekir; burada basitlik için "düzenleme = sil + yeniden ekle" akışını yukarıda tercih ettik.
   }
 });
 
@@ -277,55 +233,36 @@ el("#modal").addEventListener("click",(e)=>{ if(e.target.id==="modal") closePick
   });
 });
 
-/* Pano filtre + arşiv filtre tetikleme */
-el("#panoEkipFiltre").addEventListener("change", renderPafta);
-el("#filtreEkip").addEventListener("change", renderTable);
-el("#filtreBlok").addEventListener("change", renderTable);
-el("#btnFiltreTemizle").addEventListener("click", ()=>{
-  el("#filtreEkip").value=""; el("#filtreBlok").value=""; renderTable();
-});
-
-/* İcmal (print) — sadece hızlı kayıt verisinden, tabloyu yazdırmaz */
+/* İcmal (print) — sadece pafta + özet tablo */
 function buildIcmalHTML(){
   const totalBlocks = ALL_BLOCKS.length;
-  const rows = CREWS.map(t=>{
-    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
-    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-    const percent = totalBlocks ? (done/totalBlocks*100) : 0;
-    return `<tr>
-      <td style="padding:8px;border:1px solid #bbb">${t}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
-      <td style="padding:8px;border:1px solid #bbb;text-align:center"><b>%${percent.toFixed(1)}</b> <span style="color:#666">(${done}/${totalBlocks})</span></td>
-    </tr>`;
-  }).join("");
-
-  const percents = CREWS.map(t=>{
-    const latestPerBlock = ALL_BLOCKS.map(b=>getLatestStatusFor(b, t));
-    const done = latestPerBlock.filter(cls=>cls==="d-bitti"||cls==="d-teslim").length;
-    return totalBlocks ? (done/totalBlocks*100) : 0;
+  const donePerBlock = ALL_BLOCKS.map(b=>{
+    const cls = getLatestStatusFor(b, "");
+    return (cls==="d-bitti"||cls==="d-teslim") ? 1 : 0;
   });
-  const avg = percents.reduce((a,b)=>a+b,0)/(percents.length||1);
+  const done = donePerBlock.reduce((a,b)=>a+b,0);
+  const percent = totalBlocks ? (done/totalBlocks*100) : 0;
 
   return `
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead>
         <tr style="background:#f1f5f9">
-          <th style="padding:10px;border:1px solid #bbb;text-align:left">İMALAT KALEMİ</th>
+          <th style="padding:10px;border:1px solid #bbb;text-align:left">BAŞLIK</th>
           <th style="padding:10px;border:1px solid #bbb">YAPILACAK BLOK</th>
           <th style="padding:10px;border:1px solid #bbb">YAPILAN BLOK</th>
           <th style="padding:10px;border:1px solid #bbb">İLERLEME</th>
         </tr>
       </thead>
-      <tbody>${rows}</tbody>
-      <tfoot>
-        <tr style="background:#f9fafb;font-weight:700">
-          <td style="padding:10px;border:1px solid #bbb">GENEL ORTALAMA</td>
-          <td style="padding:10px;border:1px solid #bbb;text-align:center" colspan="3"><b>%${avg.toFixed(1)}</b></td>
+      <tbody>
+        <tr>
+          <td style="padding:8px;border:1px solid #bbb">GENEL İCMAL</td>
+          <td style="padding:8px;border:1px solid #bbb;text-align:center">${totalBlocks}</td>
+          <td style="padding:8px;border:1px solid #bbb;text-align:center">${done}</td>
+          <td style="padding:8px;border:1px solid #bbb;text-align:center"><b>%${percent.toFixed(1)}</b> <span style="color:#666">(${done}/${totalBlocks})</span></td>
         </tr>
-      </tfoot>
+      </tbody>
     </table>
-    <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b></p>
+    <p style="margin-top:8px;color:#555">Toplam blok sayısı: <b>${totalBlocks}</b> — İcmal yalnızca pafta ve bu özet tabloyu içerir.</p>
   `;
 }
 el("#btnPdfIcmal").addEventListener("click",()=>{
@@ -341,7 +278,7 @@ function enableDragScroll(container){
   let pDown=false, pStartX=0, pStartLeft=0;
   container.addEventListener('pointerdown', e=>{
     pDown=true; pStartX=e.clientX; pStartLeft=container.scrollLeft;
-    container.setPointerCapture(e.pointerId);
+    container.setPointerCapture?.(e.pointerId);
   });
   container.addEventListener('pointermove', e=>{
     if(!pDown) return;
@@ -359,7 +296,6 @@ function enableDragScroll(container){
     tStartX=t.clientX; tStartY=t.clientY; tStartLeft=container.scrollLeft;
     decided=false; horizontal=false;
   }, {passive:true});
-
   container.addEventListener('touchmove', e=>{
     if(e.touches.length!==1) return;
     const t = e.touches[0];
@@ -383,9 +319,7 @@ function enableDragScroll(container){
     }
   }, {passive:false});
 }
-
-// DEĞİŞİKLİK 3: Sürükleme fonksiyonu artık .pafta'yı değil, #projePaftasi'nin kendisini hedef alıyor
-enableDragScroll(document.querySelector('#projePaftasi'));
+enableDragScroll(document.querySelector('#projePaftasi .pafta'));
 document.querySelectorAll('.modal .pafta').forEach(enableDragScroll);
 
 /* Başlangıç */
