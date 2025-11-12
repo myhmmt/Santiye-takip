@@ -1,5 +1,3 @@
-Sw.js
-
 const CACHE_NAME = "vista-pwa-v11";
 const ASSETS = [
   "/", "index.html", "style.css", "app.js", "manifest.json",
