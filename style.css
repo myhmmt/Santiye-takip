@@ -37,17 +37,22 @@ textarea{resize:vertical;min-height:72px}
 .app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* PAFTA GENEL – yatay kaydır; dikey kaydırmayı sayfa üstlensin */
+/* ================== PAFTA ================== */
+/* 1) Dikey kaydırmayı kilitleyen sebep: touch-action sadece pan-x idi.
+   Çözüm: pan-x PAN-Y birlikte. */
 .pafta{
   overflow-x:auto;
   overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
-  touch-action:pan-x pinch-zoom;
-  overscroll-behavior:contain;
+  touch-action:pan-x pan-y pinch-zoom;   /* <<< DÜZELTME */
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:auto;
   scrollbar-width:thin;
 }
+
+/* 2) Satırlar flex olsun (modalın .row sınıfı dahil) */
 .pafta-row,
-.pafta .row{
+.pafta .row{                         /* <<< DÜZELTME */
   display:flex;
   gap:10px;
   justify-content:flex-start;
@@ -55,15 +60,10 @@ textarea{resize:vertical;min-height:72px}
   min-width:980px;
 }
 
-/* kutular sabit genişlikte kalsın */
-.pafta .blok{
-  flex:0 0 64px !important;
-  width:64px !important;
-  height:64px;
-}
-
 .blok{
   position:relative;
+  flex:0 0 64px;
+  height:64px;
   border:1px solid var(--border);
   border-radius:10px;
   background:#f8fafc;
@@ -114,15 +114,10 @@ textarea{resize:vertical;min-height:72px}
 .pano-group h3{margin:4px 0 10px;color:#0d47a1;font-size:18px;border-left:4px solid #0d47a1;padding-left:8px}
 
 /* MOBİL DESTEK */
-@media (max-width:600px){
-  .pafta .blok{
-    flex:0 0 52px !important;
-    width:52px !important;
-    height:52px;
-    font-size:12px;
-  }
+@media(max-width:600px){
+  .blok{flex:0 0 52px;height:52px;font-size:12px}
   .blok .own{font-size:10px}
   h2{font-size:18px}
   .btn{padding:10px 14px;font-size:14px}
   .app-header h1{font-size:18px}
-  }
+}
