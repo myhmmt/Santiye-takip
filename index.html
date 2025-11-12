@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Vista Premium – Şantiye Takip v1.4</title>
+  <title>Vista Premium – Şantiye Takip v1.4.1</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
@@ -24,8 +24,9 @@
 <body>
   <div class="app-container">
 
+    <!-- HEADER -->
     <header class="app-header">
-      <h1>[ Vista Premium – Şantiye Takip v1.4 ]</h1>
+      <h1>[ Vista Premium – Şantiye Takip v1.4.1 ]</h1>
       <p class="sub-info">Muhammet Genç tarafından geliştirilmiştir.</p>
     </header>
 
@@ -92,42 +93,30 @@
           <div class="form-group">
             <label for="kayitDurum">Durum</label>
             <select id="kayitDurum">
+              <!-- Seçeneklerin mantığı app.js'te -->
               <option value="Basladi">Başladı</option>
               <option value="Devam">Devam Ediyor</option>
               <option value="Bitti">Bitti</option>
               <option value="Teslim">Teslim Alındı</option>
+              <option value="Baslanmadi">Başlanmadı</option>
             </select>
           </div>
           <div class="form-group">
             <label for="kayitNot">Not (Opsiyonel)</label>
             <textarea id="kayitNot" rows="3"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
-        </form>
-      </section>
-
-      <!-- Bölüm 3: Pano -->
-      <section id="bolum3" class="page active">
-        <h2>Bölüm 3: Proje Durum Panosu</h2>
-
-        <div class="inline" style="margin-bottom:12px">
-          <button id="btnPdfIcmal" class="btn btn-primary">
-            <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i> Kaydet
           </button>
+        </form>
 
-          <div style="min-width:240px" class="card">
-            <label for="panoEkipFiltre">İmalat Durumunu Göster:</label>
-            <select id="panoEkipFiltre"></select>
-          </div>
-        </div>
-
-        <!-- Pafta -->
-        <div id="projePaftasi" class="card">
-          <h3>Görsel Proje Paftası</h3>
-          <div class="pafta" id="paftaMain">
-            <div class="pafta-row" id="row-top"></div>
-            <div class="pafta-row" id="row-mid"></div>
-            <div class="pafta-row" id="row-bot"></div>
+        <!-- Seçilen kalemin pafta önizlemesi -->
+        <div id="previewPaftaCard" class="card">
+          <h3>Seçili Kaleme Ait Pafta Önizleme</h3>
+          <div class="pafta" id="previewPafta">
+            <div class="pafta-row" id="prev-top"></div>
+            <div class="pafta-row" id="prev-mid"></div>
+            <div class="pafta-row" id="prev-bot"></div>
           </div>
         </div>
 
@@ -137,7 +126,9 @@
           <div class="inline">
             <select id="filtreEkip"></select>
             <select id="filtreBlok"></select>
-            <button id="btnFiltreTemizle" class="btn btn-secondary"><i class="fa-solid fa-broom"></i> Temizle</button>
+            <button id="btnFiltreTemizle" class="btn btn-secondary">
+              <i class="fa-solid fa-broom"></i> Temizle
+            </button>
           </div>
         </div>
 
@@ -162,8 +153,35 @@
           </div>
         </div>
       </section>
+
+      <!-- Bölüm 3: Proje Durum Panosu -->
+      <section id="bolum3" class="page active">
+        <h2>Bölüm 3: Proje Durum Panosu</h2>
+
+        <div class="inline" style="margin-bottom:12px">
+          <button id="btnPdfIcmal" class="btn btn-primary">
+            <i class="fa-solid fa-file-pdf"></i> İcmal PDF Al
+          </button>
+        </div>
+
+        <!-- Çoklu pafta (her ekip için alt alta) -->
+        <div id="panoMulti" class="card">
+          <!-- app.js ekiplere göre başlık + pafta satırlarını oluşturacak -->
+          <!-- Her ekip için:
+              <div class="pano-group">
+                <h3>Elektrik</h3>
+                <div class="pafta">
+                  <div class="pafta-row">...</div>
+                  <div class="pafta-row">...</div>
+                  <div class="pafta-row">...</div>
+                </div>
+              </div>
+          -->
+        </div>
+      </section>
     </main>
 
+    <!-- Alt Menü -->
     <nav class="app-nav">
       <button class="nav-btn" data-page="bolum1">
         <i class="fas fa-user-check"></i><span>Yoklama</span>
@@ -177,7 +195,7 @@
     </nav>
   </div>
 
-  <!-- Modal: Pafta Seç -->
+  <!-- Modal: Paftadan Seç -->
   <div class="modal" id="modal">
     <div class="sheet">
       <div class="top">
@@ -194,13 +212,13 @@
     </div>
   </div>
 
-  <!-- PDF çıktısı için geçici alan -->
+  <!-- PDF için geçici alan (sadece tablo üretilecek) -->
   <div id="pdfArea" style="position:fixed;left:-99999px;top:-99999px;"></div>
 
   <!-- App -->
   <script type="module" src="app.js"></script>
 
-  <!-- İcmal PDF için: html2pdf -->
+  <!-- İcmal PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
           integrity="sha512-YcsIPGm4f8Qqz1Y1s+Wm9O9oMsbM3xwqJ9lVf1mHqyH2l6JZ0csg1qGZ8e4Oja2NniGZc0g8w7/2G8nY67fU2g=="
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
