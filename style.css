@@ -2,17 +2,18 @@
   --primary:#0d47a1; --primary-2:#1976d2; --bg:#f4f7f6; --card:#fff; --text:#333; --muted:#8e8e8e; --border:#e6e6e6;
   --devam:#fdd835; --bitti:#43a047; --teslim:#2e7d32;
 }
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
-.app-container{max-width:1000px;margin:0 auto;padding-bottom:74px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;width:100%;overflow-x:hidden}
+body{font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app-container{max-width:1000px;margin:0 auto;padding-bottom:74px;overflow-x:hidden}
 .list-reset{list-style:none;margin:0;padding:0}
 
-/* Header */
+/* HEADER */
 .app-header{background:var(--primary);color:#fff;text-align:center;padding:16px 14px 12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
 .app-header h1{margin:0;font-size:20px}
 .app-header .sub-info{margin:6px 0 0;font-size:13px;opacity:.9}
 
+/* MAIN */
 .app-main{padding:16px}
 .page{display:none}
 .page.active{display:block}
@@ -22,33 +23,24 @@ h2{margin:10px 4px 14px;font-size:20px}
 label{display:block;font-weight:500;margin:2px 0 6px}
 input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}
 textarea{resize:vertical;min-height:72px}
-.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;background:var(--primary-2);color:#fff;font-weight:700;cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:12px 16px;background:var(--primary-2);color:#fff;font-weight:700;cursor:pointer;transition:background .2s ease}
+.btn:hover{background:#185abd}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:var(--primary-2);color:#fff}
 .btn-secondary{background:#e0e7ff;color:#0b3ea9}
 .btn-icon{padding:8px 10px;border-radius:8px}
 .inline{display:flex;gap:10px;flex-wrap:wrap}
 
-/* Bottom nav */
-.app-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
+/* BOTTOM NAV */
+.app-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04);z-index:20}
 .app-nav .nav-btn{flex:1;border:0;background:transparent;padding:8px 6px 10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}
 .app-nav i{font-size:20px}
 .app-nav{display:flex;max-width:1000px;margin:0 auto;justify-content:space-around}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* Pafta (ana + modal) */
-#projePaftasi .pafta,
-#modal .pafta{
-  overflow-x:auto; overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  touch-action:pan-x pinch-zoom;
-  overscroll-behavior:contain;
-}
-.pafta-row,.row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0}
-#projePaftasi .pafta-row,
-#modal .row{min-width:980px}
-
-.blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none}
+/* PAFTA GENEL */
+.pafta{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x pinch-zoom;overscroll-behavior:contain;scrollbar-width:thin}
+.pafta-row{display:flex;gap:10px;justify-content:flex-start;margin:8px 0;min-width:980px}
+.blok{position:relative;flex:0 0 64px;height:64px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.3px;cursor:pointer;user-select:none;transition:transform .1s,box-shadow .1s}
 .blok:hover{box-shadow:0 6px 14px rgba(0,0,0,.06);transform:translateY(-1px)}
 .blok .own{position:absolute;left:6px;bottom:6px;font-size:11px;background:#efeff6;border:1px solid #dadcec;padding:1px 6px;border-radius:8px;color:#555}
 .blok.d-devam{background:var(--devam);border-color:#f1c21b;color:#333}
@@ -57,21 +49,21 @@ textarea{resize:vertical;min-height:72px}
 .blok.d-teslim:after{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:6px;top:6px;font-size:12px;opacity:.9}
 .blok.sosyal{width:120px}
 
-/* Modal */
+/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
 .modal.active{display:flex}
-.modal .sheet{background:#fff;max-width:940px;width:96%;border-radius:12px;padding:12px;border:1px solid var(--border);overflow:hidden}
+.modal .sheet{background:#fff;max-width:940px;width:96%;border-radius:12px;padding:12px;border:1px solid var(--border);overflow:auto}
 .modal .top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 10px}
 .modal .close{background:#e5e7eb;color:#111;border:1px solid #cbd5e1}
 .modal .help{color:#666;font-size:13px;margin:6px 8px 0}
 
-/* Tablo */
+/* TABLO */
 .table-responsive{overflow-x:auto}
 #arsivTablosu{width:100%;border-collapse:collapse;margin-top:6px}
 #arsivTablosu th,#arsivTablosu td{padding:10px;text-align:left;border-bottom:1px solid var(--border);font-size:14px}
 #arsivTablosu thead{background:#f2f2f7}
 
-/* Yoklama listesi action butonları */
+/* YOKLAMA LİSTESİ */
 .yoklama-item{display:flex;align-items:center;gap:8px;justify-content:space-between;border-bottom:1px dashed var(--border);padding:8px 0}
 .yoklama-text{flex:1}
 .yoklama-actions{display:flex;gap:6px}
@@ -79,5 +71,18 @@ textarea{resize:vertical;min-height:72px}
 .yoklama-actions .icon-btn.edit{color:#0b3ea9;background:#eaf1ff}
 .yoklama-actions .icon-btn.del{color:#c62828;background:#ffe6e6}
 
-/* Bilgi mesajı */
+/* FORM MESAJI */
 .form-msg{font-size:13px;font-weight:600;margin-top:6px;opacity:.8}
+
+/* PANO GRUPLARI */
+.pano-group{margin-bottom:24px}
+.pano-group h3{margin:4px 0 10px;color:#0d47a1;font-size:18px;border-left:4px solid #0d47a1;padding-left:8px}
+
+/* MOBİL DESTEK */
+@media(max-width:600px){
+  .blok{flex:0 0 52px;height:52px;font-size:12px}
+  .blok .own{font-size:10px}
+  h2{font-size:18px}
+  .btn{padding:10px 14px;font-size:14px}
+  .app-header h1{font-size:18px}
+}
