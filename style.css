@@ -56,14 +56,18 @@ textarea{resize:vertical;min-height:72px}
 .app-nav i{font-size:20px}
 .nav-btn.active{color:var(--primary);font-weight:700}
 
-/* PAFTA GENEL */
+/* PAFTA GENEL — yatay scroll paftada, dikey scroll sayfada */
 .pafta{
   overflow-x:auto;
-  overflow-y:hidden;                 /* dikey kaydırma sayfaya geçsin */
+  overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
-  touch-action: pan-x pan-y;         /* ⬅️ dikey hareketi de açtık */
-  overscroll-behavior-x: contain;    /* yatay taşmayı içeride tut */
-  overscroll-behavior-y: auto;       /* dikeyde sayfaya izin ver */
+
+  /* Dikey kaydırma sayfaya geçsin, sadece X yönünde zinciri kes */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+
+  /* Yatay hareketleri paftada tut, dikey hareketler engellenmesin */
+  touch-action: pan-x;
   scrollbar-width:thin;
 }
 
