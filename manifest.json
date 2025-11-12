@@ -6,6 +6,7 @@
   "display": "standalone",
   "background_color": "#0d47a1",
   "theme_color": "#0d47a1",
+  "description": "Vista Premium Şantiye Takip uygulaması: Günlük yoklama, imalat takibi ve proje icmali",
   "icons": [
     { "src": "assets/icon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "assets/icon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
